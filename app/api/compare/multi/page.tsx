@@ -5,11 +5,20 @@ import { useSearchParams } from "next/navigation"
 import { InvestmentBarChart } from "@/components/compare/investment-bar-chart"
 import { MultiTechLineChart } from "@/components/compare/MultiLineChart"
 import { MultiTechMarketDistribution } from "@/components/compare/MultiTechMarketDistribution"
-
+import { UnifiedKnowledgeGraph } from "@/components/knowledge-graph/UnifiedKnowledgeGraph"
+import { buildUnifiedKG } from "@/lib/knowledge-graph/buildUnifiedKG"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { BackButton } from "@/components/back-button"
 
 /* ================= TYPES ================= */
 
-type MetricType = "trend" | "market" | "patents" | "investment"
+type MetricType =
+  | "trend"
+  | "market"
+  | "patents"
+  | "investment"
+  | "kg"
+
 type TechDataMap = Record<string, any>
 
 /* ================= NORMALIZERS ================= */
@@ -21,21 +30,17 @@ function normalizeCurve(dataMap: TechDataMap, key: string) {
   Object.entries(dataMap).forEach(([tech, data]) => {
     const raw =
       key.includes(".")
-        ? key.split(".").reduce((o: any, k) => o?.[k], data)
-        : data?.[key]
+        ? key.split(".").reduce((o: any, k) => o?.[k], data?.dashboard)
+        : data?.dashboard?.[key]
 
     if (!Array.isArray(raw)) return
-
     perTech[tech] = {}
 
     raw.forEach((v: any, i: number) => {
-      // CASE 1: { year, value }
       if (typeof v === "object" && typeof v.year === "number") {
         yearSet.add(v.year)
         perTech[tech][v.year] = v.value ?? v.count ?? 0
       }
-
-      // CASE 2: plain number[] → infer year
       if (typeof v === "number") {
         const year = 2020 + i
         yearSet.add(year)
@@ -55,14 +60,13 @@ function normalizeCurve(dataMap: TechDataMap, key: string) {
     })
 }
 
-
 function normalizePatentCurve(dataMap: TechDataMap) {
   const yearSet = new Set<number>()
   const perTech: Record<string, Record<number, number>> = {}
 
   Object.entries(dataMap).forEach(([tech, data]) => {
     perTech[tech] = {}
-    const timeline = data?.patent_timeline ?? []
+    const timeline = data?.dashboard?.patent_timeline ?? []
 
     timeline.forEach((p: any) => {
       if (typeof p.year === "number") {
@@ -88,7 +92,10 @@ function normalizeInvestmentBars(dataMap: TechDataMap) {
   const countryMap: Record<string, any> = {}
 
   Object.entries(dataMap).forEach(([tech, data]) => {
-    const values = data?.country_investment?.values ?? {}
+    const values =
+      data?.dashboard?.values ??
+      data?.dashboard?.country_investment?.values ??
+      {}
 
     Object.entries(values).forEach(([country, value]: any) => {
       const c =
@@ -98,7 +105,7 @@ function normalizeInvestmentBars(dataMap: TechDataMap) {
           : country
 
       if (!countryMap[c]) countryMap[c] = { country: c }
-      countryMap[c][tech] = value
+      countryMap[c][tech] = value ?? 0
     })
   })
 
@@ -107,16 +114,12 @@ function normalizeInvestmentBars(dataMap: TechDataMap) {
 
 function parseMarketSizeToBillion(raw?: string): number | null {
   if (!raw) return null
-
   const s = raw.toLowerCase().replace(/[$,]/g, "").trim()
-
   const num = parseFloat(s)
   if (isNaN(num)) return null
-
   if (s.includes("trillion")) return num * 1000
   if (s.includes("billion")) return num
   if (s.includes("million")) return num / 1000
-
   return null
 }
 
@@ -124,11 +127,9 @@ function normalizeMarketDistribution(dataMap: TechDataMap) {
   const result: { tech: string; points: any[] }[] = []
 
   Object.entries(dataMap).forEach(([tech, data]) => {
-    // 🔥 FIX: handle all possible nesting
     const reports =
-      data?.market_reports ??
       data?.dashboard?.market_reports ??
-      data?.entities?.market_reports ??
+      data?.dashboard?.entities?.market_reports ??
       []
 
     const points: any[] = []
@@ -136,7 +137,6 @@ function normalizeMarketDistribution(dataMap: TechDataMap) {
     reports.forEach((r: any) => {
       const value = parseMarketSizeToBillion(r.market_size)
       if (value === null) return
-
       points.push({
         value,
         title: r.title,
@@ -144,15 +144,11 @@ function normalizeMarketDistribution(dataMap: TechDataMap) {
       })
     })
 
-    console.log("MARKET:", tech, points) // KEEP THIS
-
     result.push({ tech, points })
   })
 
-  console.log("FINAL MARKET DATA", result)
   return result
 }
-
 
 /* ================= PAGE ================= */
 
@@ -164,6 +160,15 @@ export default function MultiComparePage() {
   const [metric, setMetric] = useState<MetricType>("trend")
   const [input, setInput] = useState("")
 
+  const removeTech = (tech: string) => {
+    setTechs((prev) => prev.filter((t) => t !== tech))
+    setDataMap((prev) => {
+      const copy = { ...prev }
+      delete copy[tech]
+      return copy
+    })
+  }
+
   /* ---------- FETCH ---------- */
   useEffect(() => {
     techs.forEach(async (tech) => {
@@ -174,113 +179,172 @@ export default function MultiComparePage() {
         await fetch(`/api/tech/${tech}/run`, { method: "POST" })
         res = await fetch(`/api/tech/${tech}`)
       }
-
       if (!res.ok) return
       const json = await res.json()
 
-      setDataMap((p) => ({
-        ...p,
-        [tech]: json.dashboard ?? json.data ?? json,
-      }))
+      setDataMap((p) => ({ ...p, [tech]: json }))
     })
   }, [techs])
 
-        const chartData = useMemo(() => {
-        if (techs.length < 2) return null
+  const chartData = useMemo(() => {
+    if (techs.length < 2) return null
+    switch (metric) {
+      case "trend":
+        return normalizeCurve(dataMap, "trend_curve")
+      case "patents":
+        return normalizePatentCurve(dataMap)
+      case "investment":
+        return normalizeInvestmentBars(dataMap)
+      case "market":
+        return normalizeMarketDistribution(dataMap)
+    }
+  }, [dataMap, metric, techs.length])
 
-        switch (metric) {
-            case "trend":
-            return normalizeCurve(dataMap, "trend_curve")
+  const unifiedKG = useMemo(() => {
+    const inputs = Object.entries(dataMap)
+      .map(([tech, data]) =>
+        data?.knowledge_graph ? { tech, kg: data.knowledge_graph } : null
+      )
+      .filter(Boolean) as { tech: string; kg: any }[]
 
-            case "patents":
-            return normalizePatentCurve(dataMap)
+    if (inputs.length === 0) return null
+    return buildUnifiedKG(inputs)
+  }, [dataMap])
 
-            case "investment":
-            return normalizeInvestmentBars(dataMap)
-
-            case "market":
-            return normalizeMarketDistribution(dataMap)
-        }
-        }, [dataMap, metric, techs.length])
-
-        const hasMarketPoints =
-        metric === "market" &&
-        Array.isArray(chartData) &&
-        chartData.some(
-            (t: any) => Array.isArray(t.points) && t.points.length > 0
-        )
-
-
+  const hasMarketPoints =
+    metric === "market" &&
+    Array.isArray(chartData) &&
+    chartData.some(
+      (t: any) => Array.isArray(t.points) && t.points.length > 0
+    )
 
   /* ================= UI ================= */
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          Multi-Tech Trend Comparison
-        </h1>
+    <div className="w-full">
+      {/* ================= TOP HEADER ================= */}
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
+        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center gap-6">
+          <div className="flex items-center gap-3 shrink-0">
+            <BackButton />
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold">TechIntel</h1>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-sm font-medium text-muted-foreground">
+                Multi-Trend Comparison
+              </span>
+            </div>
+          </div>
 
-        
-      </div>
+          <div className="flex-1 flex justify-center">
+            <input
+              value={input}
+              placeholder="Add technology (press Enter)"
+              className="border px-4 py-2 rounded-md w-full max-w-md bg-background"
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && input.trim()) {
+                  const t = input.toLowerCase()
+                  if (!techs.includes(t)) setTechs([...techs, t])
+                  setInput("")
+                }
+              }}
+            />
+          </div>
 
+          <ThemeToggle />
+        </div>
+      </header>
 
-      <input
-        value={input}
-        placeholder="Add technology (press Enter)"
-        className="border px-4 py-2 rounded-md w-full max-w-lg"
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && input.trim()) {
-            const t = input.toLowerCase()
-            if (!techs.includes(t)) setTechs([...techs, t])
-            setInput("")
-          }
-        }}
-      />
+      {/* ================= PAGE CONTENT ================= */}
+      <main className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* CONTROL BAR */}
+        <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 px-4 py-3">
+          <div className="flex gap-1">
+            {[
+              { id: "trend", label: "Adoption Trend" },
+              { id: "market", label: "Market Size" },
+              { id: "patents", label: "Patent Activity" },
+              { id: "investment", label: "Investment Index" },
+              { id: "kg", label: "Knowledge Graph" },
+            ].map((opt) => {
+              const active = metric === opt.id
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => setMetric(opt.id as MetricType)}
+                  className={[
+                    "px-3 py-1.5 text-sm rounded-md transition",
+                    active
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  ].join(" ")}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {techs.map((t) => (
-          <span key={t} className="px-3 py-1 bg-blue-100 rounded-full">
-            {t}
-          </span>
-        ))}
-      </div>
+          <div className="flex flex-wrap gap-2">
+            {techs.map((t) => (
+              <div
+                key={t}
+                className="flex items-center gap-2 px-3 py-1 bg-background rounded-full text-sm border"
+              >
+                <span>{t}</span>
+                {techs.length > 1 && (
+                  <button
+                    onClick={() => removeTech(t)}
+                    className="text-muted-foreground hover:text-destructive font-bold"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
 
-      <select
-        value={metric}
-        onChange={(e) => setMetric(e.target.value as MetricType)}
-        className="border px-3 py-2 rounded-md w-64"
-      >
-        <option value="trend">Adoption Trend</option>
-        <option value="market">Market Forecast</option>
-        <option value="patents">Patent Activity</option>
-        <option value="investment">Investment Index</option>
-      </select>
-
-       {!chartData ||
-            chartData.length === 0 ||
-            (metric === "market" && !hasMarketPoints) ? (
+        {/* VISUALIZATIONS */}
+        {metric === "kg" ? (
+          unifiedKG ? (
+            <div className="space-y-4">
+              <p className="text-sm text-foreground">
+                Shared patents, papers, companies, and entities across selected technologies
+              </p>
+              <UnifiedKnowledgeGraph
+                nodes={unifiedKG.nodes}
+                edges={unifiedKG.edges}
+              />
+            </div>
+          ) : (
             <p className="text-muted-foreground">
-                No market forecast data available for selected technologies.
+              Knowledge graph data not available for selected technologies.
             </p>
-            ) : metric === "investment" ? (
-            <InvestmentBarChart
-                data={chartData! as ReturnType<typeof normalizeInvestmentBars>}
-            />
-            ) : metric === "market" ? (
-            <MultiTechMarketDistribution
-                data={chartData! as ReturnType<typeof normalizeMarketDistribution>}
-            />
-            ) : (
-            <MultiTechLineChart
-                data={chartData! as ReturnType<typeof normalizeCurve>}
-                title={metric === "trend" ? "Adoption Trend" : "Patent Activity"}
-                yLabel={metric === "trend" ? "Adoption Index" : "Patent Count"}
-            />
-            )}
-
-
+          )
+        ) : !chartData ||
+          chartData.length === 0 ||
+          (metric === "market" && !hasMarketPoints) ? (
+          <p className="text-muted-foreground">
+            No data available for selected technologies.
+          </p>
+        ) : metric === "investment" ? (
+          <InvestmentBarChart
+            data={chartData as ReturnType<typeof normalizeInvestmentBars>}
+          />
+        ) : metric === "market" ? (
+          <MultiTechMarketDistribution
+            data={chartData as ReturnType<typeof normalizeMarketDistribution>}
+          />
+        ) : (
+          <MultiTechLineChart
+            data={chartData as ReturnType<typeof normalizeCurve>}
+            title={metric === "trend" ? "Adoption Trend" : "Patent Activity"}
+            yLabel={metric === "trend" ? "Adoption Index" : "Patent Count"}
+          />
+        )}
+      </main>
     </div>
   )
 }
