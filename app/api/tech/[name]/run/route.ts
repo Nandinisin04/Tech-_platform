@@ -1,3 +1,5 @@
+export const runtime = "nodejs"
+
 import { NextResponse } from "next/server"
 import path from "path"
 import fs from "fs/promises"
@@ -6,13 +8,13 @@ import util from "util"
 
 const execAsync = util.promisify(exec)
 
-async function waitForFile(filePath: string, retries = 15) {
+async function waitForFile(p: string, retries = 20) {
   for (let i = 0; i < retries; i++) {
     try {
-      await fs.access(filePath)
+      await fs.access(p)
       return true
     } catch {
-      await new Promise((r) => setTimeout(r, 400))
+      await new Promise(r => setTimeout(r, 500))
     }
   }
   return false
@@ -20,54 +22,61 @@ async function waitForFile(filePath: string, retries = 15) {
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ name: string }> }
+  ctx: { params: Promise<{ name: string }> }
 ) {
-  try {
-    const { name } = await params
+  const { name } = await ctx.params   // ✅ CRITICAL FIX
 
-    const tech = decodeURIComponent(name)
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "_")
-
-    const dataDir = path.join(process.cwd(), "data", "tech")
-    const filePath = path.join(dataDir, `${tech}.json`)
-
-    await fs.mkdir(dataDir, { recursive: true })
-
-    const pythonCmd =
-      process.platform === "win32"
-        ? "ml\\venv\\Scripts\\python.exe"
-        : "ml/venv/bin/python"
-
-    const cmd = `"${pythonCmd}" ml/run_pipeline.py "${tech}"`
-
-    await execAsync(cmd, {
-      timeout: 1000 * 60 * 5,
-    })
-
-    const exists = await waitForFile(filePath)
-
-    if (!exists) {
-      return NextResponse.json(
-        { error: "ML ran but JSON not generated" },
-        { status: 500 }
-      )
-    }
-
-    const json = JSON.parse(await fs.readFile(filePath, "utf-8"))
-
-    return NextResponse.json({
-      status: "success",
-      technology: tech,
-      data: json,
-    })
-
-  } catch (err) {
-    console.error("ML error:", err)
+  if (!name) {
     return NextResponse.json(
-      { error: "Failed to run ML pipeline" },
+      { error: "Missing technology name" },
+      { status: 400 }
+    )
+  }
+
+  console.log("🔁 RUN ML FOR =", name)
+
+  const tech = decodeURIComponent(name)
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "_")
+
+  const dataDir = path.join(process.cwd(), "data", "tech")
+  const dashboardPath = path.join(dataDir, `${tech}.json`)
+  const kgPath = path.join(dataDir, `${tech}_kg.json`)
+
+  await fs.mkdir(dataDir, { recursive: true })
+
+  const pythonCmd =
+    process.platform === "win32"
+      ? path.join(process.cwd(), "ml", "venv", "Scripts", "python.exe")
+      : path.join(process.cwd(), "ml", "venv", "bin", "python")
+
+  const scriptPath = path.join(process.cwd(), "ml", "run_pipeline.py")
+
+  await execAsync(`"${pythonCmd}" "${scriptPath}" "${tech}"`, {
+    shell: true,
+    timeout: 1000 * 60 * 5,
+  })
+
+  if (!(await waitForFile(dashboardPath))) {
+    return NextResponse.json(
+      { error: "ML ran but JSON not generated" },
       { status: 500 }
     )
   }
+
+  const dashboard = JSON.parse(
+    await fs.readFile(dashboardPath, "utf-8")
+  )
+
+  const kg = (await waitForFile(kgPath, 5))
+    ? JSON.parse(await fs.readFile(kgPath, "utf-8"))
+    : null
+
+  return NextResponse.json({
+    status: "success",
+    technology: tech,
+    data: dashboard,
+    knowledge_graph: kg,
+  })
 }

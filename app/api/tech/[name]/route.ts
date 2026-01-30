@@ -1,3 +1,5 @@
+export const runtime = "nodejs"
+
 import { NextResponse } from "next/server"
 import path from "path"
 import fs from "fs/promises"
@@ -6,28 +8,49 @@ import util from "util"
 
 const execAsync = util.promisify(exec)
 
-async function fileExists(filePath: string) {
+/* ---------- helpers ---------- */
+async function fileExists(p: string) {
   try {
-    await fs.access(filePath)
+    await fs.access(p)
     return true
   } catch {
     return false
   }
 }
 
-async function waitForFile(filePath: string, retries = 20) {
+async function waitForFile(p: string, retries = 20) {
   for (let i = 0; i < retries; i++) {
-    if (await fileExists(filePath)) return true
-    await new Promise((r) => setTimeout(r, 500))
+    if (await fileExists(p)) return true
+    await new Promise(r => setTimeout(r, 500))
   }
   return false
 }
 
+/* ---------- GET /api/tech/[name] ---------- */
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ name: string }> }
+  ctx: { params: Promise<{ name: string }> }
 ) {
-  const { name } = await params
+  const { name } = await ctx.params   // ✅ REQUIRED
+
+  console.log(" GET ROUTE HIT, TECH =", name)
+  const { searchParams } = new URL(req.url)
+
+  const filters = {
+    from: searchParams.get("from"),       // e.g. 2020
+    to: searchParams.get("to"),           // e.g. 2024
+    entity: searchParams.get("entity"),   // patent | paper | company
+    country: searchParams.get("country"), // usa | india
+  }
+
+  console.log("🧪 FILTERS =", filters)
+
+  if (!name || name === "undefined") {
+    return NextResponse.json(
+      { error: "Invalid technology name" },
+      { status: 400 }
+    )
+  }
 
   const tech = decodeURIComponent(name)
     .toLowerCase()
@@ -36,54 +59,11 @@ export async function GET(
 
   const dataDir = path.join(process.cwd(), "data", "tech")
   const dashboardPath = path.join(dataDir, `${tech}.json`)
-  const kgPath = path.join(dataDir, `${tech}_kg.json`) // 🔹 NEW
+  const kgPath = path.join(dataDir, `${tech}_kg.json`)
 
-  // ================= CACHE FIRST =================
-  if (await fileExists(dashboardPath)) {
-    const dashboard = JSON.parse(await fs.readFile(dashboardPath, "utf-8"))
 
-    let kg = null
-    if (await fileExists(kgPath)) {
-      kg = JSON.parse(await fs.readFile(kgPath, "utf-8"))
-    }
-
-    return NextResponse.json({
-      dashboard,
-      knowledge_graph: kg,
-    })
-  }
-
-  // ================= ML TRIGGER =================
-  console.log(`⚙ ML triggered for missing tech: ${tech}`)
-
-  const pythonCmd =
-    process.platform === "win32"
-      ? "ml\\venv\\Scripts\\python.exe"
-      : "ml/venv/bin/python"
-
-  await execAsync(`"${pythonCmd}" ml/run_pipeline.py "${tech}"`, {
-    timeout: 1000 * 60 * 5,
-  })
-
-  // ================= WAIT FOR OUTPUT =================
-  const created = await waitForFile(dashboardPath)
-
-  if (!created) {
-    return NextResponse.json(
-      { error: "ML ran but JSON was not generated" },
-      { status: 500 }
-    )
-  }
-
-  const dashboard = JSON.parse(await fs.readFile(dashboardPath, "utf-8"))
-
-  let kg = null
-  if (await fileExists(kgPath)) {
-    kg = JSON.parse(await fs.readFile(kgPath, "utf-8"))
-  }
-
-  return NextResponse.json({
-    dashboard,
-    knowledge_graph: kg,
-  })
+  return NextResponse.json(
+    { error: "Cache miss. Call /run" },
+    { status: 404 }
+  )
 }

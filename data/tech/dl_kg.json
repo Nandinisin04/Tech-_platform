@@ -1,0 +1,636 @@
+{
+  "nodes": [
+    {
+      "id": "dl",
+      "type": "technology"
+    },
+    {
+      "id": "Scheduling timing design for a TDD system",
+      "type": "patent"
+    },
+    {
+      "id": "Unknown",
+      "type": "country"
+    },
+    {
+      "id": "Uplink control data transmission",
+      "type": "patent"
+    },
+    {
+      "id": "… architectures, apparatuses and systems for downlink small data transmission (dl …",
+      "type": "patent"
+    },
+    {
+      "id": "Rach conveyance of DL synchronization beam information for various DL-UL …",
+      "type": "patent"
+    },
+    {
+      "id": "Dynamic configuration of uplink (UL) and downlink (DL) frame resources for a …",
+      "type": "patent"
+    },
+    {
+      "id": "Downlink (DL) Positioning Reference Signal (PRS) Bandwidth Part (BWP) …",
+      "type": "patent"
+    },
+    {
+      "id": "Method and system for DL PRS transmission for accurate rat-dependent NR …",
+      "type": "patent"
+    },
+    {
+      "id": "… state information (CSI) measurement and report outside active downlink (DL) …",
+      "type": "patent"
+    },
+    {
+      "id": "… (AI) units, large language model (LLM) units, and deep learning (DL) units",
+      "type": "patent"
+    },
+    {
+      "id": "… control information (dci) content processing considering active downlink (dl) …",
+      "type": "patent"
+    },
+    {
+      "id": "Methods, apparatus, and systems for downlink (dl) power adjustment and ue …",
+      "type": "patent"
+    },
+    {
+      "id": "… non-transitory computer readable storage medium for maximum mimo layer aware dl …",
+      "type": "patent"
+    },
+    {
+      "id": "Method and apparatus for determining TDD UL-DL configuration applicable for …",
+      "type": "patent"
+    },
+    {
+      "id": "Device and method for cqi feedback to enable joint dl-ul scheduling in full …",
+      "type": "patent"
+    },
+    {
+      "id": "Carrier aggregation with dynamic TDD DL/UL subframe configuration",
+      "type": "patent"
+    },
+    {
+      "id": "Low-layer (DCI or MAC CE) DL puncturing indicator for positioning reference …",
+      "type": "patent"
+    },
+    {
+      "id": "Downlink (DL) transmission timing of integrated access and backhaul (IAB) node",
+      "type": "patent"
+    },
+    {
+      "id": "Inter-GNB exchange for intended UL/DL directions",
+      "type": "patent"
+    },
+    {
+      "id": "Systems and methods for supporting multiple allocations in ul/dl grant for a 5g …",
+      "type": "patent"
+    },
+    {
+      "id": "Systems and methods for supporting multiple allocations in UL/DL grant for a 5G …",
+      "type": "patent"
+    },
+    {
+      "id": "GlobalSoilMap: Toward a fine-resolution global grid of soil properties",
+      "type": "paper"
+    },
+    {
+      "id": "The Total Synthesis of dl-Aspidospermine and of dl-Quebrachamine",
+      "type": "paper"
+    },
+    {
+      "id": "The DL poly 2 user manual",
+      "type": "paper"
+    },
+    {
+      "id": "Applications of ML/DL in the management of smart cities and societies based on new trends in information technologies: A systematic literature review",
+      "type": "paper"
+    },
+    {
+      "id": "DL-Learner: learning concepts in description logics",
+      "type": "paper"
+    },
+    {
+      "id": "Pellet: A practical owl-dl reasoner",
+      "type": "paper"
+    },
+    {
+      "id": "A North American system of nomenclature for Puccinia recondita f. sp. tritici",
+      "type": "paper"
+    },
+    {
+      "id": "Outcome series series editors: dl scott and a. Silman: quality of life measures",
+      "type": "paper"
+    },
+    {
+      "id": "DL systems comparison",
+      "type": "paper"
+    },
+    {
+      "id": "UK",
+      "type": "country"
+    },
+    {
+      "id": "The DL-Lite family and relations",
+      "type": "paper"
+    },
+    {
+      "id": "Ontologies and Databases: The DL-Lite Approach",
+      "type": "paper"
+    },
+    {
+      "id": "Evolution of DL − Lite Knowledge Bases",
+      "type": "paper"
+    },
+    {
+      "id": "PET and the Pendulum: e LL 1-dl ltl ItIV, 1 C 1 U ll Faddism in Education and",
+      "type": "paper"
+    },
+    {
+      "id": "SPARQL-DL: SPARQL Query for OWL-DL.",
+      "type": "paper"
+    },
+    {
+      "id": "DL-Droid: Deep learning based android malware detection using real devices",
+      "type": "paper"
+    },
+    {
+      "id": "Query answering for OWL-DL with rules",
+      "type": "paper"
+    },
+    {
+      "id": "Il modello sud-europeo dl welfare state",
+      "type": "paper"
+    },
+    {
+      "id": "The instance store: DL reasoning with large numbers of individuals",
+      "type": "paper"
+    },
+    {
+      "id": "USA",
+      "type": "country"
+    },
+    {
+      "id": "A conceptual model of DL diesel combustion based on laser-sheet imaging",
+      "type": "paper"
+    },
+    {
+      "id": "Acceleration of the G1/S Phase Transition by Expression of Cyclins Dl and E with an Inducible System",
+      "type": "paper"
+    },
+    {
+      "id": "Good companies for Company drivers? : r/Truckers",
+      "type": "company"
+    },
+    {
+      "id": "Best companies for ML/DL roles | Tech Industry",
+      "type": "company"
+    },
+    {
+      "id": "Top Trucking Companies in Chicago, IL",
+      "type": "company"
+    },
+    {
+      "id": "United States",
+      "type": "country"
+    },
+    {
+      "id": "2026 Top LTL & Truckload Freight Companies",
+      "type": "company"
+    },
+    {
+      "id": "8 Best Trucking Companies for New Drivers",
+      "type": "company"
+    },
+    {
+      "id": "Fortune 100 Best Companies to Work For® in 2025",
+      "type": "company"
+    },
+    {
+      "id": "Top Tech Companies in Chicago, IL 2026",
+      "type": "company"
+    },
+    {
+      "id": "Best Fleets to Drive For®",
+      "type": "company"
+    },
+    {
+      "id": "37 Top Driving Companies in United States · January 2026",
+      "type": "company"
+    },
+    {
+      "id": "Driver Defense Team Makes the Inc. 5000 List for 3rd Year",
+      "type": "company"
+    }
+  ],
+  "edges": [
+    {
+      "source": "dl",
+      "target": "Scheduling timing design for a TDD system",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Uplink control data transmission",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "… architectures, apparatuses and systems for downlink small data transmission (dl …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Rach conveyance of DL synchronization beam information for various DL-UL …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Dynamic configuration of uplink (UL) and downlink (DL) frame resources for a …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Downlink (DL) Positioning Reference Signal (PRS) Bandwidth Part (BWP) …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Method and system for DL PRS transmission for accurate rat-dependent NR …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "… state information (CSI) measurement and report outside active downlink (DL) …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "… (AI) units, large language model (LLM) units, and deep learning (DL) units",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "… control information (dci) content processing considering active downlink (dl) …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Methods, apparatus, and systems for downlink (dl) power adjustment and ue …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "… non-transitory computer readable storage medium for maximum mimo layer aware dl …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Method and apparatus for determining TDD UL-DL configuration applicable for …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Device and method for cqi feedback to enable joint dl-ul scheduling in full …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Carrier aggregation with dynamic TDD DL/UL subframe configuration",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Low-layer (DCI or MAC CE) DL puncturing indicator for positioning reference …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Downlink (DL) transmission timing of integrated access and backhaul (IAB) node",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Inter-GNB exchange for intended UL/DL directions",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Systems and methods for supporting multiple allocations in ul/dl grant for a 5g …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "Systems and methods for supporting multiple allocations in UL/DL grant for a 5G …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "dl",
+      "target": "GlobalSoilMap: Toward a fine-resolution global grid of soil properties",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "The Total Synthesis of dl-Aspidospermine and of dl-Quebrachamine",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "The DL poly 2 user manual",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Applications of ML/DL in the management of smart cities and societies based on new trends in information technologies: A systematic literature review",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "DL-Learner: learning concepts in description logics",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Pellet: A practical owl-dl reasoner",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "A North American system of nomenclature for Puccinia recondita f. sp. tritici",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Outcome series series editors: dl scott and a. Silman: quality of life measures",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "DL systems comparison",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "The DL-Lite family and relations",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Ontologies and Databases: The DL-Lite Approach",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Evolution of DL − Lite Knowledge Bases",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "PET and the Pendulum: e LL 1-dl ltl ItIV, 1 C 1 U ll Faddism in Education and",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "SPARQL-DL: SPARQL Query for OWL-DL.",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "DL-Droid: Deep learning based android malware detection using real devices",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Query answering for OWL-DL with rules",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Il modello sud-europeo dl welfare state",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "The instance store: DL reasoning with large numbers of individuals",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "A conceptual model of DL diesel combustion based on laser-sheet imaging",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Acceleration of the G1/S Phase Transition by Expression of Cyclins Dl and E with an Inducible System",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "dl",
+      "target": "Good companies for Company drivers? : r/Truckers",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "Best companies for ML/DL roles | Tech Industry",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "Top Trucking Companies in Chicago, IL",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "2026 Top LTL & Truckload Freight Companies",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "8 Best Trucking Companies for New Drivers",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "Fortune 100 Best Companies to Work For® in 2025",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "Top Tech Companies in Chicago, IL 2026",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "Best Fleets to Drive For®",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "37 Top Driving Companies in United States · January 2026",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "dl",
+      "target": "Driver Defense Team Makes the Inc. 5000 List for 3rd Year",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "Scheduling timing design for a TDD system",
+      "target": "Unknown",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Uplink control data transmission",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… architectures, apparatuses and systems for downlink small data transmission (dl …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Rach conveyance of DL synchronization beam information for various DL-UL …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Dynamic configuration of uplink (UL) and downlink (DL) frame resources for a …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Downlink (DL) Positioning Reference Signal (PRS) Bandwidth Part (BWP) …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Method and system for DL PRS transmission for accurate rat-dependent NR …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… state information (CSI) measurement and report outside active downlink (DL) …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… (AI) units, large language model (LLM) units, and deep learning (DL) units",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… control information (dci) content processing considering active downlink (dl) …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Methods, apparatus, and systems for downlink (dl) power adjustment and ue …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… non-transitory computer readable storage medium for maximum mimo layer aware dl …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Method and apparatus for determining TDD UL-DL configuration applicable for …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Device and method for cqi feedback to enable joint dl-ul scheduling in full …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Carrier aggregation with dynamic TDD DL/UL subframe configuration",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Low-layer (DCI or MAC CE) DL puncturing indicator for positioning reference …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Downlink (DL) transmission timing of integrated access and backhaul (IAB) node",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Inter-GNB exchange for intended UL/DL directions",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Systems and methods for supporting multiple allocations in ul/dl grant for a 5g …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Systems and methods for supporting multiple allocations in UL/DL grant for a 5G …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Good companies for Company drivers? : r/Truckers",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Best companies for ML/DL roles | Tech Industry",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "2026 Top LTL & Truckload Freight Companies",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "8 Best Trucking Companies for New Drivers",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Top Tech Companies in Chicago, IL 2026",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Best Fleets to Drive For®",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Driver Defense Team Makes the Inc. 5000 List for 3rd Year",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "DL systems comparison",
+      "target": "UK",
+      "relation": "PUBLISHED_IN"
+    },
+    {
+      "source": "The instance store: DL reasoning with large numbers of individuals",
+      "target": "USA",
+      "relation": "PUBLISHED_IN"
+    },
+    {
+      "source": "Top Trucking Companies in Chicago, IL",
+      "target": "United States",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "United States",
+      "target": "Fortune 100 Best Companies to Work For® in 2025",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "United States",
+      "target": "37 Top Driving Companies in United States · January 2026",
+      "relation": "LOCATED_IN"
+    }
+  ]
+}

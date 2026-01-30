@@ -7,13 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { DashboardFilters } from "@/lib/filters/types"
+import * as Slider from "@radix-ui/react-slider"
+
 import {
   Building2,
   FileText,
   AlertTriangle,
   TrendingUp,
 } from "lucide-react"
-import { ShowMore } from "@/components/show-more"
 
 /* ---------------- TYPES ---------------- */
 
@@ -47,7 +49,12 @@ type SidebarPanelsProps = {
   companies?: Company[]
   publications?: Publication[]
   patents?: Patent[]
+  minPatentYear: number
+  maxPatentYear: number
+  filters: DashboardFilters
+  setFilters: React.Dispatch<React.SetStateAction<DashboardFilters>>
 }
+
 
 /* ---------------- UTILS ---------------- */
 
@@ -64,16 +71,15 @@ function extractLinkAndCleanTitle(title: string) {
 /* ---------------- COMPONENT ---------------- */
 
 export function SidebarPanels({
-  alerts,
-  companies,
-  publications,
-  patents,
+  alerts = [],
+  companies = [],
+  publications = [],
+  patents = [],
+  filters,
+  setFilters,
+  minPatentYear,
+  maxPatentYear,
 }: SidebarPanelsProps) {
-  const safeAlerts = alerts ?? []
-  const safeCompanies = companies ?? []
-  const safePublications = publications ?? []
-  const safePatents = patents ?? []
-
   const getAlertIcon = (type: Alert["type"]) => {
     switch (type) {
       case "market":
@@ -87,18 +93,90 @@ export function SidebarPanels({
 
   return (
     <div className="space-y-4">
+     
+      {/* ================= FILTERS ================= */}
+<Card>
+  <CardHeader>
+    <CardTitle className="text-sm font-semibold">Filters</CardTitle>
+    <CardDescription className="text-xs">
+      Refine technology insights
+    </CardDescription>
+  </CardHeader>
 
-      {/* ---------------- ALERTS ---------------- */}
+  <CardContent className="space-y-5">
+
+{/* -------- Patent Year Range -------- */}
+<div>
+  <p className="text-xs mb-2">
+    Patent Year Range: {filters.patentYearRange[0]} – {filters.patentYearRange[1]}
+  </p>
+
+  <Slider.Root
+    className="relative flex items-center select-none touch-none w-full h-5"
+    min={minPatentYear}
+    max={maxPatentYear}
+    step={1}
+    value={filters.patentYearRange}
+    onValueChange={(value) =>
+      setFilters((f) => ({
+        ...f,
+        patentYearRange: value as [number, number],
+      }))
+    }
+  >
+    <Slider.Track className="bg-muted relative grow rounded-full h-1">
+      <Slider.Range className="absolute bg-primary rounded-full h-full" />
+    </Slider.Track>
+    <Slider.Thumb className="block w-4 h-4 bg-primary rounded-full" />
+    <Slider.Thumb className="block w-4 h-4 bg-primary rounded-full" />
+  </Slider.Root>
+
+  <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+    <span>{minPatentYear}</span>
+    <span>{maxPatentYear}</span>
+  </div>
+</div>
+
+
+
+    {/* -------- Entity Toggles -------- */}
+    <div>
+      <p className="text-xs font-medium mb-2">Show Entities</p>
+
+      {(["patents", "papers", "companies"] as const).map((key) => (
+        <label key={key} className="flex items-center gap-2 text-sm mb-1">
+          <input
+            type="checkbox"
+            checked={filters.entities[key]}
+            onChange={(e) =>
+              setFilters(f => ({
+                ...f,
+                entities: {
+                  ...f.entities,
+                  [key]: e.target.checked,
+                },
+              }))
+            }
+          />
+          {key.charAt(0).toUpperCase() + key.slice(1)}
+        </label>
+      ))}
+    </div>
+  </CardContent>
+</Card>
+
+
+      {/* ================= ALERTS ================= */}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold">Alert Panel</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {safeAlerts.length === 0 && (
+          {alerts.length === 0 && (
             <p className="text-xs text-muted-foreground">No alerts yet</p>
           )}
 
-          {safeAlerts.map((alert, i) => (
+          {alerts.map((alert, i) => (
             <div
               key={i}
               className="flex gap-3 border border-border rounded-md p-3"
@@ -113,7 +191,7 @@ export function SidebarPanels({
         </CardContent>
       </Card>
 
-      {/* ---------------- COMPANIES ---------------- */}
+      {/* ================= COMPANIES ================= */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
@@ -125,52 +203,42 @@ export function SidebarPanels({
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-2">
-          {safeCompanies.length === 0 && (
+        <CardContent className="max-h-[260px] overflow-y-auto space-y-2 pr-1">
+          {companies.length === 0 && (
             <p className="text-xs text-muted-foreground">
               No companies available
             </p>
           )}
 
-          <ShowMore<Company>
-            items={safeCompanies}
-            initialCount={5}
-            render={(company, i) => {
-              const hasLink =
-                typeof company.link === "string" &&
-                company.link.trim().length > 0
-
-              return (
-                <div
-                  key={i}
-                  className="p-2 rounded-md border border-border/30 bg-secondary/30"
+          {companies.map((company, i) => (
+            <div
+              key={i}
+              className="p-2 rounded-md border border-border/30 bg-secondary/30"
+            >
+              {company.link ? (
+                <a
+                  href={company.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-primary hover:underline"
                 >
-                  {hasLink ? (
-                    <a
-                      href={company.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-primary hover:underline"
-                    >
-                      {company.name}
-                    </a>
-                  ) : (
-                    <p className="text-sm font-medium">{company.name}</p>
-                  )}
+                  {company.name}
+                </a>
+              ) : (
+                <p className="text-sm font-medium">{company.name}</p>
+              )}
 
-                  {company.description && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {company.description}
-                    </p>
-                  )}
-                </div>
-              )
-            }}
-          />
+              {company.description && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {company.description}
+                </p>
+              )}
+            </div>
+          ))}
         </CardContent>
       </Card>
 
-      {/* ---------------- PUBLICATIONS ---------------- */}
+      {/* ================= PUBLICATIONS ================= */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
@@ -182,50 +250,42 @@ export function SidebarPanels({
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-2">
-          {safePublications.length === 0 && (
+        <CardContent className="max-h-[260px] overflow-y-auto space-y-2 pr-1">
+          {publications.length === 0 && (
             <p className="text-xs text-muted-foreground">
               No publications available
             </p>
           )}
 
-          <ShowMore<Publication>
-            items={safePublications}
-            initialCount={5}
-            render={(pub, i) => {
-              const extracted = extractLinkAndCleanTitle(pub.title)
-              const link =
-                pub.link && pub.link.trim().length > 0
-                  ? pub.link
-                  : extracted.link
+          {publications.map((pub, i) => {
+            const extracted = extractLinkAndCleanTitle(pub.title)
+            const link = pub.link || extracted.link
+            const title = extracted.cleanTitle || pub.title
 
-              const title = extracted.cleanTitle || pub.title
-
-              return (
-                <div
-                  key={i}
-                  className="p-2 rounded-md border border-border/30 bg-secondary/30"
-                >
-                  {link ? (
-                    <a
-                      href={link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-primary hover:underline"
-                    >
-                      {title}
-                    </a>
-                  ) : (
-                    <p className="text-sm">{title}</p>
-                  )}
-                </div>
-              )
-            }}
-          />
+            return (
+              <div
+                key={i}
+                className="p-2 rounded-md border border-border/30 bg-secondary/30"
+              >
+                {link ? (
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    {title}
+                  </a>
+                ) : (
+                  <p className="text-sm">{title}</p>
+                )}
+              </div>
+            )
+          })}
         </CardContent>
       </Card>
 
-      {/* ---------------- PATENTS ---------------- */}
+      {/* ================= PATENTS ================= */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
@@ -237,48 +297,38 @@ export function SidebarPanels({
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-2">
-          {safePatents.length === 0 && (
+        <CardContent className="max-h-[260px] overflow-y-auto space-y-2 pr-1">
+          {patents.length === 0 && (
             <p className="text-xs text-muted-foreground">
               No patents available
             </p>
           )}
 
-          <ShowMore<Patent>
-            items={safePatents}
-            initialCount={5}
-            render={(patent, i) => {
-              const hasLink =
-                typeof patent.link === "string" &&
-                patent.link.trim().length > 0
-
-              return (
-                <div
-                  key={i}
-                  className="p-2 rounded-md border border-border/30 bg-secondary/30"
+          {patents.map((patent, i) => (
+            <div
+              key={i}
+              className="p-2 rounded-md border border-border/30 bg-secondary/30"
+            >
+              {patent.link ? (
+                <a
+                  href={patent.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium text-primary hover:underline"
                 >
-                  {hasLink ? (
-                    <a
-                      href={patent.link!}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-primary hover:underline"
-                    >
-                      {patent.title}
-                    </a>
-                  ) : (
-                    <p className="text-sm font-medium">{patent.title}</p>
-                  )}
+                  {patent.title}
+                </a>
+              ) : (
+                <p className="text-sm font-medium">{patent.title}</p>
+              )}
 
-                  {patent.year && (
-                    <p className="text-xs text-muted-foreground">
-                      Year: {patent.year} · TRL: {patent.trl ?? "N/A"}
-                    </p>
-                  )}
-                </div>
-              )
-            }}
-          />
+              {patent.year && (
+                <p className="text-xs text-muted-foreground">
+                  Year: {patent.year} · TRL: {patent.trl ?? "N/A"}
+                </p>
+              )}
+            </div>
+          ))}
         </CardContent>
       </Card>
 

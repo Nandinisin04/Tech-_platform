@@ -149,6 +149,10 @@
       "type": "paper"
     },
     {
+      "id": "Machine learning at Microsoft with ML. NET",
+      "type": "paper"
+    },
+    {
       "id": "ML-236A, ML-236B, and ML-236C, new inhibitors of cholesterogenesis produced by Penicillium citrinum",
       "type": "paper"
     },
@@ -181,10 +185,6 @@
       "type": "paper"
     },
     {
-      "id": "Concurrent programming in ML",
-      "type": "paper"
-    },
-    {
       "id": "40 Machine Learning Companies You Should Know",
       "type": "company"
     },
@@ -193,15 +193,7 @@
       "type": "company"
     },
     {
-      "id": "Top 15 AI/ML Engineering Companies",
-      "type": "company"
-    },
-    {
       "id": "Machine Learning Startups funded by Y Combinator (YC) ...",
-      "type": "company"
-    },
-    {
-      "id": "Top 10 Machine Learning Consulting Companies ...",
       "type": "company"
     },
     {
@@ -209,15 +201,19 @@
       "type": "company"
     },
     {
+      "id": "Top 10 Machine Learning Consulting Companies ...",
+      "type": "company"
+    },
+    {
       "id": "Top 159 AI Startups 2026 | Funded by Sequoia, YC, A16Z",
       "type": "company"
     },
     {
-      "id": "Top Machine Learning Startups in 2026",
+      "id": "Top Machine Learning Companies in 2026",
       "type": "company"
     },
     {
-      "id": "Top San Francisco Bay Area, CA Machine Learning ...",
+      "id": "Top 18 Machine Learning (ML) Companies",
       "type": "company"
     }
   ],
@@ -384,6 +380,11 @@
     },
     {
       "source": "ml",
+      "target": "Machine learning at Microsoft with ML. NET",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
       "target": "ML-236A, ML-236B, and ML-236C, new inhibitors of cholesterogenesis produced by Penicillium citrinum",
       "relation": "HAS_PAPER"
     },
@@ -419,11 +420,6 @@
     },
     {
       "source": "ml",
-      "target": "Concurrent programming in ML",
-      "relation": "HAS_PAPER"
-    },
-    {
-      "source": "ml",
       "target": "40 Machine Learning Companies You Should Know",
       "relation": "INVOLVES_COMPANY"
     },
@@ -434,17 +430,7 @@
     },
     {
       "source": "ml",
-      "target": "Top 15 AI/ML Engineering Companies",
-      "relation": "INVOLVES_COMPANY"
-    },
-    {
-      "source": "ml",
       "target": "Machine Learning Startups funded by Y Combinator (YC) ...",
-      "relation": "INVOLVES_COMPANY"
-    },
-    {
-      "source": "ml",
-      "target": "Top 10 Machine Learning Consulting Companies ...",
       "relation": "INVOLVES_COMPANY"
     },
     {
@@ -454,17 +440,22 @@
     },
     {
       "source": "ml",
+      "target": "Top 10 Machine Learning Consulting Companies ...",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
       "target": "Top 159 AI Startups 2026 | Funded by Sequoia, YC, A16Z",
       "relation": "INVOLVES_COMPANY"
     },
     {
       "source": "ml",
-      "target": "Top Machine Learning Startups in 2026",
+      "target": "Top Machine Learning Companies in 2026",
       "relation": "INVOLVES_COMPANY"
     },
     {
       "source": "ml",
-      "target": "Top San Francisco Bay Area, CA Machine Learning ...",
+      "target": "Top 18 Machine Learning (ML) Companies",
       "relation": "INVOLVES_COMPANY"
     },
     {
@@ -574,17 +565,7 @@
     },
     {
       "source": "Unknown",
-      "target": "Top 15 AI/ML Engineering Companies",
-      "relation": "LOCATED_IN"
-    },
-    {
-      "source": "Unknown",
       "target": "Machine Learning Startups funded by Y Combinator (YC) ...",
-      "relation": "LOCATED_IN"
-    },
-    {
-      "source": "Unknown",
-      "target": "Top 10 Machine Learning Consulting Companies ...",
       "relation": "LOCATED_IN"
     },
     {
@@ -594,23 +575,28 @@
     },
     {
       "source": "Unknown",
+      "target": "Top 10 Machine Learning Consulting Companies ...",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
       "target": "Top 159 AI Startups 2026 | Funded by Sequoia, YC, A16Z",
       "relation": "LOCATED_IN"
     },
     {
       "source": "Unknown",
-      "target": "Top Machine Learning Startups in 2026",
-      "relation": "LOCATED_IN"
-    },
-    {
-      "source": "Unknown",
-      "target": "Top San Francisco Bay Area, CA Machine Learning ...",
+      "target": "Top Machine Learning Companies in 2026",
       "relation": "LOCATED_IN"
     },
     {
       "source": "Ai/ml data collection and possible usage for mdt",
       "target": "United States",
       "relation": "FILED_IN"
+    },
+    {
+      "source": "United States",
+      "target": "Top 18 Machine Learning (ML) Companies",
+      "relation": "LOCATED_IN"
     },
     {
       "source": "Standard ml",
