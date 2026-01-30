@@ -87,3 +87,48 @@ export const defaultKGFilters: KGFilters = {
   minDegree: 1,
   keyword: null,
 }
+
+/* ---------------- COMPARE STATE ---------------- */
+
+/* ---------------- TECHNOLOGY DATA ---------------- */
+
+export type TechData = {
+  name: string
+
+  readiness: {
+    trl: number
+  }
+
+  market: {
+    sCurve: string
+    size: number | null
+    forecast: any[]
+  }
+
+  patents: {
+    timeline: any[]
+    list: any[]
+  }
+
+  publications: any[]
+
+  companies: any[]
+
+  knowledgeGraph: {
+    nodes: any[]
+    edges: any[]
+  }
+}
+
+
+export type CompareState = {
+  technologies: string[]          // ["ai", "data-science", ...]
+  filters: DashboardFilters       // shared across all technologies
+  kgFilters: KGFilters            // shared KG filters
+}
+
+export const defaultCompareState: CompareState = {
+  technologies: [],
+  filters: defaultFilters,
+  kgFilters: defaultKGFilters,
+}
