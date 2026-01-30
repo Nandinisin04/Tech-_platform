@@ -1,0 +1,368 @@
+{
+  "technology": "ml",
+  "summary": {
+    "trl": 2,
+    "growth_stage": "Slope of Enlightenment",
+    "market_size_billion_usd": null,
+    "signals": 20
+  },
+  "trend_curve": [
+    2,
+    2,
+    6,
+    3,
+    7
+  ],
+  "country_investment": {
+    "type": "relative_investment_index",
+    "values": {
+      "USA": 35.71,
+      "Japan": 21.43,
+      "Canada": 21.43,
+      "UK": 21.43
+    }
+  },
+  "patent_timeline": [
+    {
+      "year": 2021,
+      "count": 2
+    },
+    {
+      "year": 2022,
+      "count": 2
+    },
+    {
+      "year": 2023,
+      "count": 6
+    },
+    {
+      "year": 2024,
+      "count": 3
+    },
+    {
+      "year": 2025,
+      "count": 7
+    }
+  ],
+  "entities": {
+    "patents": [
+      {
+        "title": "5g support for ai/ml communications",
+        "snippet": "Methods, systems, and devices may assist in artificial intelligence (AI) or machine learning (ML) communications in 5G system, AI or ML traffic differentiation, AI or ML slice type, AI or ML triggering rules, AI or ML policy, AI or ML operations, or user equipment communication interface exposure.",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "ML model training procedure",
+        "snippet": "transmit an ML model training request to activate the ML model training at one or more nodes. 2. The apparatus of claim 1 , wherein the ML model training request comprises at least one of a user equipment (UE)-specific configuration for the ML model training or an area-specific configuration for the …",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "Adjusting confidence thresholds based on review and ML outputs",
+        "snippet": "determining a second ML model associated with the identifying the field of interest within the content; identifying, via the first ML model and at a first confidence, a field within the content corresponding to the field of interest; identifying, via the second ML model and at a second confidence, …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "ML model management in O-RAN",
+        "snippet": "receive, over an AI interface, a register machine learning (ML) model request from an AI-ML consumer of a Near-RT RIC, the register ML model request comprising a ML model instance to be registered with an AI-ML producer of the Non-RT RIC, the ML model instance comprising an indication of supported …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "… monitoring performance of an artificial intelligence (AI)/machine learning (ML) …",
+        "snippet": "determining at least one performance metric associated with the AI/ML model or algorithm to be monitored based on the one or more historical data elements associated with the AI/ML model; wherein: the first network node hosts a model training function of the AI/ML model or algorithm to be monitored …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "UE capability for AI/ML",
+        "snippet": "transmit a request to report a user equipment (UE) capability for at least one of an artificial intelligence (AI) procedure or a machine learning (ML) procedure; and receive, based on the request to report the UE capability, an indication of one or more of an AI capability, an ML capability, a …",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "Device, system, and method for protecting machine learning (ML) units, …",
+        "snippet": "wherein at least one of the Offline Protection Unit and the Online Protection Unit, utilizes a Secondary Engine that is selected from the group consisting of: a secondary ML engine, a secondary DL engine, a secondary AI engine, to perform a secondary classification of an input query that is …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "Update or retrain and update dynamic AI/ML models",
+        "snippet": "12. The non-transitory computer readable medium of claim 10, wherein the program is further configured to cause the at least one processor to: comparing the performance of the retrained AI/ML model to a performance threshold, to the performance of a previous version of the AI/ML model, or to both;",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "… for amalgamation of artificial intelligence (AI) and machine learning (ML) in …",
+        "snippet": ", wherein the AI/ML test analyzer automatically analyzes the test log data and the run-time data concurrently as the software test automation platform executes the multiple test cases for the software workload. 8. The system of claim 7 , wherein the AI/ML test analyzer automatically predicts the …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "Ai/ml data collection and possible usage for mdt",
+        "snippet": "is a block diagram of one possible and non-limiting exemplary system in which the exemplary embodiments may be practiced; FIG. 2 is an AI/ML workflow example; FIG. 3 is a signaling diagram of an example of immediate MDT activation procedure in 5GC and NG-RAN, including the information regarding the …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "Machine learning (ml) model for participants",
+        "snippet": "12 . The central server of claim 10 , wherein the processor is configured to train the ML model based on the meeting metadata associated with the meeting. 13 . The central server of claim 10 , wherein the ML model may be configured to associate the at least one participant with one or more topics. 14 . …",
+        "link": null,
+        "year": 2021,
+        "trl": 2
+      },
+      {
+        "title": "… Random Access Based on Artificial Intelligence / Machine Learning (AI/ML)",
+        "snippet": "an indication of failed or successful connection establishment. 42 . The method of claim 39 , wherein: the provided AI/ML predictive model is untrained; and the method further comprises sending at least a first portion of the training dataset to the one or more UEs. 43 . The method of claim 39 ,",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "AI/ML based mobility related prediction for handover",
+        "snippet": "TECHNICAL FIELD The present disclosure relates generally to communication systems, and more particularly, to a method of wireless communication include an artificial intelligence (AI) or machine learning (ML) (AI/ML) based mobility related prediction for handover procedure. INTRODUCTION Wireless …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "… having proactive analytics and correlation engine using unsupervised ML model",
+        "snippet": "100 , excluding network events for the most recent observation time frame, and ML model 137 operates to predict occurrence levels expected to be seen during the current observation time frame for the each of the various types of network event. In addition, based on network event data 139 , ML models",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "… IC50 value to inhibit a-glucosidase I at a concentration of less than 90 uG/ml, …",
+        "snippet": "The invention claimed is: 1. A plant extract obtained from Morus plant leaves which has an IC 50 value of less than 90 μg/ml with respect to inhibition of α-glucosidase I, comprising: (i) 5-40% (w/w) total imino sugars, as measured by at least one of quantitative High Performance Liquid …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Computerized systems and methods for ai/ml determinations of user capabilities …",
+        "snippet": "analyzing, by the device, via a machine learning (ML) algorithm, the set of results; and determining, by the device, based on the ML analysis, information related to performance of the user, the information is associated with one or more of the tasks in the set of tasks, wherein the performance …",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "ML-based methods for pseudo-CT and HR MR image estimation",
+        "snippet": "The present disclosure describes a computer-implemented method of transforming a low-resolution MR image to a high-resolution MR image using a deep CNN-based MRI SR network and a computer-implemented method of transforming an MR image to a pseudo-CT (sCT) image using a deep CNN-based sCT network.",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "Ai/ml approach for DDOS prevention on 5G CBRS networks",
+        "snippet": "processing the aggregated data into time series data; inputting the time series data to an AI/ML model; analyzing the time series data using the AI/ML model after the aggregated data has been processed; and based on the analyzing, determining whether or not an actual attack or attack threat is …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Ear canal pressure regulation system",
+        "snippet": "(Item 26) The second fluid flow generator generates the second fluid flow between the second fluid flow generator and the second axial earphone conduit, and the second fluid flow is 0. 25. The device of item 25, having a second fluid volume in the range of milliliters to about 20 milliliters. (Item …",
+        "link": null,
+        "year": 2021,
+        "trl": 2
+      },
+      {
+        "title": "Behavioral prediction and boundary settings, control and safety assurance of ML …",
+        "snippet": "CROSS-REFERENCE TO RELATED APPLICATIONS This application claims priority from U.S. patent application Ser. No. 17/525,602, filed Nov. 12, 2021, entitled “BEHAVIORAL PREDICTION AND BOUNDARY SETTINGS, CONTROL AND SAFETY ASSURANCE OF ML &amp; AI SYSTEMS,” which claims priority from U.S. Provisional …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      }
+    ],
+    "papers": [
+      {
+        "title": "The definition of standard ML: revised",
+        "snippet": "Standard ML is a general-purpose programming language designed for large projects. This book provides a formal definition of Standard ML for the benefit of all concerned with the …",
+        "link": "https://books.google.com/books?hl=en&lr=&id=e0PhKfbj-p8C&oi=fnd&pg=PR9&dq=ml&ots=TnP_g-C9fq&sig=zXaqXqF23BRBRYL_lr8yVvOcJbQ",
+        "year": null
+      },
+      {
+        "title": "Standard ml",
+        "snippet": "In May 1985, the two-year process of designing Standard ML was brought to a successful conclusion at a meeting of fifteen people in Edinburgh. This report records the result. Part I …",
+        "link": "http://www.lfcs.inf.ed.ac.uk/reports/86/ECS-LFCS-86-2/ECS-LFCS-86-2.pdf",
+        "year": 1985.0
+      },
+      {
+        "title": "Dlib-ml: A machine learning toolkit",
+        "snippet": "There are many excellent toolkits which provide support for developing machine learning software in Python, R, Matlab, and similar environments. Dlib-ml is an open source library, …",
+        "link": "http://www.jmlr.org/papers/volume10/king09a/king09a.pdf",
+        "year": null
+      },
+      {
+        "title": "A proposal for Standard ML",
+        "snippet": "2.1 Discussion; 2.2 Reserved words; 2.3 Special constants; 2.4 Identifiers; 2.5 Comments; 2.6 Lexical analysis; 2.7 Delimiters; 2.8 The bare syntax.",
+        "link": "https://dl.acm.org/doi/pdf/10.1145/800055.802035",
+        "year": null
+      },
+      {
+        "title": "Machine learning (ML) in medicine: review, applications, and challenges",
+        "snippet": "… papers on ML applications in healthcare. These papers have often focused on ML applications … They pay less attention to the structure of ML-based models used in different methods. AI …",
+        "link": "https://www.mdpi.com/2227-7390/9/22/2970",
+        "year": null
+      },
+      {
+        "title": "The essence of ML",
+        "snippet": "… Standard ML is a useful programming language with polymorphic expressions and a … ML calculus may be built-up b,y induction on type levels (universes). For this reason, the pure ML …",
+        "link": "https://dl.acm.org/doi/abs/10.1145/73560.73563",
+        "year": null
+      },
+      {
+        "title": "Modules for standard ML",
+        "snippet": "… The design has three main goals: (1) to facilitate the structuring of large ML programs; (2) to … of ML's polymorphic type system. It is based on concepts inherent in the structure of ML, …",
+        "link": "https://dl.acm.org/doi/abs/10.1145/800055.802036",
+        "year": null
+      },
+      {
+        "title": "EM algorithms for ML factor analysis",
+        "snippet": "The details of EM algorithms for maximum likelihood factor analysis are presented for both the exploratory and confirmatory models. The algorithm is essentially the same for both cases …",
+        "link": "https://www.cambridge.org/core/journals/psychometrika/article/em-algorithms-for-ml-factor-analysis/A760C8ABF289AADBE118933311FAB24B",
+        "year": null
+      },
+      {
+        "title": "ML for the Working Programmer",
+        "snippet": "… program in the ML language, and … ML are described and many new examples are given, while references have also been updated. Dr Paulson has extensive practical experience of ML …",
+        "link": "https://books.google.com/books?hl=en&lr=&id=8VCbAAAAQBAJ&oi=fnd&pg=PR13&dq=ml&ots=vHMu6KRfSN&sig=fV3769YNRCW0DzIsb3_0b6Be7WA",
+        "year": null
+      },
+      {
+        "title": "On the type structure of Standard ML",
+        "snippet": "… One notable feature of the core expression language of ML is that it is implicdy typed: no explicit … features of ML cannot be added to any impredicative … of ML, we will view ML programs …",
+        "link": "https://dl.acm.org/doi/abs/10.1145/169701.169696",
+        "year": null
+      },
+      {
+        "title": "Programming in standard ML",
+        "snippet": "This book is an introduction to programming with the Standard ML programming language. It began life as a set of lecture notes for Computer Science 15–212: Principles of …",
+        "link": "https://www.cs.umbc.edu/courses/graduate/CMSC631/Fall2002/online.pdf",
+        "year": null
+      },
+      {
+        "title": "Handbook of Statistical Analysis: AI and ML Applications",
+        "snippet": "… • Fayyad has published over 100 technical articles on data mining, data science, AI/ML, and databases. • He holds over 20 patents. • He is a fellow of both the Association for the …",
+        "link": "https://books.google.com/books?hl=en&lr=&id=Okj9EAAAQBAJ&oi=fnd&pg=PP1&dq=ml&ots=LZ0qEVQ0DN&sig=VPsklrIUBuascOPELnRnsj8Yjug",
+        "year": null
+      },
+      {
+        "title": "Machine learning at Microsoft with ML. NET",
+        "snippet": "… discourage developers from embracing ML in first place. In this paper we present ML.NET, a … Specifically, we introduce DataView, the core data abstraction of ML.NET which allows it to …",
+        "link": "https://dl.acm.org/doi/abs/10.1145/3292500.3330667",
+        "year": null
+      },
+      {
+        "title": "ML-236A, ML-236B, and ML-236C, new inhibitors of cholesterogenesis produced by Penicillium citrinum",
+        "snippet": "… ML-… ML-236B lowered the levels of serum cholesterol by approximately 30 % at a dose of 20 mg/kg. The data in Table I also show that the hypocholesterolemic effect of ML-236A and ML…",
+        "link": "https://www.jstage.jst.go.jp/article/antibiotics1968/29/12/29_12_1346/_article/-char/ja/",
+        "year": null
+      },
+      {
+        "title": "ML 5.0 smoothed aggregation user's guide",
+        "snippet": "… exist within ML but are … ML should be used on linear systems that correspond to things that work well with multigrid methods (eg elliptic PDEs). The ML package is used by creating a ML …",
+        "link": "https://www.researchgate.net/profile/Michael-Gee-3/publication/51992105_ML_50_Smoothed_Aggregation_User's_Guide/links/0046353395404c2655000000/ML-50-Smoothed-Aggregation-Users-Guide.pdf",
+        "year": null
+      },
+      {
+        "title": "CakeML: a verified implementation of ML",
+        "snippet": "… We have developed and mechanically verified an ML system called CakeML, which supports a substantial subset of Standard ML. CakeML is implemented as an interactive read-eval-…",
+        "link": "https://dl.acm.org/doi/abs/10.1145/2578855.2535841",
+        "year": null
+      },
+      {
+        "title": "The ML scale in Southern California",
+        "snippet": "Measurements (9,941) of peak amplitudes on Wood-Anderson instruments (or simulated Wood-Anderson instruments) in the Southern California Seismographic Network for 972 …",
+        "link": "https://pubs.geoscienceworld.org/ssa/bssa/article-abstract/77/6/2074/119025",
+        "year": null
+      },
+      {
+        "title": "Unsolved problems in ml safety",
+        "snippet": "… emergent capabilities of modern ML systems necessitate new angles of attack. We define ML Safety research as ML research aimed at making the adoption of ML more beneficial, with …",
+        "link": "https://arxiv.org/abs/2109.13916",
+        "year": null
+      },
+      {
+        "title": "Elements of ML programming (ML97 ed.)",
+        "snippet": "… We consider an extension of the functional programming language Standard ML with a modular structure based upon concepts in category theory such as categories, functors …",
+        "link": "https://dl.acm.org/doi/abs/10.5555/273107",
+        "year": null
+      },
+      {
+        "title": "Refinement types for ML",
+        "snippet": "… The resulting system of rejirzemeni f, ypes preserves desirable properties of ML such as … ML in that refinement types are given only to programs which are already well-typed in ML. …",
+        "link": "https://dl.acm.org/doi/pdf/10.1145/113445.113468",
+        "year": null
+      }
+    ],
+    "companies": [
+      {
+        "name": "40 Machine Learning Companies You Should Know",
+        "description": "Some notable companies using ML include Amazon Web Services, Databricks, DataRobot, Veritone, SoundHound, Unity Interactions, AKASA, Kensho ...",
+        "link": "https://builtin.com/artificial-intelligence/machine-learning-companies"
+      },
+      {
+        "name": "How to get into really good companies which do state of ...",
+        "description": "I am doing my MS in CS now, where I have taken graduate level courses on ML, NLP, RL and Data Science.",
+        "link": "https://www.reddit.com/r/learnmachinelearning/comments/1ghyf7n/how_to_get_into_really_good_companies_which_do/"
+      },
+      {
+        "name": "Machine Learning Startups funded by Y Combinator (YC) ...",
+        "description": "Browse 198 of the top Machine Learning startups funded by Y Combinator. We also have a Startup Directory where you can search through over 5,000 companies.",
+        "link": "https://www.ycombinator.com/companies/industry/Machine%20Learning"
+      },
+      {
+        "name": "Top 159 AI Startups 2026 | Funded by Sequoia, YC, A16Z",
+        "description": "Top AI startups and new AI companies hiring now. Sort by valuation and recent funding. Funded by Sequoia, YC, A16Z, Benchmark - the very best.",
+        "link": "https://topstartups.io/?industries=Artificial%20Intelligence"
+      },
+      {
+        "name": "Top Machine Learning Companies in 2026",
+        "description": "Looking for top machine learning companies? Compare and explore machine learning companies and choose the right ML developer for your project.",
+        "link": "https://techreviewer.co/top-machine-learning-companies"
+      },
+      {
+        "name": "Top NYC, NY Machine Learning Companies 2026",
+        "description": "Top NYC, NY Machine Learning Companies (305) · Kensho Technologies · Hinge · Capital One · BlackLine · Mondelēz International · Canoe · Tempus AI · Garner Health.",
+        "link": "https://www.builtinnyc.com/companies/type/machine-learning-industry-companies"
+      },
+      {
+        "name": "Top San Francisco Bay Area, CA Machine Learning ...",
+        "description": "Top San Francisco Bay Area, CA Machine Learning Companies (404) · John Deere · BlackLine · Xero · Capital One · PagerDuty · Deepgram · WorkWhile · CoreWeave.",
+        "link": "https://www.builtinsf.com/companies/type/machine-learning-industry-companies"
+      },
+      {
+        "name": "Top 18 Machine Learning (ML) Companies",
+        "description": "InData Labs opens up the list of the leading machine learning companies. InData Labs is a Cyprus-based data science firm and AI-powered ...",
+        "link": "https://indatalabs.com/blog/top-18-machine-learning-companies"
+      },
+      {
+        "name": "Top 16 AI/ML Engineering Companies",
+        "description": "Top 16 AI/Ml engineering companies · Simform · STX Next · Geniusee · Fingent · Entrans Technologies · Plavno · Intuz · ANADEA.",
+        "link": "https://www.simform.com/blog/top-ai-ml-engineering-companies/"
+      }
+    ],
+    "market_reports": []
+  },
+  "alerts": [
+    {
+      "type": "patent",
+      "message": "ml patent activity rising",
+      "time": "recent"
+    }
+  ]
+}

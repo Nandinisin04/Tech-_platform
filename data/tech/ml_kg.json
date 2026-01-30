@@ -1,0 +1,696 @@
+{
+  "nodes": [
+    {
+      "id": "ml",
+      "type": "technology",
+      "url": "https://en.wikipedia.org/wiki/ml"
+    },
+    {
+      "id": "5g support for ai/ml communications",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Unknown",
+      "type": "country",
+      "url": null
+    },
+    {
+      "id": "ML model training procedure",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Adjusting confidence thresholds based on review and ML outputs",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "ML model management in O-RAN",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "… monitoring performance of an artificial intelligence (AI)/machine learning (ML) …",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "UE capability for AI/ML",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Device, system, and method for protecting machine learning (ML) units, …",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Update or retrain and update dynamic AI/ML models",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "… for amalgamation of artificial intelligence (AI) and machine learning (ML) in …",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Ai/ml data collection and possible usage for mdt",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "United States",
+      "type": "country",
+      "url": null
+    },
+    {
+      "id": "Machine learning (ml) model for participants",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "… Random Access Based on Artificial Intelligence / Machine Learning (AI/ML)",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "AI/ML based mobility related prediction for handover",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "… having proactive analytics and correlation engine using unsupervised ML model",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "… IC50 value to inhibit a-glucosidase I at a concentration of less than 90 uG/ml, …",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Computerized systems and methods for ai/ml determinations of user capabilities …",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "ML-based methods for pseudo-CT and HR MR image estimation",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Ai/ml approach for DDOS prevention on 5G CBRS networks",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Ear canal pressure regulation system",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "Behavioral prediction and boundary settings, control and safety assurance of ML …",
+      "type": "patent",
+      "url": null
+    },
+    {
+      "id": "The definition of standard ML: revised",
+      "type": "paper",
+      "url": "https://books.google.com/books?hl=en&lr=&id=e0PhKfbj-p8C&oi=fnd&pg=PR9&dq=ml&ots=TnP_g-C9fq&sig=zXaqXqF23BRBRYL_lr8yVvOcJbQ"
+    },
+    {
+      "id": "Standard ml",
+      "type": "paper",
+      "url": "http://www.lfcs.inf.ed.ac.uk/reports/86/ECS-LFCS-86-2/ECS-LFCS-86-2.pdf"
+    },
+    {
+      "id": "UK",
+      "type": "country",
+      "url": null
+    },
+    {
+      "id": "Dlib-ml: A machine learning toolkit",
+      "type": "paper",
+      "url": "http://www.jmlr.org/papers/volume10/king09a/king09a.pdf"
+    },
+    {
+      "id": "A proposal for Standard ML",
+      "type": "paper",
+      "url": "https://dl.acm.org/doi/pdf/10.1145/800055.802035"
+    },
+    {
+      "id": "Machine learning (ML) in medicine: review, applications, and challenges",
+      "type": "paper",
+      "url": "https://www.mdpi.com/2227-7390/9/22/2970"
+    },
+    {
+      "id": "The essence of ML",
+      "type": "paper",
+      "url": "https://dl.acm.org/doi/abs/10.1145/73560.73563"
+    },
+    {
+      "id": "Modules for standard ML",
+      "type": "paper",
+      "url": "https://dl.acm.org/doi/abs/10.1145/800055.802036"
+    },
+    {
+      "id": "EM algorithms for ML factor analysis",
+      "type": "paper",
+      "url": "https://www.cambridge.org/core/journals/psychometrika/article/em-algorithms-for-ml-factor-analysis/A760C8ABF289AADBE118933311FAB24B"
+    },
+    {
+      "id": "Canada",
+      "type": "country",
+      "url": null
+    },
+    {
+      "id": "ML for the Working Programmer",
+      "type": "paper",
+      "url": "https://books.google.com/books?hl=en&lr=&id=8VCbAAAAQBAJ&oi=fnd&pg=PR13&dq=ml&ots=vHMu6KRfSN&sig=fV3769YNRCW0DzIsb3_0b6Be7WA"
+    },
+    {
+      "id": "On the type structure of Standard ML",
+      "type": "paper",
+      "url": "https://dl.acm.org/doi/abs/10.1145/169701.169696"
+    },
+    {
+      "id": "Programming in standard ML",
+      "type": "paper",
+      "url": "https://www.cs.umbc.edu/courses/graduate/CMSC631/Fall2002/online.pdf"
+    },
+    {
+      "id": "USA",
+      "type": "country",
+      "url": null
+    },
+    {
+      "id": "Handbook of Statistical Analysis: AI and ML Applications",
+      "type": "paper",
+      "url": "https://books.google.com/books?hl=en&lr=&id=Okj9EAAAQBAJ&oi=fnd&pg=PP1&dq=ml&ots=LZ0qEVQ0DN&sig=VPsklrIUBuascOPELnRnsj8Yjug"
+    },
+    {
+      "id": "Machine learning at Microsoft with ML. NET",
+      "type": "paper",
+      "url": "https://dl.acm.org/doi/abs/10.1145/3292500.3330667"
+    },
+    {
+      "id": "ML-236A, ML-236B, and ML-236C, new inhibitors of cholesterogenesis produced by Penicillium citrinum",
+      "type": "paper",
+      "url": "https://www.jstage.jst.go.jp/article/antibiotics1968/29/12/29_12_1346/_article/-char/ja/"
+    },
+    {
+      "id": "Japan",
+      "type": "country",
+      "url": null
+    },
+    {
+      "id": "ML 5.0 smoothed aggregation user's guide",
+      "type": "paper",
+      "url": "https://www.researchgate.net/profile/Michael-Gee-3/publication/51992105_ML_50_Smoothed_Aggregation_User's_Guide/links/0046353395404c2655000000/ML-50-Smoothed-Aggregation-Users-Guide.pdf"
+    },
+    {
+      "id": "CakeML: a verified implementation of ML",
+      "type": "paper",
+      "url": "https://dl.acm.org/doi/abs/10.1145/2578855.2535841"
+    },
+    {
+      "id": "The ML scale in Southern California",
+      "type": "paper",
+      "url": "https://pubs.geoscienceworld.org/ssa/bssa/article-abstract/77/6/2074/119025"
+    },
+    {
+      "id": "Unsolved problems in ml safety",
+      "type": "paper",
+      "url": "https://arxiv.org/abs/2109.13916"
+    },
+    {
+      "id": "Elements of ML programming (ML97 ed.)",
+      "type": "paper",
+      "url": "https://dl.acm.org/doi/abs/10.5555/273107"
+    },
+    {
+      "id": "Refinement types for ML",
+      "type": "paper",
+      "url": "https://dl.acm.org/doi/pdf/10.1145/113445.113468"
+    },
+    {
+      "id": "40 Machine Learning Companies You Should Know",
+      "type": "company",
+      "url": null
+    },
+    {
+      "id": "How to get into really good companies which do state of ...",
+      "type": "company",
+      "url": null
+    },
+    {
+      "id": "Machine Learning Startups funded by Y Combinator (YC) ...",
+      "type": "company",
+      "url": null
+    },
+    {
+      "id": "Top 159 AI Startups 2026 | Funded by Sequoia, YC, A16Z",
+      "type": "company",
+      "url": null
+    },
+    {
+      "id": "Top Machine Learning Companies in 2026",
+      "type": "company",
+      "url": null
+    },
+    {
+      "id": "Top NYC, NY Machine Learning Companies 2026",
+      "type": "company",
+      "url": null
+    },
+    {
+      "id": "Top San Francisco Bay Area, CA Machine Learning ...",
+      "type": "company",
+      "url": null
+    },
+    {
+      "id": "Top 18 Machine Learning (ML) Companies",
+      "type": "company",
+      "url": null
+    },
+    {
+      "id": "Top 16 AI/ML Engineering Companies",
+      "type": "company",
+      "url": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "ml",
+      "target": "5g support for ai/ml communications",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "ML model training procedure",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Adjusting confidence thresholds based on review and ML outputs",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "ML model management in O-RAN",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "… monitoring performance of an artificial intelligence (AI)/machine learning (ML) …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "UE capability for AI/ML",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Device, system, and method for protecting machine learning (ML) units, …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Update or retrain and update dynamic AI/ML models",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "… for amalgamation of artificial intelligence (AI) and machine learning (ML) in …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Ai/ml data collection and possible usage for mdt",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Machine learning (ml) model for participants",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "… Random Access Based on Artificial Intelligence / Machine Learning (AI/ML)",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "AI/ML based mobility related prediction for handover",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "… having proactive analytics and correlation engine using unsupervised ML model",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "… IC50 value to inhibit a-glucosidase I at a concentration of less than 90 uG/ml, …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Computerized systems and methods for ai/ml determinations of user capabilities …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "ML-based methods for pseudo-CT and HR MR image estimation",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Ai/ml approach for DDOS prevention on 5G CBRS networks",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Ear canal pressure regulation system",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "Behavioral prediction and boundary settings, control and safety assurance of ML …",
+      "relation": "HAS_PATENT"
+    },
+    {
+      "source": "ml",
+      "target": "The definition of standard ML: revised",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Standard ml",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Dlib-ml: A machine learning toolkit",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "A proposal for Standard ML",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Machine learning (ML) in medicine: review, applications, and challenges",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "The essence of ML",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Modules for standard ML",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "EM algorithms for ML factor analysis",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "ML for the Working Programmer",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "On the type structure of Standard ML",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Programming in standard ML",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Handbook of Statistical Analysis: AI and ML Applications",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Machine learning at Microsoft with ML. NET",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "ML-236A, ML-236B, and ML-236C, new inhibitors of cholesterogenesis produced by Penicillium citrinum",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "ML 5.0 smoothed aggregation user's guide",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "CakeML: a verified implementation of ML",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "The ML scale in Southern California",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Unsolved problems in ml safety",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Elements of ML programming (ML97 ed.)",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "Refinement types for ML",
+      "relation": "HAS_PAPER"
+    },
+    {
+      "source": "ml",
+      "target": "40 Machine Learning Companies You Should Know",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
+      "target": "How to get into really good companies which do state of ...",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
+      "target": "Machine Learning Startups funded by Y Combinator (YC) ...",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
+      "target": "Top 159 AI Startups 2026 | Funded by Sequoia, YC, A16Z",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
+      "target": "Top Machine Learning Companies in 2026",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
+      "target": "Top NYC, NY Machine Learning Companies 2026",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
+      "target": "Top San Francisco Bay Area, CA Machine Learning ...",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
+      "target": "Top 18 Machine Learning (ML) Companies",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "ml",
+      "target": "Top 16 AI/ML Engineering Companies",
+      "relation": "INVOLVES_COMPANY"
+    },
+    {
+      "source": "5g support for ai/ml communications",
+      "target": "Unknown",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "ML model training procedure",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Adjusting confidence thresholds based on review and ML outputs",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "ML model management in O-RAN",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… monitoring performance of an artificial intelligence (AI)/machine learning (ML) …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "UE capability for AI/ML",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Device, system, and method for protecting machine learning (ML) units, …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Update or retrain and update dynamic AI/ML models",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… for amalgamation of artificial intelligence (AI) and machine learning (ML) in …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Machine learning (ml) model for participants",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… Random Access Based on Artificial Intelligence / Machine Learning (AI/ML)",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "AI/ML based mobility related prediction for handover",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… having proactive analytics and correlation engine using unsupervised ML model",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "… IC50 value to inhibit a-glucosidase I at a concentration of less than 90 uG/ml, …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Computerized systems and methods for ai/ml determinations of user capabilities …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "ML-based methods for pseudo-CT and HR MR image estimation",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Ai/ml approach for DDOS prevention on 5G CBRS networks",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Ear canal pressure regulation system",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Behavioral prediction and boundary settings, control and safety assurance of ML …",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "40 Machine Learning Companies You Should Know",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "How to get into really good companies which do state of ...",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Machine Learning Startups funded by Y Combinator (YC) ...",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Top 159 AI Startups 2026 | Funded by Sequoia, YC, A16Z",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Top Machine Learning Companies in 2026",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Top NYC, NY Machine Learning Companies 2026",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Top San Francisco Bay Area, CA Machine Learning ...",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Unknown",
+      "target": "Top 16 AI/ML Engineering Companies",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Ai/ml data collection and possible usage for mdt",
+      "target": "United States",
+      "relation": "FILED_IN"
+    },
+    {
+      "source": "United States",
+      "target": "Top 18 Machine Learning (ML) Companies",
+      "relation": "LOCATED_IN"
+    },
+    {
+      "source": "Standard ml",
+      "target": "UK",
+      "relation": "PUBLISHED_IN"
+    },
+    {
+      "source": "EM algorithms for ML factor analysis",
+      "target": "Canada",
+      "relation": "PUBLISHED_IN"
+    },
+    {
+      "source": "Programming in standard ML",
+      "target": "USA",
+      "relation": "PUBLISHED_IN"
+    },
+    {
+      "source": "ML-236A, ML-236B, and ML-236C, new inhibitors of cholesterogenesis produced by Penicillium citrinum",
+      "target": "Japan",
+      "relation": "PUBLISHED_IN"
+    }
+  ]
+}

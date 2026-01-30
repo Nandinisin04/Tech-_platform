@@ -1,0 +1,452 @@
+{
+  "technology": "hypersonics",
+  "summary": {
+    "trl": 2,
+    "growth_stage": "Slope of Enlightenment",
+    "market_size_billion_usd": null,
+    "signals": 20
+  },
+  "trend_curve": [
+    1,
+    3,
+    1,
+    3,
+    6,
+    3,
+    3
+  ],
+  "country_investment": {
+    "type": "relative_investment_index",
+    "values": {
+      "USA": 100.0,
+      "Uk": 66.67,
+      "Israel": 66.67
+    }
+  },
+  "patent_timeline": [
+    {
+      "year": 2016,
+      "count": 1
+    },
+    {
+      "year": 2019,
+      "count": 3
+    },
+    {
+      "year": 2020,
+      "count": 1
+    },
+    {
+      "year": 2021,
+      "count": 3
+    },
+    {
+      "year": 2022,
+      "count": 6
+    },
+    {
+      "year": 2023,
+      "count": 3
+    },
+    {
+      "year": 2024,
+      "count": 3
+    }
+  ],
+  "entities": {
+    "patents": [
+      {
+        "title": "Hypersonic aircraft airborne track planning method and device, aircraft and …",
+        "snippet": "In the flight process, the state space of the hypersonic aircraft is input into a trained Actor network, the strategy action space of the hypersonic aircraft is obtained, the hypersonic aircraft flies to a preset target area according to the strategy action space, and the reentry gliding section …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Hypersonic aircraft coordination attitude control method based on sliding mode …",
+        "snippet": "Among them, x 1 = [α, β, γ v ] T represents the attitude angle of the hypersonic aircraft, x 2 = [ω m , ω n , ω l ] T represents the angular rate of the hypersonic aircraft, u = [δ m , δ n , δ l ] T represents the control input, D 1 = [r 1 r 2 r 3 ] T represents the unknown dynamics, D 2 = [d 1 d 2 …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Control of hypersonic boundary layer transition",
+        "snippet": "A system and method for controlling hypersonic boundary layer transition for a hypersonic flight vehicle are disclosed. The reduction or elimination of hot streaks that naturally occurs in the boundary layer transition process during hypersonic flight is achieved by utilizing various techniques.",
+        "link": null,
+        "year": 2021,
+        "trl": 2
+      },
+      {
+        "title": "Plane symmetry hypersonic aircraft hood separation wind tunnel test device",
+        "snippet": "2. The plane-symmetric hypersonic aircraft nose cap separation wind tunnel test device as claimed in claim 1, wherein: the orifice plate pressure regulating device (4) is arranged on the wall of the hypersonic wind tunnel, a cavity is formed in a hole wall joint (404) of the orifice plate pressure …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "A free-piston shock tunnel operating in multiple modes",
+        "snippet": "A free-piston shock tunnel operating in multiple modes technical field The invention relates to a free-piston shock wave wind tunnel operating in various modes, which is applied to hypersonic tests in various states. Background technique The shortcomings of the existing test equipment for research …",
+        "link": null,
+        "year": 2019,
+        "trl": 2
+      },
+      {
+        "title": "Hypersonic aircraft trajectory planning method based on sequence convex …",
+        "snippet": "Step 4: Plan the objective function of the linear programming problem step by step, and obtain the trajectory planning result of the hypersonic vehicle by solving the objective function. 2. a kind of hypersonic aircraft trajectory planning method based on sequence convex optimization according to …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "Method of making hypersonic leading-edge heat pipe with porous wick",
+        "snippet": "Hypersonic flight is flight through the atmosphere below about 90 km at speeds of about Mach 5 or higher, causing very high aerodynamic heating. The severe thermal environment to which vehicles are subjected during hypersonic flight pose significant technical challenges. Hypersonic vehicle …",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "A Re-Entry Collaborative Guidance Method for Hypersonic Vehicles Based on …",
+        "snippet": "1. a hypersonic aircraft re-entry collaborative guidance method based on reinforcement learning, is characterized in that comprising the following steps: S1. Based on the geocentric Cartesian coordinate system, establish the reentry dynamics model of the hypersonic gliding vehicle; S2. Combined …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "Linear optimization control method for hypersonic aircraft",
+        "snippet": "4. The linear optimization control method for hypersonic flight vehicle according to claim 3, wherein in step 4.2, the maximum iteration number M is set to 50, and the Greenwolf search population X is set i Scale of (1) S ═ 30, where X i Wherein i is 1,2,. 30, X j Is a d-2 dimensional vector including a …",
+        "link": null,
+        "year": 2021,
+        "trl": 2
+      },
+      {
+        "title": "Trajectory prediction method, system, equipment and medium of hypersonic …",
+        "snippet": "5. The method for predicting the trajectory of a hypersonic aircraft according to claim 1 wherein the expression for calculating the attention profile in the attention module is: in the method, in the process of the invention, representing an attention scoring function; x is x i An output …",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "… influence of transition on aerodynamic characteristics of hypersonic aircraft",
+        "snippet": "5. The wind tunnel test method for researching influence of transition on aerodynamic characteristics of hypersonic aircraft according to claim 1, characterized in that the test model (1) is smooth in surface, the test model (1) is not segmented, and no gap or connecting hole is formed in the …",
+        "link": null,
+        "year": 2021,
+        "trl": 2
+      },
+      {
+        "title": "A control method for hypersonic vehicle under uncertain conditions",
+        "snippet": "4. a kind of control method towards the hypersonic aircraft under condition of uncertainty according to claim 1, special Sign is the calculating process of the stability of contragradience sliding mode controller are as follows: Define Liapunov function are as follows: The derivative of the …",
+        "link": null,
+        "year": 2019,
+        "trl": 2
+      },
+      {
+        "title": "… method for ablation behavior of heat-resistant structures of hypersonic …",
+        "snippet": "4. The method for multi-scale prediction of ablation behavior of heat-resistant structures of hypersonic vehicles according to claim 3, characterized in that, in the step S3, the target ablation heat-resistant material is gas-solidified according to density and material element composition.",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "Transition prediction method of hypersonic vehicle based on global stability …",
+        "snippet": "The invention relates to a method for predicting the transition of a hypersonic aircraft based on a global stability analysis, which is achieved through the following steps: step 1, calculating the basic laminar flow field on the surface of the target hypersonic aircraft, and obtaining a three- …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "A wide-area intake pressure regulation system for a hypersonic wind tunnel",
+        "snippet": "A wide-area intake pressure regulation system of a hypersonic wind tunnel, which selects a corresponding intake pressure regulation mode according to the incoming flow pressure of the front chamber, which can simultaneously provide a wide area of vacuum incoming flow pressure, medium pressure …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "A tracking method for hypersonic reentry vehicle based on Gaussian mixture …",
+        "snippet": "Step 1. According to the earth spherical model and the fitted atmospheric model, combined with the force of the target during the hypersonic re-entry process, a motion tracking model of the hypersonic maneuvering re-entry vehicle is established in the northeast upper inertial reference coordinate …",
+        "link": null,
+        "year": 2020,
+        "trl": 2
+      },
+      {
+        "title": "Hypersonic transition prediction method based on simplified three-equation …",
+        "snippet": "1. a hypersonic transition prediction method based on a simplified three-equation transition model, is characterized in that, the method is to utilize the localized pressure gradient size characterization parameter to construct a new transition empirical judgment relation, to remove the transition …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "Bayesian estimation-based long-term trajectory prediction method for hypersonic …",
+        "snippet": "The invention relates to a trajectory prediction technology, in particular to a long-term trajectory prediction method of a hypersonic aircraft based on Bayesian estimation, which aims to solve the main technical difficulties of trajectory prediction of the hypersonic aircraft: constructing a …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "Adaptive fault-tolerant control method for hypersonic vehicle considering angle …",
+        "snippet": "1. A hypersonic aircraft self-adaptive fault-tolerant control method considering attack angle constraint is characterized by comprising the following steps: step one, establishing a longitudinal channel dynamic model of a hypersonic aircraft: wherein, representing the dynamic pressure, p …",
+        "link": null,
+        "year": 2019,
+        "trl": 2
+      },
+      {
+        "title": "A kind of flow testing system being applicable to supersonic speed/hypersonic …",
+        "snippet": "4. The flow test system suitable for supersonic/hypersonic flow channels according to claim 1, characterized in that: the rear equal straight rectification section (4) is a circular cross-section equal straight pipeline, the length of which is L 4 ≥ 5D 1 , Where D 1 is the diameter of the straight …",
+        "link": null,
+        "year": 2016,
+        "trl": 2
+      }
+    ],
+    "papers": [
+      {
+        "title": "Critical hypersonic aerothermodynamic phenomena",
+        "snippet": "… hypersonic flow are evaluated. The areas where aerothermodynamic shortcomings restrict our ability to design and analyze hypersonic … our understanding of hypersonic flow will allow …",
+        "link": "https://www.annualreviews.org/content/journals/10.1146/annurev.fluid.38.050304.092041",
+        "year": null
+      },
+      {
+        "title": "Fifty years of hypersonics: where we've been, where we're going",
+        "snippet": "… the hypersonic ramjet experiment. In order to continue to make advances in hypersonic … In order to better prepare for future developments in hypersonic flight, this article reviews the …",
+        "link": "https://www.sciencedirect.com/science/article/pii/S0376042103000794",
+        "year": null
+      },
+      {
+        "title": "Hypersonics",
+        "snippet": "A model for plasma assisted combustion of ethylene-air mixtures at conditions typical for scramjet combustion chamber is developed combining classical mechanisms of thermal …",
+        "link": "https://www.researchgate.net/profile/Anatoly-Napartovich/publication/236896197_Modeling_of_Plasma_Assisted_Combustion_in_Premixed_Supersonic_Gas_Flow/links/5458b5be0cf26d5090ac563f/Modeling-of-Plasma-Assisted-Combustion-in-Premixed-Supersonic-Gas-Flow.pdf",
+        "year": null
+      },
+      {
+        "title": "Hypersonic flow",
+        "snippet": "… hypersonic flows has progressed in recent years-with special reference to the hypersonic similarity concept and the hypersonic … predicted by the hypersonic approximations (Newtonian, …",
+        "link": "https://arc.aiaa.org/doi/pdf/10.2514/2.6897",
+        "year": null
+      },
+      {
+        "title": "Review and assessment of turbulence models for hypersonic flows",
+        "snippet": "… surveyed the existing hypersonic experiments. … hypersonic flow regime where calorically perfect gas models are appropriate. We extend the prior database of recommended hypersonic …",
+        "link": "https://www.sciencedirect.com/science/article/pii/S0376042107000309",
+        "year": null
+      },
+      {
+        "title": "Hypersonic aerothermodynamics",
+        "snippet": "A modern treatment of hypersonic aerothermodynamics for students, engineers, scientists, and program managers involved in the study and application of hypersonic flight. It assumes …",
+        "link": "https://books.google.com/books?hl=en&lr=&id=NKOIAY_Cj2kC&oi=fnd&pg=PP23&dq=hypersonics&ots=s6kt3h-OHT&sig=3A3Pw2sRuBTgVrPdlc4hBh90NUE",
+        "year": null
+      },
+      {
+        "title": "Introduction to hypersonic flow",
+        "snippet": "… of hypersonic aerodynamics. These studies have considerably increased our previous knowledge of the general properties of hypersonic … In addition, because the status of hypersonic …",
+        "link": "https://books.google.com/books?hl=en&lr=&id=et43BQAAQBAJ&oi=fnd&pg=PP1&dq=hypersonics&ots=GRknhUwMg9&sig=lOtaLyAZAArMwJich5MFxiNmLLI",
+        "year": null
+      },
+      {
+        "title": "Hypersonic flow theory",
+        "snippet": "… The dynamics of hypersonic flight or hypersonic wing theory, magnetohydrodynamic theory, … hypersonic aerodynamicists, students, and researchers conducting work on the hypersonic …",
+        "link": "https://books.google.com/books?hl=en&lr=&id=bm6epw5yHPcC&oi=fnd&pg=PP1&dq=hypersonics&ots=Jw3w-Me4aO&sig=x4GYm3CrqkqH2Gin3Wcub9eqLjE",
+        "year": null
+      },
+      {
+        "title": "Rate effects in hypersonic flows",
+        "snippet": "… Thus, hypersonic flows are energetic and are characterized by high temperatures. For … of sustained hypersonic flight in the atmosphere, which is driving the development of hypersonic …",
+        "link": "https://www.annualreviews.org/content/journals/10.1146/annurev-fluid-010518-040258",
+        "year": null
+      },
+      {
+        "title": "Hypersonic airbreathing propulsion",
+        "snippet": "The next great leap for jet propulsion will be to power-sustained, efficient flight through the atmosphere.\" Hypersonic Airbreathing Propulsion presents the first comprehensive, unified …",
+        "link": "https://books.google.com/books?hl=en&lr=&id=d1sQvT2_kMsC&oi=fnd&pg=IA4&dq=hypersonics&ots=f9Alpk5T6w&sig=59zGVkE0bMQNRqJmXTWWC_VarT0",
+        "year": null
+      },
+      {
+        "title": "Hypersonic and high temperature gas dynamics",
+        "snippet": "… Moreover, flight at this end of the spectrum is called hypersonic flight, and the aerodynamic … the label of hypersonic aerodynamics-one of the primary subjects of this book. Hypersonic …",
+        "link": "https://books.google.com/books?hl=en&lr=&id=G0u7e71QBakC&oi=fnd&pg=PP14&dq=hypersonics&ots=mZJ0IB3XTG&sig=XBKxvGx4RpcQDYDHkdX89zpTRw0",
+        "year": null
+      },
+      {
+        "title": "An overview on dynamics and controls modelling of hypersonic vehicles",
+        "snippet": "… of scramjet-powered hypersonic aircraft and still remain … longitudinal dynamics of generic hypersonic vehicle with an … important to realizing a hypersonic modelling approach that …",
+        "link": "https://ieeexplore.ieee.org/abstract/document/5159864/",
+        "year": null
+      },
+      {
+        "title": "X-43A hypersonic vehicle technology development",
+        "snippet": "NASA recently completed two major programs in hypersonics… engine propelling a hypersonic vehicle and provided unique, … of future operational hypersonic airbreathing vehicles. …",
+        "link": "https://www.sciencedirect.com/science/article/pii/S0094576506001184",
+        "year": null
+      },
+      {
+        "title": "Falcon hypersonic technology overview",
+        "snippet": "… program aimed at advancing capabilities for access to space and hypersonic flight. This paper focuses on key enabling technologies for hypersonic flight and the program’s objective of …",
+        "link": "https://arc.aiaa.org/doi/pdf/10.2514/6.2005-3253",
+        "year": null
+      },
+      {
+        "title": "Capabilities and limitations of existing hypersonic facilities",
+        "snippet": "This paper presents an overview and analysis of the various aspects of hypersonic ground testing. For this, first the simulation requirements according to the different flow regimes of …",
+        "link": "https://www.sciencedirect.com/science/article/pii/S0376042120300191",
+        "year": null
+      },
+      {
+        "title": "Materials design for hypersonics",
+        "snippet": "… used for the design of the X-43 hypersonic vehicle are indicated: b … of hypersonic vehicle development spanning hypersonic … hypersonic vehicles configuration: f the first vehicle to reach …",
+        "link": "https://www.nature.com/articles/s41467-024-46753-3",
+        "year": null
+      },
+      {
+        "title": "A review of design issues specific to hypersonic flight vehicles",
+        "snippet": "This paper provides an overview of the current technical issues and challenges associated with the design of hypersonic vehicles. Two distinct classes of vehicles are reviewed; …",
+        "link": "https://www.sciencedirect.com/science/article/pii/S0376042115300087",
+        "year": null
+      },
+      {
+        "title": "Hypersonics: Past, present, and potential future",
+        "snippet": "… While historically the term hypersonics was used to describe conditions where these energy … hypersonic flight is defined as a vehicle flying faster than Mach 5. Also, the term hypersonics …",
+        "link": "https://www.jhuapl.edu/content/techdigest/pdf/v35-n04/35-04-van%20wie.pdf",
+        "year": null
+      },
+      {
+        "title": "The relentless pursuit of hypersonic flight",
+        "snippet": "… the physics of hypersonic flight. Yet the dream retains its allure. Hypersonic aircraft could … A hypersonic vehicle flying at six times the speed of sound could cruise the US from Los …",
+        "link": "https://pubs.aip.org/physicstoday/article/70/11/30/851088",
+        "year": null
+      }
+    ],
+    "companies": [
+      {
+        "name": "Top 50 Companies in Hypersonic Weapons Market",
+        "description": "Lockheed Martin Corporation · Raytheon Technologies Corporation · Northrop Grumman Corporation · The Boeing Company · General Dynamics Corporation · BAE Systems ...",
+        "link": "https://www.sphericalinsights.com/blogs/top-50-companies-in-hypersonic-weapons-market-statistics-report-till-2035"
+      },
+      {
+        "name": "Top Supersonic And Hypersonic Weapons Companies",
+        "description": "Raytheon Technologies Corporation · Lockheed Martin Corporation · MBDA · The Boeing Company · Northrop Grumman Corporation · Israel Aerospace Industries · ArianeGroup.",
+        "link": "https://www.mordorintelligence.com/industry-reports/supersonic-and-hypersonic-weapons-market/companies"
+      },
+      {
+        "name": "Top Hypersonic Weapons Companies",
+        "description": "Lockheed Martin Corporation (US); Northrop Grumman Corporation (US); Raytheon Technologies Corporation (US); BAE Systems (UK); Thales Group ( ...",
+        "link": "https://www.marketsandmarkets.com/ResearchInsight/hypersonic-weapons-market.asp"
+      },
+      {
+        "name": "Castelion: Home",
+        "description": "Castelion designs, tests, and manufactures next-generation military systems rapidly and at massive scale to deter future wars.",
+        "link": "https://www.castelion.com/"
+      },
+      {
+        "name": "Pentagon awards three contracts to bolster US hypersonics ...",
+        "description": "The Department of Defense has awarded three companies — Northrop Grumman, General Electric and Carbon-Carbon Advanced Technologies (C-CAT) — ...",
+        "link": "https://defensescoop.com/2023/04/28/hypersonics-supply-chain/"
+      },
+      {
+        "name": "Current US hypersonic weapons projects. (General) | Page 4",
+        "description": "Raytheon and United Technologies executives pitched their proposed combined operations as creating a defense industry research and development powerhouse.",
+        "link": "https://www.secretprojects.co.uk/threads/current-us-hypersonic-weapons-projects-general.30673/page-4"
+      },
+      {
+        "name": "Hypersonics | Raytheon",
+        "description": "Raytheon Missiles & Defense is working with the government and industry to develop layered solutions aimed at detecting, tracking and ultimately defeating ...",
+        "link": "https://www.rtx.com/raytheon/what-we-do/hypersonics"
+      },
+      {
+        "name": "Hypersonic Weapons Market Companies",
+        "description": "Lockheed Martin Corporation · Raytheon Technologies Corporation · Northrop Grumann Corporation · L3Harris Technologies Inc. · Leidos · Thales Group · General Dynamics ...",
+        "link": "https://www.skyquestt.com/report/hypersonic-weapons-market/companies"
+      },
+      {
+        "name": "Top Hypersonic Missiles Companies & How to Compare ...",
+        "description": "Boeing: Leading US defense contractor with advanced hypersonic weapon prototypes. Lockheed Martin: Focuses on high-speed missile systems with ...",
+        "link": "https://www.linkedin.com/pulse/top-hypersonic-missiles-companies-how-compare-them-yatdf/"
+      }
+    ],
+    "market_reports": [
+      {
+        "title": "Hypersonic Weapons Market Size, Share & 2030 Trends ...",
+        "snippet": "The Hypersonic Weapons Market is expected to reach USD 8.24 billion in 2025 and grow at a CAGR of 12.40% to reach USD 14.78 billion by 2030.",
+        "market_size": " 8.24 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Hypersonic Weapons, Missiles, and Glide Vehicles Market ...",
+        "snippet": "The Global Hypersonic Weapons Market Size was valued at USD 6.8 billion in 2023 and is estimated to reach USD 14.5 billion by 2030, growing at a CAGR of 11.4% ...",
+        "market_size": " 6.8 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "$59 Billion Defense Aircraft Materials Market Outlook, 2030 ...",
+        "snippet": "Looking forward, the market is expected to reach $59.01 billion in 2030, at a CAGR of 6%. Key drivers include the need for next-generation ...",
+        "market_size": "$59.01 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Hypersonic Technology Market Size Expected to Reach ...",
+        "snippet": "Global hypersonic technology market was valued at $4.98 billion in 2020, and is projected to reach $12.18 billion by 2030, registering a ...",
+        "market_size": "$4.98 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Hypersonic Weapon Market Report: Trends, Forecast and ...",
+        "snippet": "The global hypersonic weapon market is expected to reach an estimated $12.3 billion by 2030 with a CAGR of 9.5% from 2024 to 2030.",
+        "market_size": "$12.3 billion",
+        "cagr": null,
+        "forecast_start": 2024.0,
+        "forecast_end": 2030.0
+      },
+      {
+        "title": "Hypersonic Technology Market to Reach $12.18 Billion ...",
+        "snippet": "Hypersonic Technology Market to Reach $12.18 Billion, Globally, by 2030 at 9.7% CAGR: Allied Market Research. Surge in number of territorial ...",
+        "market_size": "$12.18 Billion",
+        "cagr": "9.7%",
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Hypersonic Missiles Market Size, Share & Forecast to 2030",
+        "snippet": "The Hypersonic Missiles Market, valued at USD 159.02B in 2026, is projected to reach USD 217.66B by 2030, growing at a 8.2% CAGR.",
+        "market_size": " 159.02B",
+        "cagr": "8.2%",
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Trends and Analysis of the Hypersonic Technology Market ...",
+        "snippet": "Looking ahead, the market is expected to continue its rapid ascent, reaching $14.61 billion by 2030, with a CAGR of 11.5%. The forecasted growth ...",
+        "market_size": "$14.61 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Hypersonic Technology Market Size, Share, Trends by 2030",
+        "snippet": "The global hypersonic technology market was valued at $4.98 billion in 2020, and is projected to reach $12.18 billion by 2030, registering a CAGR of 9.7%.",
+        "market_size": "$4.98 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Hypersonic Weapons Market Size",
+        "snippet": "The Hypersonic Weapons Market is expected to reach a valuation of USD 6.8 billion in 2023 and is anticipated to expand to USD 14.5 billion by 2030, with a ...",
+        "market_size": " 6.8 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      }
+    ]
+  },
+  "alerts": [
+    {
+      "type": "patent",
+      "message": "hypersonics patent activity rising",
+      "time": "recent"
+    }
+  ]
+}

@@ -1,0 +1,463 @@
+{
+  "technology": "dl",
+  "summary": {
+    "trl": 2,
+    "growth_stage": "Plateau of Productivity",
+    "market_size_billion_usd": null,
+    "signals": 20
+  },
+  "trend_curve": [
+    2,
+    3,
+    1,
+    3,
+    7,
+    4
+  ],
+  "country_investment": {
+    "type": "relative_investment_index",
+    "values": {
+      "United States": 100.0,
+      "USA": 50.0,
+      "UK": 50.0
+    }
+  },
+  "patent_timeline": [
+    {
+      "year": 2020,
+      "count": 2
+    },
+    {
+      "year": 2021,
+      "count": 3
+    },
+    {
+      "year": 2022,
+      "count": 1
+    },
+    {
+      "year": 2023,
+      "count": 3
+    },
+    {
+      "year": 2024,
+      "count": 7
+    },
+    {
+      "year": 2025,
+      "count": 4
+    }
+  ],
+  "entities": {
+    "patents": [
+      {
+        "title": "Scheduling timing design for a TDD system",
+        "snippet": "wherein the first set of combinations includes combinations for which the first UL-DL subframe configuration has an uplink round trip time (RTT) for a HARQ process of 10 milliseconds, and wherein the second set of combinations includes combinations for which the first UL-DL subframe configuration …",
+        "link": null,
+        "year": 2020,
+        "trl": 2
+      },
+      {
+        "title": "Uplink control data transmission",
+        "snippet": "In both LTE and LTE-A, there is a need to transmit certain associated layer 1/layer 2 (L1/2) uplink control information (UCI) to support the uplink (UL) transmission, downlink (DL) transmission, scheduling, multiple-input multiple-output (MIMO), etc. In LTE, if a WTRU has not been assigned an …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "… architectures, apparatuses and systems for downlink small data transmission (dl …",
+        "snippet": "after sending the CSI report, receiving a DL SDT payload, associated with the DL SDT paging information, using the one or more DL SDT PDSCH resource sets. 12 . The method of any of claims 1-11 , wherein the DL SDT paging information is received after receiving a connection release or suspend message.",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Rach conveyance of DL synchronization beam information for various DL-UL …",
+        "snippet": "Methods, systems, and devices for wireless communication are described. A user equipment (UE) may receive a downlink (DL) signal from a base station on one or more DL beam(s). The UE may identify a selected DL beam of the one or more DL beam(s) for communications from the base station to the UE.",
+        "link": null,
+        "year": 2021,
+        "trl": 2
+      },
+      {
+        "title": "Dynamic configuration of uplink (UL) and downlink (DL) frame resources for a …",
+        "snippet": "1. A method for a user equipment (UE) to perform adaptive time division duplexing (TDD) hybrid automatic repeat request (HARQ)-ACKnowledgement (ACK) reporting, the method comprising: receiving an adaptive uplink-downlink (UL-DL) configuration from a network node; receiving a downlink (DL) HARQ …",
+        "link": null,
+        "year": 2021,
+        "trl": 2
+      },
+      {
+        "title": "Downlink (DL) Positioning Reference Signal (PRS) Bandwidth Part (BWP) …",
+        "snippet": "Determine synchronization accuracy information, including a measure of synchronization error associated with the timing error, level of timing misalignment, synchronization error, or degree of timing uncertainty between the device and another device that causes the BWP for the DL PRS to be …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Method and system for DL PRS transmission for accurate rat-dependent NR …",
+        "snippet": "A method and apparatus of a device that performs a new radio (NR) downlink (DL) positioning reference signal (PRS) resource scheduling is described. In an exemplary embodiment, the device configures at least one of a NR DL PRS Resource Pool, a NR DL PRS Resource Set, a NR DL PRS Resource, and a …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "… state information (CSI) measurement and report outside active downlink (DL) …",
+        "snippet": "the transceiver is further configured to: skip receptions of physical downlink control channels (PDCCHs) or of physical downlink shared channels (PDSCHs) in the first set of DL BWPs during the time duration, and receive PDCCHs or PDSCHs after the time duration, wherein an active DL BWP for the …",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "… (AI) units, large language model (LLM) units, and deep learning (DL) units",
+        "snippet": "wherein at least one of the Offline Protection Unit and the Online Protection Unit, utilizes a Secondary Engine that is selected from the group consisting of: a secondary ML engine, a secondary DL engine, a secondary AI engine, to perform a secondary classification of an input query that is …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "… control information (dci) content processing considering active downlink (dl) …",
+        "snippet": "13 . A method of a User Equipment (UE), comprising: receiving configuration for configuring the UE with a first Downlink (DL) Bandwidth Part (BWP) and a second DL BWP; receiving and/or monitoring a Downlink Control Information (DCI) in a scheduling Control Resource Set (CORESET) in the first DL BWP, …",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "Methods, apparatus, and systems for downlink (dl) power adjustment and ue …",
+        "snippet": "116 / 117 using wideband CDMA (WCDMA). WCDMA may include communication protocols such as High-Speed Packet Access (HSPA) and/or Evolved HSPA (HSPA+). HSPA may include High-Speed Downlink (DL) Packet Access (HSDPA) and/or High-Speed UL Packet Access (HSUPA). In an embodiment, the base station 114 a and …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "… non-transitory computer readable storage medium for maximum mimo layer aware dl …",
+        "snippet": "A UE as claimed in claim 14, wherein the PRS comprises PRS resources or aggregated PRS across multiple active bandwidth portions, and the at least one processor is configured to receive the PRS in the active bandwidth portion using the number of antennas based on the maximum number of DL MIMO …",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "Method and apparatus for determining TDD UL-DL configuration applicable for …",
+        "snippet": "Methods and apparatuses are provided in which a user equipment (UE) receives a system information block (SIB) from a network. The UE identifies at least one downlink (DL) period based on a first uplink (UL)/DL configuration included in the SIB. The UE monitors a physical downlink control channel ( …",
+        "link": null,
+        "year": 2023,
+        "trl": 2
+      },
+      {
+        "title": "Device and method for cqi feedback to enable joint dl-ul scheduling in full …",
+        "snippet": "… on the feedback such that the UE is neither an aggressor nor is subject to interference from aggressors. The schedule may also be based on wideband CQI feedback based on a ratio of an average overall DL interference plus noise over the average inter-cell interference plus noise and/or subband. CQI …",
+        "link": null,
+        "year": 2022,
+        "trl": 2
+      },
+      {
+        "title": "Carrier aggregation with dynamic TDD DL/UL subframe configuration",
+        "snippet": "the determined HARQ timing is based on a dynamically configured downlink/uplink (DL/UL) subframe configuration of the at least one CC that is enabled for eIMTA. 20. The apparatus of claim 18 , wherein the determined HARQ timing based on a semi-static downlink/uplink (DL/UL) subframe configuration of …",
+        "link": null,
+        "year": 2020,
+        "trl": 2
+      },
+      {
+        "title": "Low-layer (DCI or MAC CE) DL puncturing indicator for positioning reference …",
+        "snippet": "29. A method for supporting positioning of a user equipment (UE) performed by the UE, comprising: receiving assistance data for downlink positioning reference signals (DL-PRSs) from a plurality of transmission reception points (TRPs); receiving a plurality of DL-PRSs from the plurality of TRPs; …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Downlink (DL) transmission timing of integrated access and backhaul (IAB) node",
+        "snippet": "106 defined as t 2 may be determined by the arrival time of DL rx signal of IAB-N 2 106 which comes from IAB-N 1 104 , as such the time advance value with respect to t 2 signaled from IAB-N 1 104 can be calculated as follows T A.UL 2=2 T (1,2) (5) To achieve synchronous DL transmission, it follows from Eq.",
+        "link": null,
+        "year": 2025,
+        "trl": 2
+      },
+      {
+        "title": "Inter-GNB exchange for intended UL/DL directions",
+        "snippet": "generating, by an access node, a message including the intended UL/DL direction information, wherein the intended UL/DL direction information includes cell ID information, UL/DL pattern information, synchronization signal block (SSB) configuration information and random access channel (RACH) …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Systems and methods for supporting multiple allocations in ul/dl grant for a 5g …",
+        "snippet": "RELATED APPLICATIONS This application is related to and claims priority from U.S. Provisional Patent Application No. 62/501,356, entitled \"SYSTEMS AND METHODS FOR SUPPORTING MULTIPLE NUMEROLOGIES IN A SINGLE UL/DL GRANT FOR A 5G NR UE,\" filed on May 4, 2017 . TECHNICAL FIELD The present disclosure …",
+        "link": null,
+        "year": 2024,
+        "trl": 2
+      },
+      {
+        "title": "Systems and methods for supporting multiple allocations in UL/DL grant for a 5G …",
+        "snippet": "illustrates various components that may be utilized in a gNB; FIG. 22 is a block diagram illustrating one implementation of a UE in which systems and methods for supporting multiple numerologies in a single UL/DL grant may be implemented; FIG. 23 is a block diagram illustrating one implementation …",
+        "link": null,
+        "year": 2021,
+        "trl": 2
+      }
+    ],
+    "papers": [
+      {
+        "title": "GlobalSoilMap: Toward a fine-resolution global grid of soil properties",
+        "snippet": "Soil scientists are being challenged to provide assessments of soil condition from local through to global scales. A particular issue is the need for estimates of the stores and fluxes in …",
+        "link": "https://www.sciencedirect.com/science/article/pii/B9780128001370000030",
+        "year": null
+      },
+      {
+        "title": "The Total Synthesis of dl-Aspidospermine and of dl-Quebrachamine",
+        "snippet": "(8) The Fischer indole synthesis toward the junction between two rings was first reported by V. Georgian, Chem. Ind.(London), 1124 (1957).(9) The stereochemistry ofthe various bicyclic …",
+        "link": "https://pubs.acs.org/doi/pdf/10.1021/ja00901a061",
+        "year": 1957.0
+      },
+      {
+        "title": "The DL poly 2 user manual",
+        "snippet": "DL POLY 2 is a parallel molecular dynamics simulation package developed at Daresbury Laboratory by W. Smith and TR Forester under the auspices of the Engineering and Physical …",
+        "link": "https://www.smcm.iqfr.csic.es/docs/USRMAN.pdf",
+        "year": null
+      },
+      {
+        "title": "Applications of ML/DL in the management of smart cities and societies based on new trends in information technologies: A systematic literature review",
+        "snippet": "The goal of managing smart cities and societies is to maximize the efficient use of finite resources while enhancing the quality of life. To establish a sustainable urban existence, smart …",
+        "link": "https://www.sciencedirect.com/science/article/pii/S2210670722004061",
+        "year": null
+      },
+      {
+        "title": "DL-Learner: learning concepts in description logics",
+        "snippet": "In this paper, we introduce DL-Learner, a framework for learning in description logics and OWL. OWL is the official W3C standard ontology language for the Semantic Web. Concepts in …",
+        "link": "https://www.jmlr.org/papers/volume10/lehmann09a/lehmann09a.pdf",
+        "year": null
+      },
+      {
+        "title": "Pellet: A practical owl-dl reasoner",
+        "snippet": "… of a direct tableau algorithm for integrating DL-safe rules with S H O I Q (D). Preliminary empirical results [8] have been encouraging and we think that the DL-safe implementation is …",
+        "link": "https://www.sciencedirect.com/science/article/pii/S1570826807000169",
+        "year": null
+      },
+      {
+        "title": "A North American system of nomenclature for Puccinia recondita f. sp. tritici",
+        "snippet": "A nomenclature system for designating virulence combinations of cultures of Puccinia recondita f. sp. tritici in North America is proposed by the North American Wheat Leaf Rust …",
+        "link": "https://www.apsnet.org/publications/phytopathology/backissues/Documents/1989Articles/Phyto79n05_525.pdf",
+        "year": null
+      },
+      {
+        "title": "Outcome series series editors: dl scott and a. Silman: quality of life measures",
+        "snippet": "Quality of life measures have become increasingly popular as outcome measures despite the lack of consensus on a definition of quality of life. This review describes the most …",
+        "link": "https://academic.oup.com/rheumatology/article-abstract/35/3/275/1782475",
+        "year": null
+      },
+      {
+        "title": "DL systems comparison",
+        "snippet": "The tradeoff between expressiveness and tractability in Description Logics (DLs) has long been recognised [9]. For DL system designers and implementors there are several possible …",
+        "link": "http://www.cs.ox.ac.uk/ian.horrocks/Publications/download/1998/HoPa98.pdf",
+        "year": null
+      },
+      {
+        "title": "The DL-Lite family and relations",
+        "snippet": "… systematic investigation of inference in extensions of the original DL-Lite logics along five axes: by (… Our approach is based on embedding DL-Lite logics in suitable fragments of the one-…",
+        "link": "https://www.jair.org/index.php/jair/article/view/10623",
+        "year": null
+      },
+      {
+        "title": "Ontologies and Databases: The DL-Lite Approach",
+        "snippet": "… DL constructs, and show that for most such extensions, the nice computational properties of the DL… -QUONTO server, thus providing a standard DL reasoner for \\(DL-Lite_{\\mathcal{A},id}\\…",
+        "link": "https://link.springer.com/chapter/10.1007/978-3-642-03754-2_7",
+        "year": null
+      },
+      {
+        "title": "Evolution of DL − Lite Knowledge Bases",
+        "snippet": "… update and revision of DL KBs that adopt the … DL-Lite evolution, either due to high complexity of computation, or because the result of such an action of evolution is not expressible in DL-…",
+        "link": "https://link.springer.com/chapter/10.1007/978-3-642-17746-0_8",
+        "year": null
+      },
+      {
+        "title": "PET and the Pendulum: e LL 1-dl ltl ItIV, 1 C 1 U ll Faddism in Education and",
+        "snippet": "DUCATIONAL innovation is famous for its cycle of early enthusiasm, widespread dissemination, subsequent disappointment, and eventual decline-the classic swing of the pendulum. Of …",
+        "link": "http://spedfoundations.pbworks.com/w/file/fetch/97596248/slavin.pdf",
+        "year": null
+      },
+      {
+        "title": "SPARQL-DL: SPARQL Query for OWL-DL.",
+        "snippet": "… SPARQL-DL, a substantial subset of SPARQL for which we provide a clear OWL-DL based … syntax for SPARQL-DL queries, define the semantics based on OWL-DL model theory, and …",
+        "link": "https://ceur-ws.org/Vol-258/paper14.pdf?ref=https://githubhelp.com",
+        "year": null
+      },
+      {
+        "title": "DL-Droid: Deep learning based android malware detection using real devices",
+        "snippet": "… In this paper, we propose DL-Droid, a deep learning system … Our study reveals that DL-Droid can achieve up to 97.8% … input generation for dynamic analysis as DL-Droid with the state-…",
+        "link": "https://www.sciencedirect.com/science/article/pii/S0167404819300161",
+        "year": null
+      },
+      {
+        "title": "Query answering for OWL-DL with rules",
+        "snippet": "… are required to be DL-safe: each variable in the rule is required to occur in a non-DL-atom in the … logic SHIQ extended with DL-safe rules, based on a reduction to disjunctive programs. …",
+        "link": "https://www.sciencedirect.com/science/article/pii/S157082680500003X",
+        "year": null
+      },
+      {
+        "title": "Il modello sud-europeo dl welfare state",
+        "snippet": "SummaryThe article tries to identify some common traits of the welfare states of Italy, Spain, Portugal and Greece, with special attention to institutional and political aspects.The main …",
+        "link": "https://www.cambridge.org/core/journals/italian-political-science-review-rivista-italiana-di-scienza-politica/article/il-modello-sudeuropeo-dl-welfare-state/4B34CD6DD555CAC7290982DF054C8289",
+        "year": null
+      },
+      {
+        "title": "The instance store: DL reasoning with large numbers of individuals",
+        "snippet": "… only publicly available DL system that supports full ABox reasoning for an expressive DL) and of … Related Work As already mentioned, the idea of supporting DL style reasoning using …",
+        "link": "https://www.academia.edu/download/101942328/DL2004.pdf#page=39",
+        "year": null
+      },
+      {
+        "title": "A conceptual model of DL diesel combustion based on laser-sheet imaging",
+        "snippet": "A phenomenological description, or \"conceptual model,\" of how direct-injection (DI) diesel combustion occurs has been derived from laser-sheet imaging and other recent optical data. …",
+        "link": "https://www.jstor.org/stable/44730758",
+        "year": null
+      },
+      {
+        "title": "Acceleration of the G1/S Phase Transition by Expression of Cyclins Dl and E with an Inducible System",
+        "snippet": "… Dl in asynchronous cycling cells, cyclin Dl conferred a greater effect upon stimulation from quiescence, suggesting a specific role for cyclin Dl … These results suggest that cyclins Dl and E …",
+        "link": "https://www.tandfonline.com/doi/abs/10.1128/mcb.14.3.1669-1679.1994",
+        "year": null
+      }
+    ],
+    "companies": [
+      {
+        "name": "Good companies for Company drivers? : r/Truckers",
+        "description": "FedEx , Walmart, UPS , Heartland Express , Estes, Old Dominion, Proctor & Gamble, Averitt, Werner's Target Account, and JB Hunt Intermodal. I ...",
+        "link": "https://www.reddit.com/r/Truckers/comments/1eejbxa/good_companies_for_company_drivers/"
+      },
+      {
+        "name": "Best companies for ML/DL roles | Tech Industry",
+        "description": "Best companies for ML/DL roles. Based on the learning/skill enhancement, impact, strength of the tech stack, challenge of the job.",
+        "link": "https://www.teamblind.com/post/best-companies-for-mldl-roles-vqtmuxio"
+      },
+      {
+        "name": "Top Trucking Companies in Chicago, IL",
+        "description": "Trucking Companies · AAA Freight · Artur Express Inc. · Baggett Transportation · Bison Transport USA · Climate Express · Crane Freight & Cartage · Crete Carrier - ...",
+        "link": "https://cdllife.com/trucking/companies?city=Chicago%2C%20IL"
+      },
+      {
+        "name": "2026 Top LTL & Truckload Freight Companies",
+        "description": "Top 20 Truckload Freight Companies. Knight-Swift; Schneider; Landstar; JB Hunt; Prime; Werner Enterprises; CRST; US Xpress; Crete; CR England ...",
+        "link": "https://www.inteklogistics.com/blog/top-ltl-truckload-freight-companies"
+      },
+      {
+        "name": "8 Best Trucking Companies for New Drivers",
+        "description": "Have you decided that trucking is the best industry for you? Congratulations! It's a great industry to work in!",
+        "link": "https://www.youtube.com/watch?v=QvUBxM61olI"
+      },
+      {
+        "name": "Fortune 100 Best Companies to Work For® in 2025",
+        "description": "Fortune 100 Best Companies to Work For® 2025 ; 1, Hilton, McLean, VA, US ; 2, Synchrony, Stamford, CT, US ; 3, Cisco, San Jose, CA, US ; 4, American Express, New ...",
+        "link": "https://www.greatplacetowork.com/best-companies-to-work-for"
+      },
+      {
+        "name": "Top Tech Companies in Chicago, IL 2026",
+        "description": "See the complete list of Chicago, IL technology companies, many of which are hiring now. See company benefits, info, interviews and more at Built In.",
+        "link": "https://www.builtinchicago.org/companies"
+      },
+      {
+        "name": "Best Fleets to Drive For®",
+        "description": "Best Fleets to Drive For is an annual survey and contest that identifies the for-hire carriers providing the best workplace experiences for their drivers.",
+        "link": "https://www.bestfleetstodrivefor.com/"
+      },
+      {
+        "name": "37 Top Driving Companies in United States · January 2026",
+        "description": "37 top Driving companies and startups in United States in January 2026 · Aurora.tech · Nexar Inc. · DrayNow, Inc. · Maven Machines · Derq · Drop Stop · Driver Partners ...",
+        "link": "https://www.f6s.com/companies/driving/united-states/co"
+      },
+      {
+        "name": "Driver Defense Team Makes the Inc. 5000 List for 3rd Year",
+        "description": "We're proud to announce that Driver Defense Team has earned a spot on Inc. Magazine's list of America's fastest-growing private companies ...",
+        "link": "https://www.driverdefenseteam.com/blog/three-years-running-driver-defense-team-makes-the-inc-5000-list-of-fastest-growing-businesses/"
+      }
+    ],
+    "market_reports": [
+      {
+        "title": "US Deep Learning Market Size & Outlook, 2025-2030",
+        "snippet": "The U.S. deep learning market generated a revenue of USD 19,423.2 million in 2024 and is expected to reach USD 63,927.4 million by 2030. The U.S. market is ...",
+        "market_size": " 19,423.2 million",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Deep Learning Market Size to Surpass USD 188.58 billion ...",
+        "snippet": "Deep Learning Market Size to Surpass USD 188.58 billion by 2030, exhibiting a CAGR of 40.3% As per the report by Fortune Business Insights, the ...",
+        "market_size": " 188.58 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Deep Learning Chip Market to Reach USD 81.77 Billion ...",
+        "snippet": "The deep learning chip market was valued at $4,465.2 million in 2020, and is to reach $81,776.8 million by 2030, registering a CAGR of 35.2% ...",
+        "market_size": "$4,465.2 million",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Deep Learning Market Size And Share | Industry Report 2030",
+        "snippet": "The global deep learning market size was estimated at USD 96.8 billion in 2024 and is projected to reach USD 526.7 billion by 2030, growing at a CAGR of 31.8% ...",
+        "market_size": " 96.8 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Deep Learning Market Size & Share Analysis",
+        "snippet": "The Deep Learning Market worth USD 64.92 billion in 2026 is growing at a CAGR of 35.48% to reach USD 296.23 billion by 2031.",
+        "market_size": " 64.92 billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Digital Twin Market Size, Analysis & Forecast Report 2030",
+        "snippet": "The Global Digital Twin Market size is expected to reach $195.4 billion by 2030, rising at a market growth of 41.3% CAGR during the forecast period.",
+        "market_size": "$195.4 billion",
+        "cagr": "41.3%",
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Deep Learning Chip Market Size, Share and Forecast - 2030",
+        "snippet": "The deep learning chip market size was valued at $4465.2 million in 2020, and is projected to reach $81776.8 million by 2030, growing at a CAGR of 35.2% ...",
+        "market_size": "$4465.2 million",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Deep Learning Market Size Will Achieve USD 415 Billion by",
+        "snippet": "Deep Learning Market Size 2021, USD 10.3 Billion ; Deep Learning Market Forecast 2030, USD 415 Billion ; Deep Learning Market CAGR, 51.1% During ...",
+        "market_size": " 10.3 Billion",
+        "cagr": null,
+        "forecast_start": null,
+        "forecast_end": null
+      },
+      {
+        "title": "Machine Learning Market: Global Industry Analysis and ...",
+        "snippet": "Market Size in 2023: US $ 42.35 Bn. Forecast Period 2024 to 2030 CAGR: 46%, Market Size in 2030: US $ 598.92 Bn.",
+        "market_size": "$ 42.35 Bn",
+        "cagr": null,
+        "forecast_start": 2024.0,
+        "forecast_end": 2030.0
+      },
+      {
+        "title": "Deep Learning in Machine Vision market size will grow at a ...",
+        "snippet": "Deep Learning in Machine Vision market size will grow at a CAGR of 55.60% from 2023–2030 According to Cognitive Market Research, ...",
+        "market_size": null,
+        "cagr": null,
+        "forecast_start": 2023.0,
+        "forecast_end": 2030.0
+      }
+    ]
+  },
+  "alerts": [
+    {
+      "type": "market",
+      "message": "10 recent funding or investment signals detected",
+      "time": "recent"
+    },
+    {
+      "type": "tech",
+      "message": "Government or defense-sector involvement observed",
+      "time": "recent"
+    }
+  ]
+}
