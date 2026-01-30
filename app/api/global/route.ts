@@ -1,29 +1,48 @@
 import { NextResponse } from "next/server"
-import fs from "fs/promises"
-import path from "path"
+
+import globalPatents from "@/data/global/global_patents.json"
+import globalTrends from "@/data/global/global_trends.json"
 
 export const runtime = "nodejs"
 
 export async function GET() {
   try {
-    const filePath = path.join(
-      process.cwd(),
-      "data",
-      "global",
-      "global_tech_pulse.json"
-    )
+    // ---------- Basic existence checks ----------
+    if (!globalPatents || !globalTrends) {
+      throw new Error("One or more JSON imports failed")
+    }
 
-    const json = JSON.parse(await fs.readFile(filePath, "utf-8"))
+    if (
+      !globalPatents.generated_at ||
+      !Array.isArray(globalPatents.signals)
+    ) {
+      throw new Error("Malformed global patents JSON")
+    }
+
+    if (
+      !globalTrends.generated_at ||
+      !Array.isArray(globalTrends.signals)
+    ) {
+      throw new Error("Malformed global trends JSON")
+    }
 
     return NextResponse.json({
-      generated_at: json.generated_at,
-      summary: json.summary,
-      trends: json.entities.news,   // 👈 important
-      patents: json.entities.patents
+      generated_at: {
+        patents: globalPatents.generated_at,
+        trends: globalTrends.generated_at,
+      },
+      counts: {
+        patents: globalPatents.counts ?? globalPatents.signals.length,
+        trends: globalTrends.counts ?? globalTrends.signals.length,
+      },
+      patents: globalPatents.signals,
+      trends: globalTrends.signals,
     })
   } catch (err) {
+    console.error("Global signals route error:", err)
+
     return NextResponse.json(
-      { error: "Global trends not available" },
+      { error: "Global signals not available" },
       { status: 404 }
     )
   }

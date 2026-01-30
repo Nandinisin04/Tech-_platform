@@ -6,6 +6,9 @@ import fs from "fs/promises"
 import { exec } from "child_process"
 import util from "util"
 
+import { connectDB } from "@/lib/mongodb"
+import { Technology } from "@/models/technology"
+
 const execAsync = util.promisify(exec)
 
 async function waitForFile(p: string, retries = 20) {
@@ -14,7 +17,7 @@ async function waitForFile(p: string, retries = 20) {
       await fs.access(p)
       return true
     } catch {
-      await new Promise(r => setTimeout(r, 500))
+      await new Promise((r) => setTimeout(r, 500))
     }
   }
   return false
@@ -24,13 +27,10 @@ export async function POST(
   req: Request,
   ctx: { params: Promise<{ name: string }> }
 ) {
-  const { name } = await ctx.params   // ✅ CRITICAL FIX
+  const { name } = await ctx.params
 
   if (!name) {
-    return NextResponse.json(
-      { error: "Missing technology name" },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: "Missing technology name" }, { status: 400 })
   }
 
   console.log("🔁 RUN ML FOR =", name)
@@ -59,24 +59,36 @@ export async function POST(
   })
 
   if (!(await waitForFile(dashboardPath))) {
-    return NextResponse.json(
-      { error: "ML ran but JSON not generated" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "ML ran but JSON not generated" }, { status: 500 })
   }
 
-  const dashboard = JSON.parse(
-    await fs.readFile(dashboardPath, "utf-8")
-  )
+  const dashboard = JSON.parse(await fs.readFile(dashboardPath, "utf-8"))
 
   const kg = (await waitForFile(kgPath, 5))
     ? JSON.parse(await fs.readFile(kgPath, "utf-8"))
     : null
+
+  // ✅ SAVE INTO MONGODB
+  await connectDB()
+
+  await Technology.findOneAndUpdate(
+    { name: tech },
+    {
+      name: tech,
+      latest_json: {
+        dashboard,
+        knowledge_graph: kg,
+      },
+      updated_at: new Date(),
+    },
+    { upsert: true, new: true }
+  )
 
   return NextResponse.json({
     status: "success",
     technology: tech,
     data: dashboard,
     knowledge_graph: kg,
+    saved_to_db: true,
   })
 }

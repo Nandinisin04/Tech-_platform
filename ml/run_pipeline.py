@@ -8,13 +8,16 @@ import pandas as pd
 import numpy as np
 from serpapi import GoogleSearch
 import networkx as nx
+import requests
+
 
 
 # ================== CONFIG ==================
 
-SERPAPI_KEY = "86f4411ba4a3dfb0a4cee3f23e98a79e169e346baa51121199d3d698c30b4c11"
+SERPAPI_KEY = os.getenv("SERPAPI_API_KEY")
 
-
+if not SERPAPI_KEY:
+    raise RuntimeError("SERPAPI_API_KEY missing")
 # ================== SERPAPI ==================
 
 def serpapi_search(params):
@@ -199,13 +202,109 @@ def extract_country_from_domain(link):
     if not isinstance(link, str):
         return None
     link = link.lower()
-    if ".edu" in link: return "USA"
-    if ".ac.uk" in link or ".uk" in link: return "UK"
-    if ".cn" in link: return "China"
-    if ".in" in link: return "India"
-    if ".de" in link: return "Germany"
-    if ".jp" in link: return "Japan"
-    if ".fr" in link: return "France"
+    if any(d in link for d in [
+        ".edu", ".gov", ".mil",
+        ".us",
+    ]):
+        return "USA"
+
+    # ---------- UK ----------
+    if any(d in link for d in [
+        ".ac.uk", ".uk",
+    ]):
+        return "UK"
+
+    # ---------- China ----------
+    if any(d in link for d in [
+        ".cn", ".edu.cn", ".ac.cn",
+    ]):
+        return "China"
+
+    # ---------- India ----------
+    if any(d in link for d in [
+        ".in", ".ac.in", ".edu.in",
+        ".gov.in", ".nic.in",
+    ]):
+        return "India"
+
+    # ---------- Germany ----------
+    if any(d in link for d in [
+        ".de", ".uni.de",
+    ]):
+        return "Germany"
+
+    # ---------- France ----------
+    if any(d in link for d in [
+        ".fr", ".gouv.fr",
+    ]):
+        return "France"
+
+    # ---------- Japan ----------
+    if any(d in link for d in [
+        ".jp", ".ac.jp", ".go.jp",
+    ]):
+        return "Japan"
+
+    # ---------- South Korea ----------
+    if any(d in link for d in [
+        ".kr", ".ac.kr", ".go.kr",
+    ]):
+        return "South Korea"
+
+    # ---------- Canada ----------
+    if any(d in link for d in [
+        ".ca", ".gc.ca",
+    ]):
+        return "Canada"
+
+    # ---------- Australia ----------
+    if any(d in link for d in [
+        ".au", ".edu.au", ".gov.au",
+    ]):
+        return "Australia"
+
+    # ---------- Russia ----------
+    if any(d in link for d in [
+        ".ru",
+    ]):
+        return "Russia"
+
+    # ---------- Singapore ----------
+    if any(d in link for d in [
+        ".sg", ".edu.sg", ".gov.sg",
+    ]):
+        return "Singapore"
+
+    # ---------- Israel ----------
+    if any(d in link for d in [
+        ".il", ".ac.il", ".gov.il",
+    ]):
+        return "Israel"
+
+    # ---------- Netherlands ----------
+    if any(d in link for d in [
+        ".nl",
+    ]):
+        return "Netherlands"
+
+    # ---------- Switzerland ----------
+    if any(d in link for d in [
+        ".ch",
+    ]):
+        return "Switzerland"
+
+    # ---------- Sweden ----------
+    if any(d in link for d in [
+        ".se",
+    ]):
+        return "Sweden"
+
+    # ---------- Spain ----------
+    if any(d in link for d in [
+        ".es",
+    ]):
+        return "Spain"
+
     return None
 
 def add_patent_year_country(df):
@@ -255,30 +354,57 @@ def add_year_from_snippet(df):
 
 # ---- TRL ----
 TRL_MAP = {
-    9: ["mission proven", "flight test", "operational system"],
-    8: ["qualified", "completed system"],
-    7: ["system prototype", "operational environment"],
-    6: ["prototype", "demonstrated"],
-    5: ["validated", "tested"],
-    4: ["lab testing", "laboratory validation"],
-    3: ["proof of concept"],
-    2: ["concept", "modeling", "simulation"],
-    1: ["theoretical", "hypothesis"],
+    9: ["operational deployment", "in service", "live deployment"],
+    8: ["commercial product", "commercial deployment", "industrial adoption"],
+    7: ["field tested", "pilot study", "real-world evaluation"],
+
+    6: ["validated prototype", "hardware prototype", "system validation"],
+    5: ["experimental evaluation", "benchmark results", "performance evaluation"],
+    4: ["simulation results", "experimental setup", "laboratory evaluation"],
+
+    3: ["proof of concept", "poc", "algorithm design"],
+    2: ["theoretical analysis", "conceptual framework", "proposed approach"],
+    1: ["hypothesis", "idea"],
 }
+
+
 
 def estimate_trl(text):
     t = str(text).lower()
+    scores = {}
+
     for trl, keywords in TRL_MAP.items():
+        count = 0
         for kw in keywords:
             if kw in t:
-                return trl
-    return 2  # default early-stage
+                count += 1
+        if count > 0:
+            scores[trl] = count
+
+    if not scores:
+        return 2
+
+    weighted = {trl: trl * count for trl, count in scores.items()}
+    return max(weighted, key=weighted.get)
+
+
+
+
 
 def add_trl(df):
     if df.empty:
         return df
+
     df = df.copy()
-    df["trl"] = df["snippet"].apply(estimate_trl)
+
+    df["trl"] = df.apply(
+        lambda r: estimate_trl(
+            f"{r.get('title', '')} {r.get('snippet', '')}"
+        ),
+        axis=1
+    )
+    df["trl"] = df["trl"].fillna(2)
+
     return df
 
 # ================== ANALYTICS ==================
@@ -439,7 +565,7 @@ def safe_str(x):
 def build_knowledge_graph(result: dict, tech_name: str):
     G = nx.Graph()
 
-    G.add_node(tech_name, type="technology")
+    G.add_node(tech_name, type="technology", url=f"https://en.wikipedia.org/wiki/{tech_name.replace(' ', '_')}")
 
     # -------- PATENTS --------
     for _, row in result.get("patents", pd.DataFrame()).iterrows():
@@ -447,8 +573,16 @@ def build_knowledge_graph(result: dict, tech_name: str):
         country = safe_str(row.get("country"))
 
         if patent:
-            G.add_node(patent, type="patent")
+            patent_url = safe_str(row.get("link"))  # or "url"
+
+            G.add_node(
+                patent,
+                type="patent",
+                url=patent_url if patent_url else None
+            )
+
             G.add_edge(tech_name, patent, relation="HAS_PATENT")
+
 
             if country:
                 G.add_node(country, type="country")
@@ -460,8 +594,16 @@ def build_knowledge_graph(result: dict, tech_name: str):
         country = safe_str(row.get("country"))
 
         if paper:
-            G.add_node(paper, type="paper")
+            paper_url = safe_str(row.get("link"))
+
+            G.add_node(
+                paper,
+                type="paper",
+                url=paper_url if paper_url else None
+            )
+
             G.add_edge(tech_name, paper, relation="HAS_PAPER")
+
 
             if country:
                 G.add_node(country, type="country")
@@ -473,8 +615,16 @@ def build_knowledge_graph(result: dict, tech_name: str):
         country = safe_str(row.get("country"))
 
         if company:
-            G.add_node(company, type="company")
+            company_url = safe_str(row.get("website"))  # or link column
+
+            G.add_node(
+                company,
+                type="company",
+                url=company_url if company_url else None
+            )
+
             G.add_edge(tech_name, company, relation="INVOLVES_COMPANY")
+
 
             if country:
                 G.add_node(country, type="country")
@@ -494,7 +644,8 @@ def serialize_knowledge_graph(G):
     for node, attrs in G.nodes(data=True):
         nodes.append({
             "id": str(node),
-            "type": attrs.get("type", "unknown")
+            "type": attrs.get("type", "unknown"),
+            "url": attrs.get("url")
         })
 
     for src, tgt, attrs in G.edges(data=True):
@@ -615,88 +766,6 @@ def run_pipeline_for_tech(tech: str):
         
         
 
-
-
-
-#-----investment------
-def compute_relative_investment_index(result):
-    import pandas as pd
-
-    # ---------- Patent signal ----------
-    if (
-        "trend_patents_country" in result
-        and isinstance(result["trend_patents_country"], pd.DataFrame)
-        and not result["trend_patents_country"].empty
-    ):
-        patent_signal = (
-            result["trend_patents_country"]
-            .query("country != 'Unknown'")
-            .groupby("country")["count"]
-            .sum()
-        )
-    else:
-        patent_signal = pd.Series(dtype=float)
-
-    # ---------- Publication signal ----------
-    if (
-        "papers" in result
-        and isinstance(result["papers"], pd.DataFrame)
-        and "country" in result["papers"].columns
-    ):
-        publication_signal = (
-            result["papers"]
-            .query("country != 'Unknown'")
-            .groupby("country")
-            .size()
-        )
-    else:
-        publication_signal = pd.Series(dtype=float)
-
-    # ---------- Company signal ----------
-    if (
-        "companies" in result
-        and isinstance(result["companies"], pd.DataFrame)
-        and "country" in result["companies"].columns
-    ):
-        company_signal = (
-            result["companies"]
-            .query("country != 'Unknown'")
-            .groupby("country")
-            .size()
-        )
-    else:
-        company_signal = pd.Series(dtype=float)
-
-    # ---------- Combine countries ----------
-    countries = (
-        set(patent_signal.index)
-        | set(publication_signal.index)
-        | set(company_signal.index)
-    )
-
-    if not countries:
-        return {}
-
-    # ---------- Weighted score ----------
-    raw_scores = {
-        country: (
-            0.5 * patent_signal.get(country, 0)
-            + 0.3 * publication_signal.get(country, 0)
-            + 0.2 * company_signal.get(country, 0)
-        )
-        for country in countries
-    }
-
-    max_score = max(raw_scores.values()) or 1
-
-    investment_index = {
-        country: round((score / max_score) * 100, 2)
-        for country, score in raw_scores.items()
-    }
-
-    return dict(
-        sorted(investment_index.items(), key=lambda x: x[1], reverse=True)
-    )
 def generate_alerts(result, tech_key):
     alerts = []
 
@@ -785,6 +854,299 @@ def generate_alerts(result, tech_key):
 
     return alerts
 
+
+#-----investment------
+# ===============================
+# Country normalization map
+# ===============================
+COUNTRY_NORMALIZATION = {
+    "us": "USA",
+    "usa": "USA",
+    "united states": "USA",
+    "united states of america": "USA",
+
+    "uk": "UK",
+    "united kingdom": "UK",
+    "great britain": "UK",
+
+    "peoples republic of china": "China",
+    "prc": "China",
+    "china": "China",
+
+    "republic of korea": "South Korea",
+    "south korea": "South Korea",
+    "korea": "South Korea",
+
+    "russian federation": "Russia",
+    "russia": "Russia"
+}
+
+
+# ===============================
+# Main computation function
+# ===============================
+def compute_relative_investment_index(result, TOP_N=5):
+    import pandas as pd
+    import numpy as np
+
+    # ---------- helpers ----------
+    def log_safe(x):
+        return np.log1p(x)
+
+    def normalize_country(country):
+        if not isinstance(country, str):
+            return "Unknown"
+        c = country.strip().lower()
+        return COUNTRY_NORMALIZATION.get(c, country.title())
+
+    # ---------- Patent signal ----------
+    if (
+        "trend_patents_country" in result
+        and isinstance(result["trend_patents_country"], pd.DataFrame)
+        and not result["trend_patents_country"].empty
+    ):
+        pat_df = result["trend_patents_country"].copy()
+        pat_df["country"] = pat_df["country"].apply(normalize_country)
+
+        patent_signal = (
+            pat_df
+            .query("country != 'Unknown'")
+            .groupby("country")["count"]
+            .sum()
+            .apply(log_safe)
+        )
+    else:
+        patent_signal = pd.Series(dtype=float)
+
+    # ---------- Publication signal ----------
+    if (
+        "papers" in result
+        and isinstance(result["papers"], pd.DataFrame)
+        and "country" in result["papers"].columns
+    ):
+        pap_df = result["papers"].copy()
+        pap_df["country"] = pap_df["country"].apply(normalize_country)
+
+        publication_signal = (
+            pap_df
+            .query("country != 'Unknown'")
+            .groupby("country")
+            .size()
+            .apply(log_safe)
+        )
+    else:
+        publication_signal = pd.Series(dtype=float)
+
+    # ---------- Company signal ----------
+    if (
+        "companies" in result
+        and isinstance(result["companies"], pd.DataFrame)
+        and "country" in result["companies"].columns
+    ):
+        comp_df = result["companies"].copy()
+        comp_df["country"] = comp_df["country"].apply(normalize_country)
+
+        company_signal = (
+            comp_df
+            .query("country != 'Unknown'")
+            .groupby("country")
+            .size()
+            .apply(log_safe)
+        )
+    else:
+        company_signal = pd.Series(dtype=float)
+
+    # ---------- Combine countries ----------
+    countries = (
+        set(patent_signal.index)
+        | set(publication_signal.index)
+        | set(company_signal.index)
+    )
+
+    if not countries:
+        return {}
+
+    # ---------- Raw weighted scores ----------
+    raw_scores = {
+        country: (
+            0.5 * patent_signal.get(country, 0)
+            + 0.3 * publication_signal.get(country, 0)
+            + 0.2 * company_signal.get(country, 0)
+        )
+        for country in countries
+    }
+
+    # ---------- Ensure TOP_N countries ----------
+    sorted_scores = sorted(raw_scores.items(), key=lambda x: x[1], reverse=True)
+
+    # keep non-zero first
+    filtered = [(c, s) for c, s in sorted_scores if s > 0]
+
+    # if too few, pad with next strongest (even if zero)
+    if len(filtered) < TOP_N:
+        filtered = sorted_scores[:TOP_N]
+
+    raw_scores = dict(filtered)
+
+    # ---------- Normalize to percentages ----------
+    total_score = sum(raw_scores.values()) or 1
+
+    investment_index = {
+        country: round((score / total_score) * 100, 2)
+        for country, score in raw_scores.items()
+    }
+
+    # ---------- Optional: Others bucket ----------
+    shown_countries = set(investment_index.keys())
+    others_score = sum(
+        v for k, v in raw_scores.items() if k not in shown_countries
+    )
+
+    if others_score > 0:
+        investment_index["Others"] = round(
+            100 - sum(investment_index.values()), 2
+        )
+
+    # ---------- Final sorted output ----------
+    return dict(
+        sorted(investment_index.items(), key=lambda x: x[1], reverse=True)
+    )
+
+def generate_alerts(result, tech_key):
+    alerts = []
+
+    patents_trend = result.get("trend_patents_year")
+    papers_trend = result.get("trend_papers_year")
+    market_forecast = result.get("market_forecast")
+    funding_df = result.get("funding")
+
+    # ---------------- PATENT SURGE ----------------
+    if isinstance(patents_trend, pd.DataFrame) and len(patents_trend) >= 2:
+        last_row = patents_trend.iloc[-1]
+        prev_row = patents_trend.iloc[-2]
+
+        last, prev = last_row["count"], prev_row["count"]
+        year = int(last_row["year"])
+
+        if prev > 0:
+            growth = (last - prev) / prev
+            if growth > 0.3:
+                alerts.append({
+                    "type": "patent",
+                    "message": f"Patent filings grew by {int(growth*100)}% in {year} ({prev} → {last})",
+                    "time": "recent"
+                })
+
+    # ---------------- RESEARCH ACCELERATION ----------------
+    if isinstance(papers_trend, pd.DataFrame) and len(papers_trend) >= 2:
+        last_row = papers_trend.iloc[-1]
+        prev_row = papers_trend.iloc[-2]
+
+        last, prev = last_row["count"], prev_row["count"]
+        year = int(last_row["year"])
+
+        if prev > 0:
+            growth = (last - prev) / prev
+            if growth > 0.25:
+                alerts.append({
+                    "type": "tech",
+                    "message": f"Research publications increased by {int(growth*100)}% in {year}",
+                    "time": "recent"
+                })
+
+    # ---------------- MARKET MOMENTUM ----------------
+    if market_forecast and isinstance(market_forecast, dict):
+        values = market_forecast.get("billions", [])
+        years = market_forecast.get("years", [])
+
+        if len(values) >= 2:
+            start_val, end_val = values[0], values[-1]
+            start_year, end_year = years[0], years[-1]
+
+            growth_pct = ((end_val - start_val) / start_val) * 100 if start_val else 0
+
+            if growth_pct > 10:
+                alerts.append({
+                    "type": "market",
+                    "message": f"Market projected to grow {int(growth_pct)}% ({start_year}–{end_year})",
+                    "time": "forecast"
+                })
+
+    # ---------------- FUNDING / GOVERNMENT SIGNAL ----------------
+    if isinstance(funding_df, pd.DataFrame) and not funding_df.empty:
+        alerts.append({
+            "type": "market",
+            "message": f"{len(funding_df)} recent funding or investment signals detected",
+            "time": "recent"
+        })
+
+        for txt in funding_df.get("snippet", []):
+            t = str(txt).lower()
+            if any(k in t for k in ["government", "defense", "military", "ministry"]):
+                alerts.append({
+                    "type": "tech",
+                    "message": "Government or defense-sector involvement observed",
+                    "time": "recent"
+                })
+                break
+
+    # ---------------- FALLBACK (OPTION A) ----------------
+    if not alerts:
+        alerts.append({
+            "type": "tech",
+            "message": "Technology activity remains stable with no major inflection",
+            "time": "current"
+        })
+
+    return alerts
+
+def generate_summary(tech: str) -> str:
+    """
+    Generates a precise, textbook-grade technical definition
+    using Gemini. Safe, single-call, cacheable.
+    """
+    from google import genai
+
+    API_KEY = "AIzaSyAXuTc4NYR8X9Lwv5DXMOmn-Ee3vQDEXf8"
+
+    prompt = f"""
+Write a precise, textbook-style technical explanation of {tech}.
+
+STRICT FORMAT RULES:
+- DO NOT use markdown
+- DO NOT use **bold**, *italics*, bullet points, or headings
+- Output plain text only
+- No asterisks, no lists, no formatting
+
+CONTENT RULES:
+- First sentence must define what it physically or mathematically is
+- Mention governing scientific or engineering principles
+- Clearly distinguish it from closely related technologies
+- Explain how scientists and engineers of organisations like drdo,isro,iits etc  use this technology
+- Briefly describe its current global research or industrial usage
+
+LENGTH RULES:
+- Exactly 3 paragraphs
+- Each paragraph 3-4 sentences
+- Total length must be under 160 words
+
+"""
+
+
+    client = genai.Client(api_key=API_KEY)
+
+    response = client.models.generate_content(
+        model="models/gemini-3-flash-preview",
+        contents=prompt
+    )
+
+    text = getattr(response, "text", "").strip()
+
+    if not text or len(text.split()) < 50:
+        raise RuntimeError("Weak or empty Gemini response")
+
+    return text
+
 # ================== JSON EXPORT ==================
 
 def export_dashboard_json(tech: str, result: dict):
@@ -801,6 +1163,9 @@ def export_dashboard_json(tech: str, result: dict):
     market    = result.get("market", pd.DataFrame())
     trend_pat = result.get("patents_year", pd.DataFrame())
     forecast  = result.get("market_forecast")
+    #summary_text = generate_summary(tech)
+    
+
 
     def safe(val):
         if isinstance(val, float):
@@ -809,14 +1174,15 @@ def export_dashboard_json(tech: str, result: dict):
 
     output = {
         "technology": tech_key,
-
+        # "overview":{ "text":summary_text},
         # ================= SUMMARY =================
         "summary": {
             "trl": (
-                int(patents["trl"].mean())
+                int(patents["trl"].median())
                 if isinstance(patents, pd.DataFrame) and "trl" in patents and not patents.empty
                 else 2
             ),
+
             "growth_stage": result.get("hype_stage", "Unknown"),
             "market_size_billion_usd": (
                 safe(max(forecast["billions"])) if forecast and "billions" in forecast else None
@@ -854,7 +1220,7 @@ def export_dashboard_json(tech: str, result: dict):
                 {
                     "title": r.get("title"),
                     "snippet": r.get("snippet"),
-                    "link": r.get("link"),
+                    "link": safe(r.get("link")),
                     "year": safe(r.get("year")),
                     "trl": safe(r.get("trl")),
                 }
@@ -865,7 +1231,7 @@ def export_dashboard_json(tech: str, result: dict):
                 {
                     "title": r.get("title"),
                     "snippet": r.get("snippet"),
-                    "link": r.get("link"),
+                    "link":safe( r.get("link")),
                     "year": safe(r.get("year")),
                 }
                 for _, r in papers.iterrows()
@@ -875,7 +1241,7 @@ def export_dashboard_json(tech: str, result: dict):
                 {
                     "name": r.get("name"),
                     "description": r.get("description"),
-                    "link": r.get("link"),
+                    "link": safe(r.get("link")),
                 }
                 for _, r in companies.iterrows()
             ] if isinstance(companies, pd.DataFrame) else [],
@@ -894,7 +1260,13 @@ def export_dashboard_json(tech: str, result: dict):
         },
 
         # ================= ALERTS =================
-        "alerts": generate_alerts(result, tech_key),
+        "alerts": [
+            {
+                "type": "patent",
+                "message": f"{tech_key} patent activity rising",
+                "time": "recent",
+            }
+        ],
     }
 
     os.makedirs("data/tech", exist_ok=True)
@@ -931,4 +1303,4 @@ if __name__ == "__main__":
     result = run_pipeline_for_tech(tech)
     export_dashboard_json(tech, result)
     export_kg_json(tech, result)
-    print(" ML pipeline completed")
+    print(" ML pipeline completed") 

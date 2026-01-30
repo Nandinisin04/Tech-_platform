@@ -1,51 +1,17 @@
 export const runtime = "nodejs"
 
 import { NextResponse } from "next/server"
-import path from "path"
-import fs from "fs/promises"
-import { exec } from "child_process"
-import util from "util"
-
-const execAsync = util.promisify(exec)
-
-/* ---------- helpers ---------- */
-async function fileExists(p: string) {
-  try {
-    await fs.access(p)
-    return true
-  } catch {
-    return false
-  }
-}
-
-async function waitForFile(p: string, retries = 20) {
-  for (let i = 0; i < retries; i++) {
-    if (await fileExists(p)) return true
-    await new Promise(r => setTimeout(r, 500))
-  }
-  return false
-}
+import { connectDB } from "@/lib/mongodb"
+import { Technology } from "@/models/technology"
 
 /* ---------- GET /api/tech/[name] ---------- */
 export async function GET(
   req: Request,
   ctx: { params: Promise<{ name: string }> }
 ) {
-  const { name } = await ctx.params   // ✅ REQUIRED
+  const { name } = await ctx.params
 
-  console.log(" GET ROUTE HIT, TECH =", name)
-  const { searchParams } = new URL(req.url)
-
-  const filters = {
-    from: searchParams.get("from"),       // e.g. 2020
-    to: searchParams.get("to"),           // e.g. 2024
-    entity: searchParams.get("entity"),   // patent | paper | company
-    country: searchParams.get("country"), // usa | india
-  }
-
-  console.log("🧪 FILTERS =", filters)
-
-  if (!name || name === "undefined") {
+  if (!name) {
     return NextResponse.json(
       { error: "Invalid technology name" },
       { status: 400 }
@@ -57,13 +23,19 @@ export async function GET(
     .trim()
     .replace(/\s+/g, "_")
 
-  const dataDir = path.join(process.cwd(), "data", "tech")
-  const dashboardPath = path.join(dataDir, `${tech}.json`)
-  const kgPath = path.join(dataDir, `${tech}_kg.json`)
+  await connectDB()
 
+  const doc = await Technology.findOne({ name: tech })
 
-  return NextResponse.json(
-    { error: "Cache miss. Call /run" },
-    { status: 404 }
-  )
+  if (!doc || !doc.latest_json) {
+    return NextResponse.json(
+      { error: "No data found. Call /run" },
+      { status: 404 }
+    )
+  }
+
+  return NextResponse.json({
+    dashboard: doc.latest_json.dashboard ?? null,
+    knowledge_graph: doc.latest_json.knowledge_graph ?? null,
+  })
 }

@@ -16,10 +16,10 @@
   "country_investment": {
     "type": "relative_investment_index",
     "values": {
-      "UK": 100.0,
-      "Japan": 100.0,
-      "USA": 100.0,
-      "United States": 66.67
+      "USA": 35.71,
+      "Japan": 21.43,
+      "Canada": 21.43,
+      "UK": 21.43
     }
   },
   "patent_timeline": [
@@ -191,7 +191,7 @@
       {
         "title": "The definition of standard ML: revised",
         "snippet": "Standard ML is a general-purpose programming language designed for large projects. This book provides a formal definition of Standard ML for the benefit of all concerned with the …",
-        "link": "https://books.google.com/books?hl=en&lr=&id=e0PhKfbj-p8C&oi=fnd&pg=PR9&dq=ml&ots=TnP_g_zeak&sig=hMSksinpuY6wsLCd4ovvGQJ_9rY",
+        "link": "https://books.google.com/books?hl=en&lr=&id=e0PhKfbj-p8C&oi=fnd&pg=PR9&dq=ml&ots=TnP_g-C9fq&sig=zXaqXqF23BRBRYL_lr8yVvOcJbQ",
         "year": null
       },
       {
@@ -239,7 +239,7 @@
       {
         "title": "ML for the Working Programmer",
         "snippet": "… program in the ML language, and … ML are described and many new examples are given, while references have also been updated. Dr Paulson has extensive practical experience of ML …",
-        "link": "https://books.google.com/books?hl=en&lr=&id=8VCbAAAAQBAJ&oi=fnd&pg=PR13&dq=ml&ots=vHMu6JOkNH&sig=8wRXszfVBZgwRIw3NTiqkzHXnUw",
+        "link": "https://books.google.com/books?hl=en&lr=&id=8VCbAAAAQBAJ&oi=fnd&pg=PR13&dq=ml&ots=vHMu6KRfSN&sig=fV3769YNRCW0DzIsb3_0b6Be7WA",
         "year": null
       },
       {
@@ -257,7 +257,7 @@
       {
         "title": "Handbook of Statistical Analysis: AI and ML Applications",
         "snippet": "… • Fayyad has published over 100 technical articles on data mining, data science, AI/ML, and databases. • He holds over 20 patents. • He is a fellow of both the Association for the …",
-        "link": "https://books.google.com/books?hl=en&lr=&id=Okj9EAAAQBAJ&oi=fnd&pg=PP1&dq=ml&ots=LZ0qEUN5yH&sig=JBajaNZ4uztiM7egJUsTSGHqPK4",
+        "link": "https://books.google.com/books?hl=en&lr=&id=Okj9EAAAQBAJ&oi=fnd&pg=PP1&dq=ml&ots=LZ0qEVQ0DN&sig=VPsklrIUBuascOPELnRnsj8Yjug",
         "year": null
       },
       {
@@ -326,16 +326,6 @@
         "link": "https://www.ycombinator.com/companies/industry/Machine%20Learning"
       },
       {
-        "name": "Top NYC, NY Machine Learning Companies 2026",
-        "description": "Top NYC, NY Machine Learning Companies (305) · Kensho Technologies · Hinge · Capital One · BlackLine · Mondelēz International · Canoe · Tempus AI · Garner Health.",
-        "link": "https://www.builtinnyc.com/companies/type/machine-learning-industry-companies"
-      },
-      {
-        "name": "Top 10 Machine Learning Consulting Companies ...",
-        "description": "Top 10 Machine Learning Consulting Companies Revolutionizing AI Implementation · 2. Boston Consulting Group · 6. Cognizant: Driving AI Innovation ...",
-        "link": "https://rtslabs.com/top-machine-learning-consulting-companies"
-      },
-      {
         "name": "Top 159 AI Startups 2026 | Funded by Sequoia, YC, A16Z",
         "description": "Top AI startups and new AI companies hiring now. Sort by valuation and recent funding. Funded by Sequoia, YC, A16Z, Benchmark - the very best.",
         "link": "https://topstartups.io/?industries=Artificial%20Intelligence"
@@ -346,103 +336,32 @@
         "link": "https://techreviewer.co/top-machine-learning-companies"
       },
       {
+        "name": "Top NYC, NY Machine Learning Companies 2026",
+        "description": "Top NYC, NY Machine Learning Companies (305) · Kensho Technologies · Hinge · Capital One · BlackLine · Mondelēz International · Canoe · Tempus AI · Garner Health.",
+        "link": "https://www.builtinnyc.com/companies/type/machine-learning-industry-companies"
+      },
+      {
+        "name": "Top San Francisco Bay Area, CA Machine Learning ...",
+        "description": "Top San Francisco Bay Area, CA Machine Learning Companies (404) · John Deere · BlackLine · Xero · Capital One · PagerDuty · Deepgram · WorkWhile · CoreWeave.",
+        "link": "https://www.builtinsf.com/companies/type/machine-learning-industry-companies"
+      },
+      {
         "name": "Top 18 Machine Learning (ML) Companies",
         "description": "InData Labs opens up the list of the leading machine learning companies. InData Labs is a Cyprus-based data science firm and AI-powered ...",
         "link": "https://indatalabs.com/blog/top-18-machine-learning-companies"
+      },
+      {
+        "name": "Top 16 AI/ML Engineering Companies",
+        "description": "Top 16 AI/Ml engineering companies · Simform · STX Next · Geniusee · Fingent · Entrans Technologies · Plavno · Intuz · ANADEA.",
+        "link": "https://www.simform.com/blog/top-ai-ml-engineering-companies/"
       }
     ],
-    "market_reports": [
-      {
-        "title": "Machine Learning Market Size & Share | Industry Report ...",
-        "snippet": "Machine learning market size was USD 55.80 billion in 2024 and is projected to reach USD 282.13 billion by 2030, at a CAGR of 30.4% from 2025 to 2030.",
-        "market_size": " 55.80 billion",
-        "cagr": null,
-        "forecast_start": 2025.0,
-        "forecast_end": 2030.0
-      },
-      {
-        "title": "U.S. Machine Learning Market Share | Growth Analysis ...",
-        "snippet": "The market is expected to grow from USD 6.49 billion in 2023 to USD 59.30 billion by 2030, exhibiting a CAGR of 37.2% during the forecast period.",
-        "market_size": " 6.49 billion",
-        "cagr": null,
-        "forecast_start": null,
-        "forecast_end": null
-      },
-      {
-        "title": "Machine Learning Market Size, Share & Top Key Players ...",
-        "snippet": "The Global Machine Learning Market size is expected to reach $408.4 billion by 2030, rising at a market growth of 36.7% CAGR during the forecast period.",
-        "market_size": "$408.4 billion",
-        "cagr": "36.7%",
-        "forecast_start": null,
-        "forecast_end": null
-      },
-      {
-        "title": "Machine Learning Market Size To Reach $282.13Bn By 2030",
-        "snippet": "The global machine learning market size is anticipated to reach USD 282.13 billion by 2030, registering a CAGR of 30.4% from 2025 to 2030, according to a ...",
-        "market_size": " 282.13 billion",
-        "cagr": null,
-        "forecast_start": 2025.0,
-        "forecast_end": 2030.0
-      },
-      {
-        "title": "Machine Learning - Worldwide | Statista Market Forecast",
-        "snippet": "The Machine Learning market is expected to see significant growth in the coming years, with a forecasted compound annual growth rate (CAGR) of over 18.7% from ...",
-        "market_size": null,
-        "cagr": null,
-        "forecast_start": null,
-        "forecast_end": null
-      },
-      {
-        "title": "Artificial Intelligence (AI) Software Market Size: 2024 to 2030",
-        "snippet": "Growing at a Compound Annual Growth Rate (CAGR) of 25%, the AI software market size will reach US$467 billion in 2030. Generative AI will be the fastest growing ...",
-        "market_size": "$467 billion",
-        "cagr": null,
-        "forecast_start": null,
-        "forecast_end": null
-      },
-      {
-        "title": "Machine learning as a Service Market | Forecast - 2030",
-        "snippet": "Machine learning as a service market is projected to reach $302.66 Billion by 2030. The report covers key drivers along with industry analysis.",
-        "market_size": "$302.66 Billion",
-        "cagr": null,
-        "forecast_start": null,
-        "forecast_end": null
-      },
-      {
-        "title": "Machine Learning Market size growing with a CAGR of ...",
-        "snippet": "The Machine Learning Market is expected to grow from USD 30.00 Billion in 2022 to USD 74.30 Billion by 2030, at a CAGR of 12.00% during the ...",
-        "market_size": " 30.00 Billion",
-        "cagr": null,
-        "forecast_start": null,
-        "forecast_end": null
-      },
-      {
-        "title": "machine-learning-model-management-market",
-        "snippet": "The global market for Automated Machine Learning Market size is projected to reach USD 6.4 billion by 2028, at a CAGR of 44.6% during the forecast period.",
-        "market_size": " 6.4 billion",
-        "cagr": null,
-        "forecast_start": null,
-        "forecast_end": null
-      },
-      {
-        "title": "Machine Learning Market Analysis, Trends, Forecast 2030",
-        "snippet": "The Global Machine Learning Market Size was valued at USD 14.91 billion in 2021 and is expected to reach at a CAGR of 38.1% from 2021 to 2030.",
-        "market_size": " 14.91 billion",
-        "cagr": null,
-        "forecast_start": 2021.0,
-        "forecast_end": 2030.0
-      }
-    ]
+    "market_reports": []
   },
   "alerts": [
     {
-      "type": "market",
-      "message": "9 recent funding or investment signals detected",
-      "time": "recent"
-    },
-    {
-      "type": "tech",
-      "message": "Government or defense-sector involvement observed",
+      "type": "patent",
+      "message": "ml patent activity rising",
       "time": "recent"
     }
   ]

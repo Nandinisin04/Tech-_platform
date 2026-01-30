@@ -16,33 +16,6 @@ interface CategoryItem {
   metadata: string
 }
 
-const INVESTMENTS: CategoryItem[] = [
-  {
-    id: "1",
-    title: "Series B Round: $150M",
-    description: "Advanced Materials Company secures funding for production scaling",
-    date: "3 days ago",
-    metadata: "$150M",
-  },
-  {
-    id: "2",
-    title: "Strategic Investment: $85M",
-    description: "Defense tech firm backed by sovereign wealth fund for autonomous systems",
-    date: "1 week ago",
-    metadata: "$85M",
-  },
-]
-
-const PATENTS: CategoryItem[] = [
-  {
-    id: "1",
-    title: "Patent Filed: Quantum Key Distribution",
-    description: "Novel approach to secure quantum communications infrastructure",
-    date: "4 days ago",
-    metadata: "US Patent",
-  },
-]
-
 const CATEGORY_CONFIG: Record<
   CategoryType,
   { title: string; description: string; icon: React.ReactNode; color: string }
@@ -86,30 +59,96 @@ export default function CategoryPage() {
         setLoading(true)
         setError(null)
 
+        /* ================= TRENDS ================= */
         if (type === "trends") {
           const res = await fetch("/api/global")
-          if (!res.ok) throw new Error()
+          if (!res.ok) throw new Error("Trends API failed")
 
           const json = await res.json()
-          const news = json.trends ?? json.entities?.news ?? []
 
-          const mapped: CategoryItem[] = news.map((n: any, i: number) => ({
-            id: String(i),
-            title: n.title,
-            description: n.source ?? "Technology news",
-            date: n.date,
-            metadata: "News",
-          }))
+          const mapped: CategoryItem[] = (json.trends ?? []).map(
+            (t: any, i: number) => ({
+              id: String(i),
+              title: t.title,
+              description: t.source ?? t.snippet ?? "Technology news",
+              date: t.date ?? "Recent",
+              metadata: t.field ?? "Trend",
+            })
+          )
 
-          if (!cancelled) setData(mapped)
-        } else if (type === "investments") {
-          setData(INVESTMENTS)
-        } else if (type === "patents") {
-          setData(PATENTS)
+          if (!cancelled) {
+            setData(mapped)
+            setLoading(false)
+          }
+          return
         }
 
-        if (!cancelled) setLoading(false)
-      } catch {
+        /* ================= PATENTS ================= */
+        if (type === "patents") {
+          const res = await fetch("/api/global")
+          if (!res.ok) throw new Error("Patents API failed")
+
+          const json = await res.json()
+
+          const mapped: CategoryItem[] = (json.patents ?? []).map(
+            (p: any, i: number) => ({
+              id: String(i),
+              title: p.title,
+              description: p.assignee ?? "Patent filing",
+              date: p.year ? String(p.year) : "Recent",
+              metadata: p.field ?? "Patent",
+            })
+          )
+
+          if (!cancelled) {
+            setData(mapped)
+            setLoading(false)
+          }
+          return
+        }
+
+        /* ================= INVESTMENTS ================= */
+        if (type === "investments") {
+          const res = await fetch("/api/global-investment")
+          if (!res.ok) throw new Error("Investment API failed")
+
+          const json = await res.json()
+
+          const rows: CategoryItem[] = []
+          const countries = json ?? {}
+
+          Object.entries(countries).forEach(
+            ([country, countryData]: any) => {
+              const technologies = countryData?.technologies ?? {}
+
+              Object.entries(technologies).forEach(
+                ([tech, techData]: any) => {
+                  const articles = techData?.articles ?? []
+
+                  articles.forEach((a: any, idx: number) => {
+                    if (!a?.title) return
+
+                    rows.push({
+                      id: `${country}-${tech}-${idx}`,
+                      title: a.title,
+                      description: a.source ?? "Investment news",
+                      date: a.date ?? "Recent",
+                      metadata: `${tech.toUpperCase()} · ${country.toUpperCase()}`,
+                    })
+                  })
+                }
+              )
+            }
+          )
+
+          if (!cancelled) {
+            setData(rows)
+            setLoading(false)
+          }
+          return
+        }
+      } catch (err) {
+        console.error("Category page error:", err)
         if (!cancelled) {
           setError("Data not available")
           setLoading(false)

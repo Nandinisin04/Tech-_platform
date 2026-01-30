@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { BackButton} from "@/components/back-button";
 
 import { DashboardHeader } from "@/components/dashboard-header";
 import { KeyInsightsCards } from "@/components/key-insights-cards";
@@ -13,8 +14,9 @@ import { KnowledgeGraph } from "@/components/knowledge-graph";
 import { applyFilters } from "@/lib/filters/applyFilters"
 import { defaultFilters, DashboardFilters } from "@/lib/filters/types"
 import { defaultKGFilters, KGFilters } from "@/lib/filters/types"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { filterKnowledgeGraph } from "@/lib/filters/filterKnowledgeGraph"
-
+import { fetchMultipleTechs } from "@/lib/utils/useCompareTech";
 
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
@@ -151,16 +153,27 @@ const maxPatentYear =
   console.log("marketValues:", data)
   return (
     <main className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card sticky top-0 z-50">
-        <div className="mx-auto max-w-7xl px-4 py-4 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 text-primary">
-            <ChevronLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Back</span>
-          </Link>
-          <h1 className="text-2xl font-bold">TechIntel</h1>
-        </div>
-      </header>
+     {/* Header */}
+<header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
+  <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
+    
+    {/* LEFT SIDE */}
+    <div className="flex items-center gap-4">
+      <Link href="/" className="flex items-center gap-2 text-primary">
+        <ChevronLeft className="w-5 h-5" />
+        <span className="text-sm font-medium">Back</span>
+      </Link>
+      <h1 className="text-2xl font-bold">TechIntel</h1>
+    </div>
+    
+
+    {/* RIGHT SIDE */}
+    <div className="flex items-center">
+      <ThemeToggle />
+    </div>
+
+  </div>
+</header>
 
       <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
         <DashboardHeader techName={decodeURIComponent(techName)} />
