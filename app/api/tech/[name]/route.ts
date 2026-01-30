@@ -35,15 +35,25 @@ export async function GET(
     .replace(/\s+/g, "_")
 
   const dataDir = path.join(process.cwd(), "data", "tech")
-  const filePath = path.join(dataDir, `${tech}.json`)
+  const dashboardPath = path.join(dataDir, `${tech}.json`)
+  const kgPath = path.join(dataDir, `${tech}_kg.json`) // 🔹 NEW
 
-  // 🔹 ALWAYS try to read cache first
-  if (await fileExists(filePath)) {
-    const cached = await fs.readFile(filePath, "utf-8")
-    return NextResponse.json(JSON.parse(cached))
+  // ================= CACHE FIRST =================
+  if (await fileExists(dashboardPath)) {
+    const dashboard = JSON.parse(await fs.readFile(dashboardPath, "utf-8"))
+
+    let kg = null
+    if (await fileExists(kgPath)) {
+      kg = JSON.parse(await fs.readFile(kgPath, "utf-8"))
+    }
+
+    return NextResponse.json({
+      dashboard,
+      knowledge_graph: kg,
+    })
   }
 
-  // 🔹 HARD ML TRIGGER (NO EARLY EXIT)
+  // ================= ML TRIGGER =================
   console.log(`⚙ ML triggered for missing tech: ${tech}`)
 
   const pythonCmd =
@@ -55,8 +65,8 @@ export async function GET(
     timeout: 1000 * 60 * 5,
   })
 
-  // 🔹 WAIT until file is created
-  const created = await waitForFile(filePath)
+  // ================= WAIT FOR OUTPUT =================
+  const created = await waitForFile(dashboardPath)
 
   if (!created) {
     return NextResponse.json(
@@ -65,6 +75,15 @@ export async function GET(
     )
   }
 
-  const data = await fs.readFile(filePath, "utf-8")
-  return NextResponse.json(JSON.parse(data))
+  const dashboard = JSON.parse(await fs.readFile(dashboardPath, "utf-8"))
+
+  let kg = null
+  if (await fileExists(kgPath)) {
+    kg = JSON.parse(await fs.readFile(kgPath, "utf-8"))
+  }
+
+  return NextResponse.json({
+    dashboard,
+    knowledge_graph: kg,
+  })
 }

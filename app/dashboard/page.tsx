@@ -9,6 +9,8 @@ import { DashboardHeader } from "@/components/dashboard-header"
 import { KeyInsightsCards } from "@/components/key-insights-cards"
 import { VisualizationArea } from "@/components/visualization-area"
 import { SidebarPanels } from "@/components/sidebar-panels"
+import { KnowledgeGraph } from "@/components/knowledge-graph"
+
 
 function DashboardContent() {
   const searchParams = useSearchParams()
@@ -16,6 +18,7 @@ function DashboardContent() {
   const techName = techParam.toLowerCase()
 
   const [data, setData] = useState<any>(null)
+  const [kg, setKg] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -27,7 +30,11 @@ function DashboardContent() {
         if (!res.ok) throw new Error("Technology data not available")
         return res.json()
       })
-      .then((json) => setData(json))
+      .then((json) => {
+        setData(json.dashboard ?? json)
+        setKg(json.knowledge_graph ?? null)
+      })
+
       .catch(() => setError("Technology data not available"))
   }, [techName])
 
@@ -73,8 +80,9 @@ function DashboardContent() {
           <div className="lg:col-span-2">
             <VisualizationArea
               trendCurve={data.trend_curve ?? []}
-              countryInvestment={data.country_investment.values ?? []}
+              countryInvestment={data.country_investment.values ?? []}   // 
               patentTimeline={data.patent_timeline ?? []}
+              marketReports={data.entities?.market_reports ?? []}
             />
           </div>
 
@@ -85,11 +93,25 @@ function DashboardContent() {
             companies={data.entities?.companies ?? []}
             publications={data.entities?.papers ?? []}
             patents = {data.entities?.patents ?? []}
-      
           />
 
           </div>
+
         </div>
+        
+
+       {kg && kg.nodes?.length > 0 && (
+       <div className="mt-10">
+       <h2 className="text-lg font-semibold mb-4">
+      Knowledge Graph
+       </h2>
+
+       <KnowledgeGraph
+      nodes={kg.nodes}
+      edges={kg.edges}
+    />
+  </div>
+       )}
       </div>
     </main>
   )

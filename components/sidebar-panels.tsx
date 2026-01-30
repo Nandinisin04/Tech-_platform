@@ -10,10 +10,10 @@ import {
 import {
   Building2,
   FileText,
-  Grid3x3,
   AlertTriangle,
   TrendingUp,
 } from "lucide-react"
+import { ShowMore } from "@/components/show-more"
 
 /* ---------------- TYPES ---------------- */
 
@@ -33,6 +33,7 @@ type Publication = {
   title: string
   link?: string | null
 }
+
 type Patent = {
   title: string
   snippet?: string
@@ -41,12 +42,23 @@ type Patent = {
   trl?: number
 }
 
-
 type SidebarPanelsProps = {
   alerts?: Alert[]
   companies?: Company[]
   publications?: Publication[]
   patents?: Patent[]
+}
+
+/* ---------------- UTILS ---------------- */
+
+function extractLinkAndCleanTitle(title: string) {
+  const urlRegex = /https?:\/\/[^\s]+/g
+  const match = title.match(urlRegex)
+
+  return {
+    link: match ? match[0] : null,
+    cleanTitle: title.replace(urlRegex, "").replace(/:\s*$/, "").trim(),
+  }
 }
 
 /* ---------------- COMPONENT ---------------- */
@@ -57,8 +69,6 @@ export function SidebarPanels({
   publications,
   patents,
 }: SidebarPanelsProps) {
-
-  /* ✅ SAFETY NORMALIZATION */
   const safeAlerts = alerts ?? []
   const safeCompanies = companies ?? []
   const safePublications = publications ?? []
@@ -114,150 +124,164 @@ export function SidebarPanels({
             Key players in the ecosystem
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-2">
-  {safeCompanies.length === 0 && (
-    <p className="text-xs text-muted-foreground">
-      No companies available
-    </p>
-  )}
-
-  {safeCompanies.map((company, i) => {
-    const validLink =
-      typeof company.link === "string" && company.link.trim().length > 0
-        ? company.link
-        : null
-
-    return (
-      <div
-        key={i}
-        className="p-2 rounded-md border border-border/30 bg-secondary/30"
-      >
-        {validLink ? (
-          <a
-            href={validLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            {company.name}
-          </a>
-        ) : (
-          <p className="text-sm font-medium">{company.name}</p>
-        )}
-
-        {company.description && (
-          <p className="text-xs text-muted-foreground mt-1">
-            {company.description}
-          </p>
-        )}
-      </div>
-    )
-  })}
-</CardContent>
-
-      </Card>
-
-      {/* ---------------- PUBLICATIONS (WITH LINKS) ---------------- */}
-      {/* Publications */}
-<Card>
-  <CardHeader className="pb-3">
-    <div className="flex items-center gap-2">
-      <FileText className="w-4 h-4 text-accent" />
-      <CardTitle className="text-base">Publications</CardTitle>
-    </div>
-    <CardDescription className="text-xs">
-      Research & analysis sources
-    </CardDescription>
-  </CardHeader>
-
-  <CardContent className="space-y-2">
-    {safePublications.length === 0 && (
-      <p className="text-xs text-muted-foreground">
-        No publications available
-      </p>
-    )}
-
-    {safePublications.map((pub, i) => {
-      const validLink =
-        typeof pub.link === "string" && pub.link.trim().length > 0
-          ? pub.link
-          : null
-
-      return (
-        <div
-          key={i}
-          className="p-2 rounded-md border border-border/30 bg-secondary/30"
-        >
-          {validLink ? (
-            <a
-              href={validLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-primary hover:underline"
-            >
-              {pub.title}
-            </a>
-          ) : (
-            <p className="text-sm">{pub.title}</p>
-          )}
-        </div>
-      )
-    })}
-  </CardContent>
-</Card>
-
-{/* Patents */}
-<Card>
-  <CardHeader className="pb-3">
-    <div className="flex items-center gap-2">
-      <FileText className="w-4 h-4 text-purple-500" />
-      <CardTitle className="text-base">Patents</CardTitle>
-    </div>
-    <CardDescription className="text-xs">
-      Key filed patents (ML-derived)
-    </CardDescription>
-  </CardHeader>
-
-  <CardContent className="space-y-2">
-    {safePatents.length === 0 && (
-      <p className="text-xs text-muted-foreground">
-        No patents available
-      </p>
-    )}
-
-    {safePatents.map((patent, i) => {
-      const hasValidLink =
-        typeof patent.link === "string" &&
-        patent.link.trim().length > 0
-
-      return (
-        <div
-          key={i}
-          className="p-2 rounded-md border border-border/30 bg-secondary/30"
-        >
-          {hasValidLink ? (
-            <a
-              href={patent.link!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-primary hover:underline font-medium"
-            >
-              {patent.title}
-            </a>
-          ) : (
-            <p className="text-sm font-medium">{patent.title}</p>
-          )}
-
-          {patent.year && (
+          {safeCompanies.length === 0 && (
             <p className="text-xs text-muted-foreground">
-              Year: {patent.year} · TRL: {patent.trl ?? "N/A"}
+              No companies available
             </p>
           )}
-        </div>
-      )
-    })}
-  </CardContent>
-</Card>
-</div>
+
+          <ShowMore<Company>
+            items={safeCompanies}
+            initialCount={5}
+            render={(company, i) => {
+              const hasLink =
+                typeof company.link === "string" &&
+                company.link.trim().length > 0
+
+              return (
+                <div
+                  key={i}
+                  className="p-2 rounded-md border border-border/30 bg-secondary/30"
+                >
+                  {hasLink ? (
+                    <a
+                      href={company.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      {company.name}
+                    </a>
+                  ) : (
+                    <p className="text-sm font-medium">{company.name}</p>
+                  )}
+
+                  {company.description && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {company.description}
+                    </p>
+                  )}
+                </div>
+              )
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      {/* ---------------- PUBLICATIONS ---------------- */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-accent" />
+            <CardTitle className="text-base">Publications</CardTitle>
+          </div>
+          <CardDescription className="text-xs">
+            Research & analysis sources
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-2">
+          {safePublications.length === 0 && (
+            <p className="text-xs text-muted-foreground">
+              No publications available
+            </p>
+          )}
+
+          <ShowMore<Publication>
+            items={safePublications}
+            initialCount={5}
+            render={(pub, i) => {
+              const extracted = extractLinkAndCleanTitle(pub.title)
+              const link =
+                pub.link && pub.link.trim().length > 0
+                  ? pub.link
+                  : extracted.link
+
+              const title = extracted.cleanTitle || pub.title
+
+              return (
+                <div
+                  key={i}
+                  className="p-2 rounded-md border border-border/30 bg-secondary/30"
+                >
+                  {link ? (
+                    <a
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      {title}
+                    </a>
+                  ) : (
+                    <p className="text-sm">{title}</p>
+                  )}
+                </div>
+              )
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      {/* ---------------- PATENTS ---------------- */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-purple-500" />
+            <CardTitle className="text-base">Patents</CardTitle>
+          </div>
+          <CardDescription className="text-xs">
+            Key filed patents (ML-derived)
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-2">
+          {safePatents.length === 0 && (
+            <p className="text-xs text-muted-foreground">
+              No patents available
+            </p>
+          )}
+
+          <ShowMore<Patent>
+            items={safePatents}
+            initialCount={5}
+            render={(patent, i) => {
+              const hasLink =
+                typeof patent.link === "string" &&
+                patent.link.trim().length > 0
+
+              return (
+                <div
+                  key={i}
+                  className="p-2 rounded-md border border-border/30 bg-secondary/30"
+                >
+                  {hasLink ? (
+                    <a
+                      href={patent.link!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      {patent.title}
+                    </a>
+                  ) : (
+                    <p className="text-sm font-medium">{patent.title}</p>
+                  )}
+
+                  {patent.year && (
+                    <p className="text-xs text-muted-foreground">
+                      Year: {patent.year} · TRL: {patent.trl ?? "N/A"}
+                    </p>
+                  )}
+                </div>
+              )
+            }}
+          />
+        </CardContent>
+      </Card>
+
+    </div>
   )
 }

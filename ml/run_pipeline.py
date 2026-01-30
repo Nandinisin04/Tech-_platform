@@ -7,10 +7,12 @@ import json
 import pandas as pd
 import numpy as np
 from serpapi import GoogleSearch
+import networkx as nx
+
 
 # ================== CONFIG ==================
 
-SERPAPI_KEY = "f2a7e058cd5f6d0d527576fc32f08f649f30deb2f5cf0b6f555e0212f796dd89"
+SERPAPI_KEY = "86f4411ba4a3dfb0a4cee3f23e98a79e169e346baa51121199d3d698c30b4c11"
 
 
 # ================== SERPAPI ==================
@@ -426,7 +428,86 @@ def classify_hype_stage(patent_trend, paper_trend, funding_trend):
     if 0.0 <= avg_g <= 0.5:
         return "Slope of Enlightenment"
     return "Plateau of Productivity"
+def safe_str(x):
+    if x is None:
+        return None
+    if isinstance(x, float) and pd.isna(x):
+        return None
+    return str(x).strip()
 
+
+def build_knowledge_graph(result: dict, tech_name: str):
+    G = nx.Graph()
+
+    G.add_node(tech_name, type="technology")
+
+    # -------- PATENTS --------
+    for _, row in result.get("patents", pd.DataFrame()).iterrows():
+        patent = safe_str(row.get("title"))
+        country = safe_str(row.get("country"))
+
+        if patent:
+            G.add_node(patent, type="patent")
+            G.add_edge(tech_name, patent, relation="HAS_PATENT")
+
+            if country:
+                G.add_node(country, type="country")
+                G.add_edge(patent, country, relation="FILED_IN")
+
+    # -------- PAPERS --------
+    for _, row in result.get("papers", pd.DataFrame()).iterrows():
+        paper = safe_str(row.get("title"))
+        country = safe_str(row.get("country"))
+
+        if paper:
+            G.add_node(paper, type="paper")
+            G.add_edge(tech_name, paper, relation="HAS_PAPER")
+
+            if country:
+                G.add_node(country, type="country")
+                G.add_edge(paper, country, relation="PUBLISHED_IN")
+
+    # -------- COMPANIES --------
+    for _, row in result.get("companies", pd.DataFrame()).iterrows():
+        company = safe_str(row.get("name"))
+        country = safe_str(row.get("country"))
+
+        if company:
+            G.add_node(company, type="company")
+            G.add_edge(tech_name, company, relation="INVOLVES_COMPANY")
+
+            if country:
+                G.add_node(country, type="country")
+                G.add_edge(company, country, relation="LOCATED_IN")
+
+    return G
+
+
+
+def serialize_knowledge_graph(G):
+    """
+    Converts NetworkX graph into frontend-ready JSON
+    """
+    nodes = []
+    edges = []
+
+    for node, attrs in G.nodes(data=True):
+        nodes.append({
+            "id": str(node),
+            "type": attrs.get("type", "unknown")
+        })
+
+    for src, tgt, attrs in G.edges(data=True):
+        edges.append({
+            "source": str(src),
+            "target": str(tgt),
+            "relation": attrs.get("relation", "RELATED_TO")
+        })
+
+    return {
+        "nodes": nodes,
+        "edges": edges
+    }
  
 # ================== PIPELINE ==================
 
@@ -472,6 +553,17 @@ def run_pipeline_for_tech(tech: str):
             trend_papers_year,
             trend_funding_year,
         )
+        
+        G = build_knowledge_graph(
+            {
+                "patents": patents_df,
+                "papers": papers_df,
+                "companies": companies_df,
+            },
+            tech
+        )
+
+        kg_json = serialize_knowledge_graph(G)
 
         # ================== ✅ FINAL RETURN ==================
         return {
@@ -493,10 +585,11 @@ def run_pipeline_for_tech(tech: str):
             "maturity_score": maturity_score,
             "adoption_curve": adoption_curve,
             "hype_stage": hype_stage,
+            "knowledge_graph": kg_json,
         }
 
     except Exception as e:
-        print(f"❌ Pipeline failed for {tech}: {e}")
+        print(f" Pipeline failed for {tech}: {e}")
 
         # ✅ GUARANTEED SAFE FALLBACK
         return {
@@ -519,6 +612,8 @@ def run_pipeline_for_tech(tech: str):
             "adoption_curve": [],
             "hype_stage": "Unknown",
         }
+        
+        
 
 
 
@@ -602,7 +697,93 @@ def compute_relative_investment_index(result):
     return dict(
         sorted(investment_index.items(), key=lambda x: x[1], reverse=True)
     )
+def generate_alerts(result, tech_key):
+    alerts = []
 
+    patents_trend = result.get("trend_patents_year")
+    papers_trend = result.get("trend_papers_year")
+    market_forecast = result.get("market_forecast")
+    funding_df = result.get("funding")
+
+    # ---------------- PATENT SURGE ----------------
+    if isinstance(patents_trend, pd.DataFrame) and len(patents_trend) >= 2:
+        last_row = patents_trend.iloc[-1]
+        prev_row = patents_trend.iloc[-2]
+
+        last, prev = last_row["count"], prev_row["count"]
+        year = int(last_row["year"])
+
+        if prev > 0:
+            growth = (last - prev) / prev
+            if growth > 0.3:
+                alerts.append({
+                    "type": "patent",
+                    "message": f"Patent filings grew by {int(growth*100)}% in {year} ({prev} → {last})",
+                    "time": "recent"
+                })
+
+    # ---------------- RESEARCH ACCELERATION ----------------
+    if isinstance(papers_trend, pd.DataFrame) and len(papers_trend) >= 2:
+        last_row = papers_trend.iloc[-1]
+        prev_row = papers_trend.iloc[-2]
+
+        last, prev = last_row["count"], prev_row["count"]
+        year = int(last_row["year"])
+
+        if prev > 0:
+            growth = (last - prev) / prev
+            if growth > 0.25:
+                alerts.append({
+                    "type": "tech",
+                    "message": f"Research publications increased by {int(growth*100)}% in {year}",
+                    "time": "recent"
+                })
+
+    # ---------------- MARKET MOMENTUM ----------------
+    if market_forecast and isinstance(market_forecast, dict):
+        values = market_forecast.get("billions", [])
+        years = market_forecast.get("years", [])
+
+        if len(values) >= 2:
+            start_val, end_val = values[0], values[-1]
+            start_year, end_year = years[0], years[-1]
+
+            growth_pct = ((end_val - start_val) / start_val) * 100 if start_val else 0
+
+            if growth_pct > 10:
+                alerts.append({
+                    "type": "market",
+                    "message": f"Market projected to grow {int(growth_pct)}% ({start_year}–{end_year})",
+                    "time": "forecast"
+                })
+
+    # ---------------- FUNDING / GOVERNMENT SIGNAL ----------------
+    if isinstance(funding_df, pd.DataFrame) and not funding_df.empty:
+        alerts.append({
+            "type": "market",
+            "message": f"{len(funding_df)} recent funding or investment signals detected",
+            "time": "recent"
+        })
+
+        for txt in funding_df.get("snippet", []):
+            t = str(txt).lower()
+            if any(k in t for k in ["government", "defense", "military", "ministry"]):
+                alerts.append({
+                    "type": "tech",
+                    "message": "Government or defense-sector involvement observed",
+                    "time": "recent"
+                })
+                break
+
+    # ---------------- FALLBACK (OPTION A) ----------------
+    if not alerts:
+        alerts.append({
+            "type": "tech",
+            "message": "Technology activity remains stable with no major inflection",
+            "time": "current"
+        })
+
+    return alerts
 
 # ================== JSON EXPORT ==================
 
@@ -713,13 +894,7 @@ def export_dashboard_json(tech: str, result: dict):
         },
 
         # ================= ALERTS =================
-        "alerts": [
-            {
-                "type": "patent",
-                "message": f"{tech_key} patent activity rising",
-                "time": "recent",
-            }
-        ],
+        "alerts": generate_alerts(result, tech_key),
     }
 
     os.makedirs("data/tech", exist_ok=True)
@@ -731,6 +906,21 @@ def export_dashboard_json(tech: str, result: dict):
     print(f"Dashboard JSON written: {out_path}")
 
 
+def export_kg_json(tech: str, result: dict):
+    if "knowledge_graph" not in result:
+        print("No knowledge graph found in pipeline result")
+        return
+
+    tech_key = tech.lower().replace(" ", "_")
+    kg = result["knowledge_graph"]
+
+    os.makedirs("data/tech", exist_ok=True)
+    out_path = f"data/tech/{tech_key}_kg.json"
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(kg, f, indent=2, ensure_ascii=False)
+
+    print(f"Knowledge Graph JSON written: {out_path}")
 
 
 
@@ -740,4 +930,5 @@ if __name__ == "__main__":
     tech = sys.argv[1]
     result = run_pipeline_for_tech(tech)
     export_dashboard_json(tech, result)
+    export_kg_json(tech, result)
     print(" ML pipeline completed")
