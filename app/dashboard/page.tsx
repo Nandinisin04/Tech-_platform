@@ -1,11 +1,10 @@
 "use client";
-
+import React from "react";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { BackButton} from "@/components/back-button";
-
 import { DashboardHeader } from "@/components/dashboard-header";
 import { KeyInsightsCards } from "@/components/key-insights-cards";
 import { VisualizationArea } from "@/components/visualization-area";
@@ -17,6 +16,98 @@ import { defaultKGFilters, KGFilters } from "@/lib/filters/types"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { filterKnowledgeGraph } from "@/lib/filters/filterKnowledgeGraph"
 import { fetchMultipleTechs } from "@/lib/utils/useCompareTech";
+
+function applyPreset(
+  f: KGFilters,
+  nodeTypes: Partial<KGFilters["nodeTypes"]>,
+  enabledRelations: string[]
+): KGFilters {
+  return {
+    ...f,
+
+    nodeTypes: {
+      ...f.nodeTypes,
+      ...Object.fromEntries(Object.keys(f.nodeTypes).map((k) => [k, false])),
+      ...nodeTypes,
+    },
+
+    relations: {
+      ...Object.fromEntries(Object.keys(f.relations).map((k) => [k, false])),
+      ...Object.fromEntries(enabledRelations.map((r) => [r, true])),
+    },
+
+    // ✅ KEEP THESE so TS doesn’t cry
+    minDegree: f.minDegree,
+    keyword: f.keyword,
+  }
+}
+
+function FilterPill({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-lg border bg-background p-3 shadow-sm">
+      <p className="text-xs font-semibold text-muted-foreground mb-2">{title}</p>
+      <div className="space-y-2">{children}</div>
+    </div>
+  )
+}
+
+const RELATION_LABELS: Record<string, string> = {
+  HAS_PATENT: "Tech → Patents",
+  HAS_PAPER: "Tech → Papers",
+  INVOLVES_COMPANY: "Tech → Articles (Company Sources)",
+  FILED_IN: "Patent → Country",
+  PUBLISHED_IN: "Paper → Country",
+  LOCATED_IN: "Company → Country",
+  ACTIVE_IN: "Tech → Active Countries",
+  MENTIONED_IN: "Tech → Mentioned in Articles",
+
+  RELATED_WORK: "Patent ↔ Paper Bridge",
+  SIMILAR_PAPER: "Paper ↔ Similar Paper",
+  SIMILAR_PATENT: "Patent ↔ Similar Patent",
+
+  COUNTRY_PATENT_SIGNAL: "Paper → Country (Patent Signal)",
+  COUNTRY_RESEARCH_SIGNAL: "Paper → Country (Research Signal)",
+}
+
+function resetRelations(relations: Record<string, boolean>, enable: string[]) {
+  const base: Record<string, boolean> = {}
+
+  Object.keys(relations).forEach((k) => {
+    base[k] = false
+  })
+
+  enable.forEach((k) => {
+    base[k] = true
+  })
+
+  return base
+}
+
+
+
+function ChipButton({
+  label,
+  onClick,
+}: {
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="px-3 py-1.5 text-xs rounded-full border bg-background hover:bg-muted transition"
+    >
+      {label}
+    </button>
+  )
+}
+
 
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
@@ -191,11 +282,13 @@ const maxPatentYear =
               marketReports={filteredData.entities?.market_reports ?? []}
             />
 
-            {/* Knowledge Graph */}
+            {/* ✅ Knowledge Graph */}
             {kg && kg.nodes?.length > 0 && (
               <div className="mt-6 rounded-xl border bg-card p-4">
+                {/* Header */}
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-sm font-semibold">Knowledge Graph</h2>
+
                   <button
                     onClick={() => setShowKG(!showKG)}
                     className="px-3 py-1.5 text-xs rounded-md border bg-background hover:bg-muted transition"
@@ -206,107 +299,149 @@ const maxPatentYear =
 
                 {showKG && (
                   <>
-                    <div className="flex flex-wrap gap-4 mb-3">
+                    {/* ✅ Node Legend */}
+                    <div className="flex flex-wrap gap-4 mb-4 text-xs text-muted-foreground">
                       <LegendItem color="bg-sky-300" label="Technology" />
-                      <LegendItem color="bg-green-500" label="Company" />
                       <LegendItem color="bg-blue-600" label="Patent" />
                       <LegendItem color="bg-green-200" label="Paper" />
-                      <LegendItem color=" bg-pink-300" label="Country" />
+                      <LegendItem color="bg-pink-300" label="Country" />
+                      <LegendItem color="bg-yellow-400" label="Source Article" />
                     </div>
-                    {/* -------- KG FILTER CONTROLS -------- */}
-                    <div className="mb-4 space-y-3 rounded-md border bg-muted/30 p-3">
 
-                   {/* Node type toggles */}
-                      <div className="flex flex-wrap gap-4 text-xs">
-                        {Object.entries(kgFilters.nodeTypes).map(([key, value]) => (
-                          <label key={key} className="flex items-center gap-1 capitalize">
-                            <input
-                              type="checkbox"
-                              checked={value}
-                              onChange={(e) =>
-                                setKgFilters((f) => ({
-                                  ...f,
-                                  nodeTypes: {
-                                    ...f.nodeTypes,
-                                    [key]: e.target.checked,
-                                  },
-                                }))
-                              }
-                            />
-                            {key}
-                          </label>
-                        ))}
+                    {/* ✅ Layout: Graph Left + Controls Right */}
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                      {/* LEFT = Graph */}
+                      <div className="lg:col-span-3 h-[520px] w-full overflow-hidden rounded-md border bg-background">
+                        {filteredKG && (
+                          <KnowledgeGraph nodes={filteredKG.nodes} edges={filteredKG.edges} />
+                        )}
                       </div>
 
-                      {/* Relation toggles */}
-                      <div className="flex flex-wrap gap-4 text-xs">
-                        {Object.entries(kgFilters.relations).map(([key, value]) => (
-                          <label key={key} className="flex items-center gap-1">
-                            <input
-                              type="checkbox"
-                              checked={value}
-                              onChange={(e) =>
-                                setKgFilters((f) => ({
-                                  ...f,
-                                  relations: {
-                                    ...f.relations,
-                                    [key]: e.target.checked,
-                                  },
-                                }))
-                              }
-                            />
-                            {key.replace("_", " ")}
-                          </label>
-                        ))}
-                      </div>
+                      {/* RIGHT = Controls Panel */}
+                      <div className="lg:col-span-1 space-y-3">
+                        {/* ✅ Analyst Questions */}
+                       <FilterPill title="ANALYST QUESTIONS">
+                      <div className="flex flex-wrap gap-2">
 
-                      {/* Degree + keyword */}
-                      {/* <div className="flex items-center gap-4">
-                        <label className="text-xs">
-                          Min degree: {kgFilters.minDegree}
-                          <input
-                            type="range"
-                            min={1}
-                            max={5}
-                            value={kgFilters.minDegree}
-                            onChange={(e) =>
-                              setKgFilters((f) => ({
-                                ...f,
-                                minDegree: Number(e.target.value),
-                              }))
-                            }
-                            className="w-32 ml-2"
-                          />
-                        </label>
-
-                        <input
-                          type="text"
-                          placeholder="Search node…"
-                          className="text-xs px-2 py-1 border rounded w-40"
-                          value={kgFilters.keyword ?? ""}
-                          onChange={(e) =>
-                            setKgFilters((f) => ({
-                              ...f,
-                              keyword: e.target.value || null,
-                            }))
+                        <ChipButton
+                          label="🌍 Active Countries"
+                          onClick={() =>
+                            setKgFilters((f) =>
+                              applyPreset(
+                                f,
+                                { technology: true, country: true },
+                                ["ACTIVE_IN"]
+                              )
+                            )
                           }
                         />
-                      </div> */}
-                    </div>
 
-                    <div className="h-[420px] w-full overflow-hidden rounded-md border">
-                      {filteredKG && (
-                        <KnowledgeGraph
-                          nodes={filteredKG.nodes}
-                          edges={filteredKG.edges}
+                        <ChipButton
+                          label="🔗 Patent ↔ Paper Bridges"
+                          onClick={() =>
+                            setKgFilters((f) =>
+                              applyPreset(
+                                f,
+                                { technology: true, patent: true, paper: true },
+                                ["RELATED_WORK", "HAS_PATENT", "HAS_PAPER"]
+                              )
+                            )
+                          }
                         />
-                      )}
 
+                        <ChipButton
+                          label="📄 Similar Papers"
+                          onClick={() =>
+                            setKgFilters((f) =>
+                              applyPreset(
+                                f,
+                                { paper: true },
+                                ["SIMILAR_PAPER"]
+                              )
+                            )
+                          }
+                        />
+
+                        <ChipButton
+                          label="🧩 Similar Patents"
+                          onClick={() =>
+                            setKgFilters((f) =>
+                              applyPreset(
+                                f,
+                                { patent: true },
+                                ["SIMILAR_PATENT"]
+                              )
+                            )
+                          }
+                        />
+
+                      </div>
+                    </FilterPill>
+
+                          {/* ✅ Node Type Filters */}
+<FilterPill title="NODE TYPES">
+  <div className="grid grid-cols-1 gap-2 text-xs">
+    {Object.entries(kgFilters.nodeTypes).map(([key, value]) => (
+      <label key={key} className="flex items-center gap-2 capitalize">
+        <input
+          type="checkbox"
+          checked={value}
+          onChange={(e) =>
+            setKgFilters((f) => ({
+              ...f,
+              nodeTypes: {
+                ...f.nodeTypes,
+                [key]: e.target.checked,
+              },
+            }))
+          }
+        />
+        {key.replaceAll("_", " ")}
+      </label>
+    ))}
+  </div>
+</FilterPill>
+
+
+                        {/* ✅ Relation Filters */}
+                        <FilterPill title="RELATION TYPES">
+                          <div className="grid grid-cols-1 gap-2 text-xs max-h-[180px] overflow-auto pr-1">
+                            {Object.entries(kgFilters.relations).map(([key, value]) => (
+                            <label key={key} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={value}
+                                onChange={(e) =>
+                                  setKgFilters((f) => ({
+                                    ...f,
+                                    relations: {
+                                      ...f.relations,
+                                      [key]: e.target.checked,
+                                    },
+                                  }))
+                                }
+                              />
+                              {RELATION_LABELS[key] ?? key.replaceAll("_", " ")}
+                            </label>
+                          ))}
+
+                          </div>
+                        </FilterPill>
+
+                        {/* ✅ Reset */}
+                        <button
+                          onClick={() => setKgFilters(defaultKGFilters)}
+                          className="w-full px-3 py-2 text-xs rounded-md border bg-background hover:bg-muted transition"
+                        >
+                          Reset Filters
+                        </button>
+                      </div>
                     </div>
                   </>
                 )}
               </div>
             )}
+
           </div>
 
           {/* RIGHT: SIDEBAR (ONCE) */}

@@ -562,106 +562,224 @@ def safe_str(x):
         return None
     return str(x).strip()
 
+import re
+import networkx as nx
+import pandas as pd
+
+def normalize_country(c: str):
+    if not c:
+        return None
+    c = c.strip()
+    mapping = {
+        "USA": "United States",
+        "US": "United States",
+        "United States of America": "United States",
+        "UK": "United Kingdom",
+        "UAE": "United Arab Emirates",
+    }
+    return mapping.get(c, c)
+
+def safe_clean_str(x):
+    if x is None:
+        return None
+    x = str(x).strip()
+    if x == "" or x.lower() in ["none", "null", "nan"]:
+        return None
+    return x
+
+def is_junk_title(text: str):
+    if not text:
+        return True
+    t = text.lower().strip()
+
+    junk_patterns = [
+        r"\btop\s*\d+",
+        r"\bstocks?\b",
+        r"\bcompanies\b",
+        r"\bmarket\b",
+        r"\breport\b",
+        r"\bforecast\b",
+        r"\b202\d\b",
+        r"\bbest\b",
+        r"\bguide\b",
+        r"\blist\b",
+    ]
+    if len(t) > 120:
+        return True
+    for pat in junk_patterns:
+        if re.search(pat, t):
+            return True
+    return False
+
+# ✅ similarity helpers
+def tokenize(text: str):
+    if not isinstance(text, str):
+        return set()
+    text = re.sub(r"[^a-zA-Z0-9\s]", " ", text.lower())
+    words = [w for w in text.split() if len(w) > 3]
+    stop = {
+        "using","based","system","method","model","approach","analysis","study","research",
+        "framework","design","performance","results","application","applications","deep",
+        "learning","artificial","intelligence","machine","network"
+    }
+    return set([w for w in words if w not in stop])
+
+def jaccard(a: set, b: set):
+    if not a or not b:
+        return 0.0
+    return len(a & b) / max(1, len(a | b))
+
 
 def build_knowledge_graph(result: dict, tech_name: str):
     G = nx.Graph()
 
-    G.add_node(tech_name, type="technology", url=f"https://en.wikipedia.org/wiki/{tech_name.replace(' ', '_')}")
+    tech_name = safe_clean_str(tech_name)
+    if not tech_name:
+        return G
+
+    # ✅ Technology node
+    G.add_node(
+        tech_name,
+        type="technology",
+        url=f"https://en.wikipedia.org/wiki/{tech_name.replace(' ', '_')}"
+    )
 
     # -------- PATENTS --------
-    for _, row in result.get("patents", pd.DataFrame()).iterrows():
-        patent = safe_str(row.get("title"))
-        country = safe_str(row.get("country"))
+    patents_df = result.get("patents", pd.DataFrame())
+    patent_titles = []
 
-        if patent:
-            patent_url = safe_str(row.get("link"))  # or "url"
+    for _, row in patents_df.iterrows():
+        patent = safe_clean_str(row.get("title"))
+        patent_url = safe_clean_str(row.get("link"))
 
-            G.add_node(
-                patent,
-                type="patent",
-                url=patent_url if patent_url else None
-            )
+        if not patent or is_junk_title(patent):
+            continue
 
-            G.add_edge(tech_name, patent, relation="HAS_PATENT")
+        patent_titles.append(patent)
 
-
-            if country:
-                G.add_node(country, type="country")
-                G.add_edge(patent, country, relation="FILED_IN")
+        G.add_node(patent, type="patent", url=patent_url)
+        G.add_edge(tech_name, patent, relation="HAS_PATENT")
 
     # -------- PAPERS --------
-    for _, row in result.get("papers", pd.DataFrame()).iterrows():
-        paper = safe_str(row.get("title"))
-        country = safe_str(row.get("country"))
+    papers_df = result.get("papers", pd.DataFrame())
+    paper_titles = []
 
-        if paper:
-            paper_url = safe_str(row.get("link"))
+    for _, row in papers_df.iterrows():
+        paper = safe_clean_str(row.get("title"))
+        paper_url = safe_clean_str(row.get("link"))
 
-            G.add_node(
-                paper,
-                type="paper",
-                url=paper_url if paper_url else None
-            )
+        if not paper or is_junk_title(paper):
+            continue
 
-            G.add_edge(tech_name, paper, relation="HAS_PAPER")
+        paper_titles.append(paper)
 
+        G.add_node(paper, type="paper", url=paper_url)
+        G.add_edge(tech_name, paper, relation="HAS_PAPER")
 
-            if country:
-                G.add_node(country, type="country")
-                G.add_edge(paper, country, relation="PUBLISHED_IN")
+    # -------- ARTICLES (misnamed as companies) --------
+    articles_df = result.get("companies", pd.DataFrame())
+    article_titles = []
 
-    # -------- COMPANIES --------
-    for _, row in result.get("companies", pd.DataFrame()).iterrows():
-        company = safe_str(row.get("name"))
-        country = safe_str(row.get("country"))
+    for _, row in articles_df.iterrows():
+        article_title = safe_clean_str(row.get("name"))
+        article_url = safe_clean_str(row.get("link"))
 
-        if company:
-            company_url = safe_str(row.get("website"))  # or link column
+        if not article_title:
+            continue
 
-            G.add_node(
-                company,
-                type="company",
-                url=company_url if company_url else None
-            )
+        article_titles.append(article_title)
 
-            G.add_edge(tech_name, company, relation="INVOLVES_COMPANY")
+        G.add_node(article_title, type="source_article", url=article_url)
+        G.add_edge(tech_name, article_title, relation="MENTIONED_IN")
 
+    # ✅ Limit for speed
+    patent_titles = patent_titles[:25]
+    paper_titles = paper_titles[:25]
+    article_titles = article_titles[:15]
 
-            if country:
-                G.add_node(country, type="country")
-                G.add_edge(company, country, relation="LOCATED_IN")
+    # =========================================================
+    # ✅ EXTRA LINKAGES (NON-STAR GRAPH)
+    # =========================================================
+
+    # 1) Paper ↔ Patent similarity
+    for p in patent_titles:
+        p_tok = tokenize(p)
+        for r in paper_titles:
+            sim = jaccard(p_tok, tokenize(r))
+            if sim >= 0.18:
+                G.add_edge(p, r, relation="RELATED_WORK", weight=sim)
+
+    # 2) Paper ↔ Paper similarity
+    for i in range(len(paper_titles)):
+        for j in range(i + 1, len(paper_titles)):
+            a, b = paper_titles[i], paper_titles[j]
+            sim = jaccard(tokenize(a), tokenize(b))
+            if sim >= 0.22:
+                G.add_edge(a, b, relation="SIMILAR_PAPER", weight=sim)
+
+    # 3) Patent ↔ Patent similarity
+    for i in range(len(patent_titles)):
+        for j in range(i + 1, len(patent_titles)):
+            a, b = patent_titles[i], patent_titles[j]
+            sim = jaccard(tokenize(a), tokenize(b))
+            if sim >= 0.22:
+                G.add_edge(a, b, relation="SIMILAR_PATENT", weight=sim)
+
+    # 4) Article ↔ Patent/Paper mentions (keyword overlap)
+    for art in article_titles:
+        art_tok = tokenize(art)
+
+        for p in patent_titles[:15]:
+            if jaccard(art_tok, tokenize(p)) >= 0.12:
+                G.add_edge(art, p, relation="MENTIONS_PATENT")
+
+        for r in paper_titles[:15]:
+            if jaccard(art_tok, tokenize(r)) >= 0.12:
+                G.add_edge(art, r, relation="MENTIONS_PAPER")
+
+    # 5) Countries from investment dict + connect to tech
+    country_inv = result.get("country_investment", {}).get("values", {})
+    if isinstance(country_inv, dict) and len(country_inv) > 0:
+        for c, score in country_inv.items():
+            c = normalize_country(safe_clean_str(c))
+            if not c:
+                continue
+            G.add_node(c, type="country")
+            G.add_edge(tech_name, c, relation="ACTIVE_IN", weight=float(score))
+
+            # connect country to some items to avoid star-only view
+            for p in patent_titles[:5]:
+                G.add_edge(c, p, relation="COUNTRY_PATENT_SIGNAL")
+            for r in paper_titles[:5]:
+                G.add_edge(c, r, relation="COUNTRY_RESEARCH_SIGNAL")
 
     return G
-
-
-
 def serialize_knowledge_graph(G):
-    """
-    Converts NetworkX graph into frontend-ready JSON
-    """
     nodes = []
     edges = []
+
+    degree_map = dict(G.degree())
 
     for node, attrs in G.nodes(data=True):
         nodes.append({
             "id": str(node),
             "type": attrs.get("type", "unknown"),
-            "url": attrs.get("url")
+            "url": attrs.get("url"),
+            "degree": degree_map.get(node, 0),
         })
 
     for src, tgt, attrs in G.edges(data=True):
         edges.append({
             "source": str(src),
             "target": str(tgt),
-            "relation": attrs.get("relation", "RELATED_TO")
+            "relation": attrs.get("relation", "RELATED_TO"),
+            "weight": float(attrs.get("weight", 1.0)),
         })
 
-    return {
-        "nodes": nodes,
-        "edges": edges
-    }
- 
-# ================== PIPELINE ==================
+    return {"nodes": nodes, "edges": edges}
+
+
+#======pipeline=============
 
 def run_pipeline_for_tech(tech: str):
     print(f"Running pipeline for: {tech}")
@@ -686,6 +804,7 @@ def run_pipeline_for_tech(tech: str):
         trend_papers_year   = compute_trend_by_year(papers_df)
         trend_funding_year  = compute_trend_by_year(funding_df)
         trend_market_year   = compute_trend_by_year(market_df)
+        trend_curve = build_trend_curve(trend_patents_year, trend_papers_year, trend_funding_year)
 
         trend_patents_country = compute_trend_by_country_year(patents_df)
         trend_papers_country  = compute_trend_by_country_year(papers_df)
@@ -705,12 +824,22 @@ def run_pipeline_for_tech(tech: str):
             trend_papers_year,
             trend_funding_year,
         )
+        country_investment = {
+        "type": "relative_investment_index",
+        "values": compute_relative_investment_index({
+            "trend_patents_country": trend_patents_country,
+            "papers": papers_df,
+            "companies": companies_df
+        })
+    }
+
         
         G = build_knowledge_graph(
             {
                 "patents": patents_df,
                 "papers": papers_df,
                 "companies": companies_df,
+                "country_investment": country_investment, 
             },
             tech
         )
@@ -766,6 +895,39 @@ def run_pipeline_for_tech(tech: str):
         }
         
         
+def build_trend_curve(trend_pat, trend_pap=None, trend_fund=None):
+    """
+    Combine year-wise signals into ONE curve.
+    Output: list[int] aligned by years.
+    """
+
+    dfs = []
+    if isinstance(trend_pat, pd.DataFrame) and not trend_pat.empty:
+        dfs.append(trend_pat.rename(columns={"count": "patents"}))
+    if isinstance(trend_pap, pd.DataFrame) and not trend_pap.empty:
+        dfs.append(trend_pap.rename(columns={"count": "papers"}))
+    if isinstance(trend_fund, pd.DataFrame) and not trend_fund.empty:
+        dfs.append(trend_fund.rename(columns={"count": "funding"}))
+
+    if not dfs:
+        return []
+
+    # merge on year
+    merged = dfs[0]
+    for d in dfs[1:]:
+        merged = merged.merge(d, on="year", how="outer")
+
+    merged = merged.fillna(0).sort_values("year")
+
+    # weighted sum (tune as you like)
+    merged["score"] = (
+        0.5 * merged.get("patents", 0)
+        + 0.3 * merged.get("papers", 0)
+        + 0.2 * merged.get("funding", 0)
+    )
+
+    # convert to int curve
+    return merged["score"].round().astype(int).tolist()
 
 def generate_alerts(result, tech_key):
     alerts = []

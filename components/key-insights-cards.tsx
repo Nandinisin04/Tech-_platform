@@ -9,6 +9,16 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { TrendingUp, Activity, BarChart3, Zap } from "lucide-react"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import { HoverTip } from "@/components/common/HoverTip"
+
+import {
+  KEY_INSIGHTS_TOOLTIPS,
+  STAGE_INFO,
+  TRL_INFO,
+  MARKET_SIZE_INFO,
+  CONVERGENCE_INFO,
+} from "@/lib/keyInsightsTooltips"
 
 interface InsightCard {
   id: string
@@ -24,7 +34,7 @@ type KeyInsightsProps = {
   insights: {
     trl: number
     growth_stage: string
-    market_size_billion_usd: number
+    market_size_billion_usd: number | null
     signals: number
   }
 }
@@ -54,7 +64,10 @@ export function KeyInsightsCards({ insights }: KeyInsightsProps) {
       title: "Market Size",
       description: "Projected market value",
       metric: "TAM",
-      value: `$${insights.market_size_billion_usd}B`,
+      value:
+        insights.market_size_billion_usd == null
+          ? "N/A"
+          : `$${insights.market_size_billion_usd}B`,
       icon: <BarChart3 className="w-5 h-5" />,
       status: "increasing",
     },
@@ -70,40 +83,90 @@ export function KeyInsightsCards({ insights }: KeyInsightsProps) {
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {INSIGHTS.map((insight) => (
-        <Card
-          key={insight.id}
-          className="hover:border-primary/30 transition-all hover:shadow-sm"
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-sm font-semibold">
-                  {insight.title}
-                </CardTitle>
-                <CardDescription className="text-xs mt-1">
-                  {insight.description}
-                </CardDescription>
-              </div>
-              <div className="text-primary/50 flex-shrink-0">
-                {insight.icon}
-              </div>
-            </div>
-          </CardHeader>
+    <TooltipProvider delayDuration={200}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {INSIGHTS.map((insight) => {
+          const baseTip =
+            KEY_INSIGHTS_TOOLTIPS[
+              insight.title as keyof typeof KEY_INSIGHTS_TOOLTIPS
+            ]
 
-          <CardContent>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-foreground">
-                {insight.value}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {insight.metric}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+          // ✅ dynamic value meaning per card
+          let valueMeaning = "Value meaning: —"
+
+          if (insight.title === "Technology Readiness") {
+            valueMeaning = TRL_INFO(insights.trl)
+          }
+
+          if (insight.title === "Market Size") {
+            valueMeaning = MARKET_SIZE_INFO(insights.market_size_billion_usd)
+          }
+
+          if (insight.title === "Tech Convergence") {
+            valueMeaning = CONVERGENCE_INFO(insights.signals)
+          }
+
+          if (insight.title === "S-Curve Position") {
+            valueMeaning = `Value meaning: ${
+              STAGE_INFO[insights.growth_stage] ?? "Stage meaning not available."
+            }`
+          }
+
+          // ✅ final tooltip text (2 lines meaning + space + 1 line value meaning)
+          const combinedTooltip = `
+${baseTip?.meaning ?? "Info not available."}
+
+${valueMeaning}
+          `.trim()
+
+          return (
+            <Card
+              key={insight.id}
+              className="hover:border-primary/30 transition-all hover:shadow-sm"
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    {/* ✅ ONLY ONE tooltip icon per card (near title) */}
+                    <CardTitle className="text-sm font-semibold flex items-center gap-1">
+                      <span>{insight.title}</span>
+
+                      <HoverTip
+                        showIcon={true}
+                        title={insight.title}
+                        subtitle={insight.description}
+                        footer="Hover for explanation"
+                        tip={combinedTooltip}
+                      >
+                        <span />
+                      </HoverTip>
+                    </CardTitle>
+
+                    <CardDescription className="text-xs mt-1">
+                      {insight.description}
+                    </CardDescription>
+                  </div>
+
+                  <div className="text-primary/50 flex-shrink-0">
+                    {insight.icon}
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold text-foreground">
+                    {insight.value}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {insight.metric}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </TooltipProvider>
   )
 }

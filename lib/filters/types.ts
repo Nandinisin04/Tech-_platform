@@ -57,6 +57,7 @@ export type KGFilters = {
     paper: boolean
     company: boolean
     country: boolean
+    source_article: boolean
   }
   relations: {
     HAS_PATENT: boolean
@@ -64,7 +65,15 @@ export type KGFilters = {
     INVOLVES_COMPANY: boolean
     FILED_IN: boolean
     LOCATED_IN: boolean
-  }
+    ACTIVE_IN: boolean
+
+    RELATED_WORK: boolean
+    SIMILAR_PAPER: boolean
+    SIMILAR_PATENT: boolean
+    MENTIONED_IN: boolean
+    COUNTRY_PATENT_SIGNAL: boolean
+    COUNTRY_RESEARCH_SIGNAL: boolean
+    }
   minDegree: number
   keyword: string | null
 }
@@ -76,6 +85,7 @@ export const defaultKGFilters: KGFilters = {
     paper: true,
     company: true,
     country: false,
+    source_article: true,
   },
   relations: {
     HAS_PATENT: true,
@@ -83,6 +93,14 @@ export const defaultKGFilters: KGFilters = {
     INVOLVES_COMPANY: true,
     FILED_IN: false,
     LOCATED_IN: false,
+    ACTIVE_IN: true,
+
+  RELATED_WORK: true,
+  SIMILAR_PAPER: false,
+  SIMILAR_PATENT: false,
+  MENTIONED_IN: true,
+  COUNTRY_PATENT_SIGNAL: false,
+  COUNTRY_RESEARCH_SIGNAL: false,
   },
   minDegree: 1,
   keyword: null,

@@ -25,6 +25,10 @@ import {
   Scatter,
 } from "recharts";
 
+import { makeTrendData } from "@/lib/trendUtils"
+import { TrendTooltip } from "@/components/common/TrendTooltip"
+
+
 type PatentPoint = {
   year: number;
   count: number;
@@ -73,12 +77,14 @@ export function VisualizationArea({
 }: VisualizationAreaProps) {
   // ---------- SAFE TRANSFORMS ----------
   const forecastData =
-    trendCurve.length > 0
-      ? trendCurve.map((value, index) => ({
-          step: `T${index + 1}`,
-          value,
-        }))
-      : [];
+  trendCurve.length > 0
+    ? trendCurve.map((value, index) => ({
+        step: `T${index + 1}`,
+        value,
+        index, // ✅ added (important for delta calc tooltip)
+      }))
+    : [];
+
 
   const investmentData =
     countryInvestment && Object.keys(countryInvestment).length > 0
@@ -164,7 +170,7 @@ const summaryDots = boxStats
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="step" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<TrendTooltip data={forecastData} />} />
                 <Area
                   type="monotone"
                   dataKey="value"
