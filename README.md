@@ -1,30 +1,45 @@
-# AI Technology Platform UI
+# TechIntel
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Our project is live at: **[https://frontend-zeta-coral-71.vercel.app/](https://frontend-zeta-coral-71.vercel.app/)**
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/kats-projects-9c54684f/v0-ai-technology-platform-ui)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/tkaVCYGMARI)
+## What This Project Does
 
-## Overview
+Our project provides a secure intelligence workspace to help scientists analyze both open research and internal technical materials.
+It supports locally deployed analysis of sensitive internal information to ensure data remains within organizational boundaries, while also organizing scattered public research data to generate high-level technology trends and statistical insights.
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+## Why it Matters
 
-## Deployment
+- Public research data is scattered and noisy
 
-Your project is live at:
+- Internal technical materials cannot be sent to cloud tools
 
-**[https://vercel.com/kats-projects-9c54684f/v0-ai-technology-platform-ui](https://vercel.com/kats-projects-9c54684f/v0-ai-technology-platform-ui)**
+- Scientists spend significant time manually reading and synthesizing information
 
-## Build your app
+Our platform bridges this gap by combining structured open-source intelligence with secure, local analysis workflows.
 
-Continue building your app on:
 
-**[https://v0.app/chat/tkaVCYGMARI](https://v0.app/chat/tkaVCYGMARI)**
+## Key Capabilities
 
-## How It Works
+- Dual-mode intelligence: open research + local analysis
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+- Secure, local-first document ingestion
+
+- Structured insight generation (search, summaries, trends)
+
+- Modular and extensible architecture
+
+
+## Tech Stack
+
+**Frontend**
+- React (Next.js), Tailwind CSS, Vercel
+
+**Backend API**
+- Node.js, Express.js, MongoDB (Mongoose), Render
+
+**Data Pipelines**
+- Python, FastAPI (pipeline service), SERP & GEMINI API
+
+**Database**
+- MongoDB Atlas + Local file-based storage
+
