@@ -94,21 +94,479 @@ def fetch_patents(tech, num=20):
 
 
 def fetch_papers(tech, num=20):
-    params = {"engine": "google_scholar", "q": tech, "num": num}
+    params = {
+        "engine": "google_scholar",
+        "q": tech,
+        "num": num
+    }
+
     results = serpapi_search(params)
     organic = results.get("organic_results", []) or []
 
-    return pd.DataFrame([
-        {
+    papers = []
+
+    for r in organic:
+
+        pub_info = r.get("publication_info") or {}
+
+        papers.append({
             "title": r.get("title"),
             "snippet": r.get("snippet"),
             "link": r.get("link"),
-            "year": (r.get("publication_info") or {}).get("year"),
-            "authors":(r.get("publication_info") or {}).get("authors"),
+            "year": pub_info.get("year"),
+            "authors": pub_info.get("authors"),
+            "venue": pub_info.get("summary"),   # journal / conference
+            "citations": (
+                (r.get("inline_links") or {})
+                .get("cited_by", {})
+                .get("total")
+            ),
             "technology": tech
-        }
-        for r in organic
-    ])
+        })
+
+    return pd.DataFrame(papers)
+def enrich_papers_with_crossref(papers_df):
+
+    enriched_rows = []
+
+    for _, row in papers_df.iterrows():
+
+        title = row.get("title")
+
+        try:
+            url = "https://api.crossref.org/works"
+            params = {"query.title": title, "rows": 1}
+
+            res = requests.get(url, params=params, timeout=10)
+            data = res.json()
+
+            items = data.get("message", {}).get("items", [])
+
+            if items:
+                item = items[0]
+
+                # ---------- BASIC METADATA ----------
+                row["doi"] = item.get("DOI")
+
+                row["journal"] = (
+                    item.get("container-title")[0]
+                    if item.get("container-title")
+                    else None
+                )
+
+                row["publisher"] = item.get("publisher")
+
+                row["year"] = (
+                    item.get("issued", {})
+                    .get("date-parts", [[None]])[0][0]
+                )
+
+                row["abstract"] = item.get("abstract")
+
+                # ---------- NEW INTEL FIELDS ----------
+
+                # Conference / venue
+                row["conference"] = (
+                    item.get("container-title")[0]
+                    if item.get("type") == "proceedings-article"
+                    else None
+                )
+
+                # Reference count
+                row["reference_count"] = item.get("reference-count")
+
+                # Subject areas
+                row["subjects"] = item.get("subject")
+
+                # Author affiliations
+                affiliations = []
+
+                for author in item.get("author", []):
+                    for aff in author.get("affiliation", []):
+                        if aff.get("name"):
+                            affiliations.append(aff.get("name"))
+
+                row["affiliations"] = affiliations
+
+                # Publication type
+                row["publication_type"] = item.get("type")
+
+        except Exception:
+            pass
+
+        enriched_rows.append(row)
+
+    return pd.DataFrame(enriched_rows)
+
+def enrich_from_arxiv(row):
+
+    link = str(row.get("link", ""))
+
+    if "arxiv.org" not in link:
+        return row
+
+    try:
+        # Extract ID
+        arxiv_id = link.split("/")[-1]
+
+        url = f"http://export.arxiv.org/api/query?id_list={arxiv_id}"
+        res = requests.get(url, timeout=10)
+
+        text = res.text
+
+        abstract_match = re.search(
+            r"<summary>(.*?)</summary>",
+            text,
+            re.S
+        )
+
+        if abstract_match:
+            abstract = abstract_match.group(1).strip()
+            row["abstract"] = abstract
+
+        row["source"] = "arxiv"
+
+    except Exception:
+        pass
+
+    return row
+
+def enrich_from_semantic_scholar(row):
+
+    doi = row.get("doi")
+    title = row.get("title")
+
+    try:
+
+        # Prefer DOI search
+        if doi:
+            url = f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}"
+            params = {
+                "fields": "abstract,citationCount,fieldsOfStudy,openAccessPdf"
+            }
+
+        else:
+            # Fallback: title search
+            url = "https://api.semanticscholar.org/graph/v1/paper/search"
+            params = {
+                "query": title,
+                "limit": 1,
+                "fields": "abstract,citationCount,fieldsOfStudy,openAccessPdf"
+            }
+
+        res = requests.get(url, params=params, timeout=10)
+        data = res.json()
+
+        # Handle search vs DOI response
+        paper = (
+            data.get("data", [{}])[0]
+            if "data" in data
+            else data
+        )
+
+        # ---------- Extract fields ----------
+        if not row.get("abstract"):
+            row["abstract"] = paper.get("abstract")
+
+        if not row.get("citations"):
+            row["citations"] = paper.get("citationCount")
+
+        row["fields_of_study"] = paper.get("fieldsOfStudy")
+
+        # Open access PDF detection
+        oa_pdf = paper.get("openAccessPdf", {})
+        if oa_pdf:
+            row["open_pdf"] = oa_pdf.get("url")
+
+        row["source"] = "semantic_scholar"
+
+    except Exception:
+        pass
+
+    return row
+
+def enrich_from_openalex(row):
+
+    doi = row.get("doi")
+
+    if not doi:
+        return row
+
+    try:
+
+        url = f"https://api.openalex.org/works/doi:{doi}"
+        res = requests.get(url, timeout=10)
+
+        if res.status_code != 200:
+            return row
+
+        data = res.json()
+
+        # ---------- Abstract reconstruction ----------
+        inverted_index = data.get("abstract_inverted_index")
+
+        if inverted_index and not row.get("abstract"):
+
+            words = []
+
+            # Flatten inverted index
+            for word, positions in inverted_index.items():
+                for pos in positions:
+                    words.append((pos, word))
+
+            # Sort by position
+            words_sorted = sorted(words, key=lambda x: x[0])
+
+            abstract = " ".join([w[1] for w in words_sorted])
+
+            row["abstract"] = abstract
+
+        # ---------- Extra metadata ----------
+        row["openalex_citations"] = data.get("cited_by_count")
+
+        concepts = data.get("concepts", [])
+        row["concepts"] = [c.get("display_name") for c in concepts[:5]]
+
+        row["source"] = "openalex"
+
+    except Exception:
+        pass
+
+    return row
+def enrich_papers(papers_df):
+
+    enriched_rows = []
+
+    # ---------- STEP 1: Crossref ----------
+    papers_df = enrich_papers_with_crossref(papers_df)
+
+    for _, row in papers_df.iterrows():
+
+        # ---------- STEP 2: arXiv ----------
+        if not row.get("abstract"):
+            row = enrich_from_arxiv(row)
+
+        # ---------- STEP 3: Semantic Scholar ----------
+        if not row.get("abstract"):
+            row = enrich_from_semantic_scholar(row)
+
+        # ---------- STEP 4: OpenAlex ----------
+        if not row.get("abstract"):
+            row = enrich_from_openalex(row)
+
+        # ---------- STEP 5: Snippet fallback ----------
+        if not row.get("abstract"):
+            row["abstract"] = row.get("snippet")
+
+        enriched_rows.append(row)
+
+    return pd.DataFrame(enriched_rows)
+
+
+
+######INSIGHTS FROM PAPER#######
+
+TECH_DOMAIN_KEYWORDS = {
+
+    "Artificial Intelligence & Machine Learning": [
+        "deep learning", "neural network", "machine learning",
+        "cnn", "rnn", "transformer", "computer vision",
+        "reinforcement learning", "supervised learning"
+    ],
+
+    "Natural Language Processing": [
+        "nlp", "language model", "bert", "gpt",
+        "text classification", "sentiment analysis",
+        "named entity recognition", "translation"
+    ],
+
+    "Blockchain & Web3": [
+        "blockchain", "web3", "smart contract",
+        "ethereum", "decentralized", "defi",
+        "distributed ledger", "consensus protocol"
+    ],
+
+    "Cybersecurity & Cryptography": [
+        "cryptography", "encryption", "cybersecurity",
+        "post-quantum", "authentication", "secure communication",
+        "zero trust", "intrusion detection"
+    ],
+
+    "Quantum Computing": [
+        "quantum computing", "quantum cryptography",
+        "qubits", "quantum algorithms",
+        "quantum key distribution"
+    ],
+
+    "Hypersonics & Aerospace": [
+        "hypersonic", "scramjet", "aerothermodynamics",
+        "supersonic", "propulsion", "reentry",
+        "missile", "flight dynamics"
+    ],
+
+    "Robotics & Autonomous Systems": [
+        "robotics", "autonomous", "uav", "drone",
+        "navigation", "path planning", "humanoid"
+    ],
+
+    "Internet of Things (IoT)": [
+        "iot", "sensor network", "smart city",
+        "edge devices", "connected devices"
+    ],
+
+    "Cloud Computing & Distributed Systems": [
+        "cloud computing", "distributed systems",
+        "microservices", "kubernetes",
+        "serverless", "containerization"
+    ],
+
+    "Web Development": [
+        "react", "next.js", "node.js", "frontend",
+        "backend", "web application", "javascript",
+        "full stack"
+    ],
+
+    "Data Science & Big Data": [
+        "big data", "data mining", "data analytics",
+        "predictive modeling", "data pipeline"
+    ],
+
+    "Semiconductors & Electronics": [
+        "semiconductor", "vlsi", "fpga",
+        "integrated circuits", "chip design"
+    ],
+
+    "Energy & Sustainability": [
+        "renewable energy", "solar", "wind energy",
+        "battery", "energy storage"
+    ]
+}
+def detect_tech_domain(text):
+
+    text = str(text).lower()
+
+    for domain, keywords in TECH_DOMAIN_KEYWORDS.items():
+        if any(k in text for k in keywords):
+            return domain
+
+    return "General Emerging Technology"
+
+
+def detect_methodology(text):
+
+    text = str(text).lower()
+
+    if "simulation" in text:
+        return "Computational simulation and modeling"
+
+    if "experimental" in text or "prototype" in text:
+        return "Experimental validation and prototyping"
+
+    if "dataset" in text or "training" in text:
+        return "Data-driven model training and evaluation"
+
+    if "framework" in text:
+        return "Framework and system architecture design"
+
+    return "Analytical and theoretical evaluation"
+
+def detect_defense_relevance(domain):
+
+    defense_map = {
+
+        "Hypersonics & Aerospace":
+            "Direct military applications in missile systems, high-speed reconnaissance, and strategic strike platforms.",
+
+        "Cybersecurity & Cryptography":
+            "Critical for national cyber defense, secure communications, and intelligence infrastructure.",
+
+        "Artificial Intelligence & Machine Learning":
+            "Enables autonomous warfare systems, surveillance intelligence, and battlefield decision support.",
+
+        "Quantum Computing":
+            "Strategic implications for cryptographic disruption and secure quantum communications.",
+
+        "Robotics & Autonomous Systems":
+            "Applicable in unmanned combat vehicles, reconnaissance drones, and defense robotics.",
+
+        "Blockchain & Web3":
+            "Useful for secure defense data sharing and decentralized intelligence networks."
+    }
+
+    return defense_map.get(
+        domain,
+        "Moderate defense relevance depending on deployment context."
+    )
+def get_insight_text(row):
+
+    return (
+        row.get("abstract")
+        or row.get("snippet")
+        or row.get("title")
+        or ""
+    )
+
+def generate_paper_insights(row):
+
+    text = get_insight_text(row)
+
+    domain = detect_tech_domain(text)
+    methodology = detect_methodology(text)
+    defense_relevance = detect_defense_relevance(domain)
+
+    insights = {
+
+        "summary":
+            f"This publication explores advancements in {domain.lower()}, focusing on applied research, system optimization, and real-world technological deployment.",
+
+        "objective":
+            f"The study aims to investigate technical innovations and performance improvements within the field of {domain.lower()}.",
+
+        "methodology":
+            methodology,
+
+        "key_innovation":
+            "Proposes novel architectures, optimized computational techniques, or improved engineering designs to enhance system performance.",
+
+        "tech_domain":
+            domain,
+
+        "defense_relevance":
+            defense_relevance,
+
+        "strategic_impact":
+            "Potential to influence national technological capabilities, operational readiness, and strategic deterrence infrastructure.",
+
+        "novelty_signal":
+            "Represents progressive innovation contributing to ongoing global research acceleration.",
+
+        "research_maturity":
+            "Positioned between experimental validation and early-stage deployment readiness.",
+
+        "limitations":
+            "Challenges include scalability, operational cost, environmental constraints, and integration complexity."
+    }
+
+    return insights
+
+def attach_paper_insights(papers_df):
+
+    insights_list = []
+
+    for _, row in papers_df.iterrows():
+
+        try:
+            insights = generate_paper_insights(row.to_dict())
+        except Exception as e:
+            print("Insight error:", e)
+            insights = {}
+
+        insights_list.append(insights)
+
+    papers_df["insights"] = insights_list
+
+    return papers_df
+
 
 
 def fetch_companies(tech, num=10):
@@ -368,8 +826,6 @@ TRL_MAP = {
     1: ["hypothesis", "idea"],
 }
 
-
-
 def estimate_trl(text):
     t = str(text).lower()
     scores = {}
@@ -387,9 +843,6 @@ def estimate_trl(text):
 
     weighted = {trl: trl * count for trl, count in scores.items()}
     return max(weighted, key=weighted.get)
-
-
-
 
 
 def add_trl(df):
@@ -787,7 +1240,9 @@ def run_pipeline_for_tech(tech: str):
     try:
         # ================== 1. FETCH ==================
         patents_df   = clean_df(pd.DataFrame(fetch_patents(tech)), ["title"])
-        papers_df    = clean_df(pd.DataFrame(fetch_papers(tech)),  ["title"])
+        papers_raw = clean_df(pd.DataFrame(fetch_papers(tech)), ["title"])
+        papers_df = enrich_papers(papers_raw)
+        papers_df = attach_paper_insights(papers_df)
         companies_df = clean_df(pd.DataFrame(fetch_companies(tech)), ["name"])
         funding_df   = clean_df(pd.DataFrame(fetch_funding(tech)), ["title"])
         market_df    = clean_df(pd.DataFrame(fetch_market(tech)),  ["title"])
@@ -1327,13 +1782,31 @@ def export_dashboard_json(tech: str, result: dict):
     trend_pat = result.get("patents_year", pd.DataFrame())
     forecast  = result.get("market_forecast")
     #summary_text = generate_summary(tech)
-    
+        # ================== NaN SANITIZATION ==================
+
+    patents   = patents.replace({np.nan: None})
+    papers    = papers.replace({np.nan: None})
+    companies = companies.replace({np.nan: None})
+    market    = market.replace({np.nan: None})
+
 
 
     def safe(val):
-        if isinstance(val, float):
-            return None if np.isnan(val) or np.isinf(val) else val
+
+        if val is None:
+            return None
+
+        if isinstance(val, float) and (np.isnan(val) or np.isinf(val)):
+            return None
+
+        if isinstance(val, (np.floating, np.integer)) and np.isnan(val):
+            return None
+
+        if pd.isna(val):
+            return None
+
         return val
+
 
     output = {
         "technology": tech_key,
@@ -1394,8 +1867,13 @@ def export_dashboard_json(tech: str, result: dict):
                 {
                     "title": r.get("title"),
                     "snippet": r.get("snippet"),
-                    "link":safe( r.get("link")),
-                    "year": safe(r.get("year")),
+                    "abstract": r.get("abstract"),
+                    "doi": r.get("doi"),
+                    "journal": r.get("journal"),
+                    "citations": r.get("citations"),
+                    "link": r.get("link"),
+                    "year": r.get("year"),
+                    "insights": r.get("insights"),
                 }
                 for _, r in papers.iterrows()
             ] if isinstance(papers, pd.DataFrame) else [],
