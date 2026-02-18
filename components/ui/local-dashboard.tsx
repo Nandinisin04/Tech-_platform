@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
+import { X, Plus, Filter } from "lucide-react"
 
 type MetricObj = { label: string; value: string; context: string }
 
@@ -18,6 +19,7 @@ type ScientistBrief = {
   confidence: number
 }
 
+
 type Insights = {
   summary: string[]
   keyFindings: string[]
@@ -25,7 +27,14 @@ type Insights = {
   recommendations: string[]
   metrics?: string[] | MetricObj[]
   brief?: ScientistBrief
+  tags?: string[]
+  // Added timeline type
+  timeline?: { date: string; event: string }[]
 }
+
+
+
+
 
 type LocalDoc = {
   id: string
@@ -83,6 +92,19 @@ export default function LocalDashboard() {
   const [selectedDoc, setSelectedDoc] = useState<LocalDoc | null>(null)
   const [uploading, setUploading] = useState(false)
 
+  // ✅ Tagging State
+  const [activeTagFilters, setActiveTagFilters] = useState<string[]>([])
+  const [newTagInput, setNewTagInput] = useState("")
+  const [showTagInput, setShowTagInput] = useState(false)
+
+  // ✅ Computed: All unique tags across all docs
+  const allTags = Array.from(new Set(docs.flatMap(d => d.insights?.tags || [])))
+
+  // ✅ Filtered Docs
+  const filteredDocs = activeTagFilters.length === 0
+    ? docs
+    : docs.filter(d => d.insights?.tags?.some(tag => activeTagFilters.includes(tag)))
+
   const { chips: metricChips, cards: metricCards } = normalizeMetrics(
     selectedDoc?.insights?.metrics
   )
@@ -111,6 +133,82 @@ export default function LocalDashboard() {
       alert(e.message)
     } finally {
       setUploading(false)
+    }
+  }
+
+  function deleteDoc(e: React.MouseEvent, id: string) {
+    e.stopPropagation()
+    const newDocs = docs.filter((d) => d.id !== id)
+    setDocs(newDocs)
+
+    if (selectedDoc?.id === id) {
+      setSelectedDoc(newDocs.length > 0 ? newDocs[0] : null)
+    }
+  }
+
+  function addTag(docId: string, tag: string) {
+    if (!tag.trim()) return
+    const t = tag.trim()
+
+    setDocs(prev => prev.map(d => {
+      if (d.id === docId) {
+        const oldTags = d.insights?.tags || []
+        if (oldTags.includes(t)) return d
+        return {
+          ...d,
+          insights: {
+            ...d.insights!,
+            tags: [...oldTags, t]
+          }
+        }
+      }
+      return d
+    }))
+
+    // Update selectedDoc if it's the one being modified
+    if (selectedDoc?.id === docId) {
+      setSelectedDoc(prev => {
+        if (!prev || !prev.insights) return prev
+        const oldTags = prev.insights.tags || []
+        if (oldTags.includes(t)) return prev
+        return {
+          ...prev,
+          insights: {
+            ...prev.insights,
+            tags: [...oldTags, t]
+          }
+        }
+      })
+    }
+    setNewTagInput("")
+    setShowTagInput(false)
+  }
+
+  function removeTag(docId: string, tag: string) {
+    setDocs(prev => prev.map(d => {
+      if (d.id === docId) {
+        return {
+          ...d,
+          insights: {
+            ...d.insights!,
+            tags: d.insights?.tags?.filter(t => t !== tag) || []
+          }
+        }
+      }
+      return d
+    }))
+
+    if (selectedDoc?.id === docId) {
+      setSelectedDoc(prev => {
+        if (!prev || !prev.insights) return prev
+        return {
+          ...prev,
+          insights: {
+            ...prev.insights,
+            tags: prev.insights.tags?.filter(t => t !== tag) || []
+          }
+        }
+      })
     }
   }
 
@@ -149,6 +247,7 @@ export default function LocalDashboard() {
         </div>
       </div>
 
+
       {/* ✅ 3 column layout for scientist use */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* ✅ LEFT: LIBRARY + METRICS */}
@@ -160,16 +259,19 @@ export default function LocalDashboard() {
             </p>
 
             <div className="mt-3 space-y-2">
-              {docs.length === 0 ? (
-                <p className="text-xs text-gray-400">No documents uploaded yet.</p>
+              {/* Tag filtering UI removed per user request */}
+
+              {filteredDocs.length === 0 ? (
+                <p className="text-xs text-gray-400">
+                  {docs.length === 0 ? "No documents uploaded yet." : "No documents match selected filters."}
+                </p>
               ) : (
-                docs.map((d) => (
+                filteredDocs.map((d) => (
                   <div
                     key={d.id}
                     onClick={() => setSelectedDoc(d)}
-                    className={`cursor-pointer flex items-center justify-between rounded-xl border p-3 transition ${
-                      selectedDoc?.id === d.id ? "bg-muted" : "hover:bg-muted/50"
-                    }`}
+                    className={`cursor-pointer flex items-center justify-between rounded-xl border p-3 transition ${selectedDoc?.id === d.id ? "bg-muted" : "hover:bg-muted/50"
+                      }`}
                   >
                     <div>
                       <p className="text-sm font-medium">{d.name}</p>
@@ -178,9 +280,18 @@ export default function LocalDashboard() {
                       </p>
                     </div>
 
-                    <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
-                      PDF
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
+                        PDF
+                      </span>
+                      <button
+                        onClick={(e) => deleteDoc(e, d.id)}
+                        className="p-1 rounded-full hover:bg-gray-200 text-gray-400 hover:text-red-500 transition-colors"
+                        title="Remove document"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -368,6 +479,87 @@ export default function LocalDashboard() {
             ) : (
               <div className="mt-4 space-y-4 text-sm">
                 <Section title="SUMMARY" items={selectedDoc.insights.summary} />
+
+                {/* ✅ TAGS (Below Summary) */}
+                <div className="mt-4 mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-muted-foreground">TAGS</p>
+                    <button
+                      onClick={() => setShowTagInput(!showTagInput)}
+                      className="text-[10px] flex items-center gap-1 hover:text-primary transition"
+                    >
+                      <Plus className="w-3 h-3" /> Add Tag
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {/* Show Input */}
+                    {showTagInput && (
+                      <div className="flex items-center gap-1 animate-in fade-in zoom-in duration-200">
+                        <input
+                          autoFocus
+                          className="text-xs border rounded px-2 py-1 h-6 w-24"
+                          placeholder="New tag..."
+                          value={newTagInput}
+                          onChange={(e) => setNewTagInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') addTag(selectedDoc.id, newTagInput)
+                          }}
+                        />
+                        <button
+                          onClick={() => addTag(selectedDoc.id, newTagInput)}
+                          className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded h-6"
+                        >Add</button>
+                      </div>
+                    )}
+
+                    {/* List Tags */}
+                    {(selectedDoc.insights.tags || []).map((tag, i) => (
+                      <span
+                        key={i}
+                        className="group flex items-center gap-1 text-xs px-2 py-1 rounded-full border bg-zinc-50 dark:bg-zinc-900"
+                      >
+                        {tag}
+                        <button
+                          onClick={() => removeTag(selectedDoc.id, tag)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+
+                    {(!selectedDoc.insights.tags || selectedDoc.insights.tags.length === 0) && !showTagInput && (
+                      <span className="text-xs text-gray-400 italic">No tags added.</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* ✅ TIMELINE VIEW */}
+                {selectedDoc.insights.timeline && selectedDoc.insights.timeline.length > 0 && (
+                  <div className="mt-6 mb-6">
+                    <p className="text-xs font-semibold text-muted-foreground mb-3">TIMELINE</p>
+                    <div className="relative border-l border-muted ml-2 space-y-6">
+                      {selectedDoc.insights.timeline.map((item, i) => (
+                        <div key={i} className="ml-4 relative">
+                          {/* Dot */}
+                          <div className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-primary border border-background"></div>
+
+                          {/* Date */}
+                          <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground mb-1">
+                            {item.date}
+                          </span>
+
+                          {/* Event Text */}
+                          <p className="text-xs text-gray-700 dark:text-gray-300 leading-snug">
+                            {item.event}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <Section title="KEY FINDINGS" items={selectedDoc.insights.keyFindings} />
                 <Section title="RISKS" items={selectedDoc.insights.risks} />
                 <Section title="RECOMMENDATIONS" items={selectedDoc.insights.recommendations} />
@@ -376,7 +568,7 @@ export default function LocalDashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </div >
   )
 }
 
