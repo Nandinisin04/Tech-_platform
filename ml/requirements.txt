@@ -7,3 +7,4 @@ pyvis
 google-search-results
 google-genai
 # npm install framer-motion
+pymupdf

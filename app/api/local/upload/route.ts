@@ -78,34 +78,35 @@ function uniqueSentences(list: string[]) {
   }
   return out
 }
-
-/**
- * ✅ Metric label refinement based on context
- */
 function classifyMetricLabel(base: string, context: string) {
   const c = context.toLowerCase()
 
+  // 🌡️ Temperature classification
   if (base === "Temperature") {
     if (c.includes("static gas")) return "Static Gas Temperature"
     if (c.includes("initial")) return "Initial Temperature"
-    if (c.includes("range")) return "Temperature Range"
     if (c.includes("room")) return "Room Temperature"
+    if (c.includes("range")) return "Temperature Range"
     return "Temperature"
   }
 
+  // 🧭 Pressure classification
   if (base === "Pressure") {
     if (c.includes("static gas")) return "Static Gas Pressure"
     if (c.includes("initial")) return "Initial Pressure"
     return "Pressure"
   }
 
+  // ⏱️ Time classification
   if (base === "Time") {
-    if (c.includes("induction time") || c.includes(" it ")) return "Induction Time"
+    if (c.includes("induction time") || c.includes("it"))
+      return "Induction Time"
     if (c.includes("mixing time")) return "Mixing Time"
-    if (c.includes("moment selected")) return "Event Time"
+    if (c.includes("moment")) return "Event Time"
     return "Time"
   }
 
+  // 📊 Percentage classification
   if (base === "Percentage") {
     if (c.includes("concentration")) return "Concentration"
     return "Percentage"
@@ -114,9 +115,78 @@ function classifyMetricLabel(base: string, context: string) {
   return base
 }
 
-/**
- * ✅ Extract metrics with context + group
- */
+function extractMetricsWithContext(text: string, limit = 20) {
+  const sentences = text
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.?!])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 40 && s.length < 320)
+
+  const patterns = [
+    { base: "Temperature", regex: /\b(\d+(\.\d+)?)\s?K\b/i },
+    { base: "Pressure", regex: /\b(\d+(\.\d+)?)\s?(atm|bar|Pa|kPa|MPa)\b/i },
+    { base: "Time", regex: /\b(\d+(\.\d+)?)\s?(µs|us|ms|s)\b/i },
+    { base: "Percentage", regex: /\b(\d+(\.\d+)?)\s?%\b/i },
+  ]
+
+  const raw: {
+    label: string
+    value: string
+    context: string
+  }[] = []
+
+  for (const sent of sentences) {
+    for (const p of patterns) {
+      const match = sent.match(p.regex)
+
+      if (match) {
+        const value = match[0]
+        const label = classifyMetricLabel(p.base, sent)
+
+        const key = `${label}:${value}`
+
+        if (!raw.some((x) => `${x.label}:${x.value}` === key)) {
+          raw.push({
+            label,
+            value,
+            context: sent,
+          })
+        }
+      }
+    }
+
+    if (raw.length >= limit) break
+  }
+
+  // ✅ GROUP similar metrics
+  const grouped: Record<
+    string,
+    {
+      label: string
+      values: string[]
+      context: string
+    }
+  > = {}
+
+  for (const m of raw) {
+    if (!grouped[m.label]) {
+      grouped[m.label] = {
+        label: m.label,
+        values: [m.value],
+        context: m.context,
+      }
+    } else {
+      grouped[m.label].values.push(m.value)
+    }
+  }
+
+  return Object.values(grouped).map((g) => ({
+    label: g.label,
+    value: Array.from(new Set(g.values)).join(", "),
+    context: g.context,
+  }))
+}
+
 function buildScientistBrief(rawText: string, sentences: string[], metrics: any[]) {
   const t = rawText.toLowerCase()
 
@@ -286,6 +356,7 @@ function runPythonExtract(pdfPath: string): Promise<string> {
     })
   })
 }
+
 
 export async function POST(req: Request) {
   let tempPath = ""

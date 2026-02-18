@@ -4,7 +4,6 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { BackButton} from "@/components/back-button";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { KeyInsightsCards } from "@/components/key-insights-cards";
 import { VisualizationArea } from "@/components/visualization-area";
@@ -16,6 +15,9 @@ import { defaultKGFilters, KGFilters } from "@/lib/filters/types"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { filterKnowledgeGraph } from "@/lib/filters/filterKnowledgeGraph"
 import { fetchMultipleTechs } from "@/lib/utils/useCompareTech";
+import ModeToggle from "@/components/ui/mode-toggle"
+import LocalDashboard from "@/components/ui/local-dashboard"
+
 
 function applyPreset(
   f: KGFilters,
@@ -462,12 +464,43 @@ const maxPatentYear =
     </main>
   );
 }
+type Mode = "technology" | "local"
 
 export default function DashboardPage() {
+  const [mode, setMode] = useState<Mode>("technology")
+
+  useEffect(() => {
+    const saved = localStorage.getItem("intel_mode") as Mode | null
+    if (saved === "technology" || saved === "local") setMode(saved)
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("intel_mode", mode)
+  }, [mode])
+
   return (
-    <Suspense fallback={<p className="p-6">Loading dashboard...</p>}>
-      <DashboardContent />
-    </Suspense>
-  );
+    <div className="min-h-screen">
+      {/* ✅ TOP MINI BAR FOR TOGGLE */}
+      <div className="sticky top-0 z-[999] border-b bg-background/95 backdrop-blur-sm">
+        <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Mode Switch
+          </h2>
+
+          <ModeToggle mode={mode} setMode={setMode} />
+        </div>
+      </div>
+
+      {/* ✅ MODE CONTENT */}
+      {mode === "technology" ? (
+        <Suspense fallback={<p className="p-6">Loading dashboard...</p>}>
+          <DashboardContent />
+        </Suspense>
+      ) : (
+        <LocalDashboard />
+      )}
+    </div>
+  )
 }
+
 
