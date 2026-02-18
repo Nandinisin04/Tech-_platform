@@ -187,6 +187,64 @@ function extractMetricsWithContext(text: string, limit = 20) {
   }))
 }
 
+function extractTags(text: string) {
+  const t = text.toLowerCase()
+  const tags = new Set<string>()
+
+  const keywords: Record<string, string[]> = {
+    // 🧠 AI & Tech
+    "AI": ["artificial intelligence", "neural network", "machine learning", "deep learning", "llm", "gpt", "transformer", "generative ai", "computer vision", "nlp"],
+    "Computer Vision": ["image recognition", "object detection", "cnn", "yolo", "segmentation", "pixels", "visual data", "camera"],
+    "Robotics": ["robot", "autonomous", "automation", "actuator", "sensor", "control system", "ros"],
+    "Quantum": ["quantum computing", "qubit", "entanglement", "superposition", "quantum key"],
+    "Cybersecurity": ["cybersecurity", "encryption", "firewall", "malware", "phishing", "vulnerability", "zero trust"],
+    "Blockchain": ["blockchain", "crypto", "ledger", "smart contract", "token", "bitcoin", "ethereum"],
+    "IoT": ["internet of things", "sensor network", "edge computing", "smart device", "embedded system"],
+    "Cloud": ["aws", "azure", "google cloud", "docker", "kubernetes", "serverless", "cloud computing"],
+
+    // 🏥 Medical & Bio
+    "Cancer Research": ["cancer", "tumor", "oncology", "malignant", "biopsy", "breast cancer", "carcinoma"],
+    "Medical AI": ["medical imaging", "diagnosis support", "prediction model", "clinical decision", "healthcare ai"],
+    "Genomics": ["genome", "dna", "crispr", "sequencing", "genetic", "gene editing"],
+    "Pharma": ["drug discovery", "clinical trial", "pharmaceutical", "vaccine", "therapy"],
+
+    // 🔋 Energy & Environment
+    "Battery Tech": ["battery", "lithium", "anode", "cathode", "electrolyte", "storage", "capacity", "solid-state"],
+    "Climate Tech": ["climate change", "carbon", "emission", "greenhouse", "sustainability", "renewable", "solar", "wind energy"],
+    "Hydrogen": ["hydrogen", "electrolyzer", "fuel cell", "green hydrogen", "ammonia"],
+
+    // 🚀 Aerospace & Defense
+    "Hypersonics": ["hypersonic", "scramjet", "mach", "aerodynamics", "shock wave", "supersonic"],
+    "Space": ["satellite", "orbit", "launch vehicle", "propulsion", "spacecraft", "payload"],
+    "Combustion": ["combustion", "ignition", "flame", "fuel", "reaction", "burner"],
+
+    // 💼 Business & Finance
+    "Finance": ["revenue", "profit", "margin", "fiscal", "quarterly", "investment", "budget", "expenditure"],
+    "Market Analysis": ["market share", "competitor", "trend", "forecast", "growth rate", "swot"],
+    "Strategy": ["roadmap", "strategic", "go-to-market", "business plan", "acquisition"],
+    "Internal Memo": ["confidential", "internal use only", "memo", "draft", "for review", "proprietary"],
+
+    // 📄 Document Types
+    "Research Paper": ["abstract", "introduction", "methodology", "conclusion", "references", "doi", "issn"],
+    "Patent": ["patent", "claim", "inventor", "assignee", "prior art", "filed"],
+    "Proposal": ["proposal", "scope of work", "deliverables", "timeline", "budget estimation"],
+    "Contract": ["agreement", "parties", "terms and conditions", "liability", "termination", "jurisdiction"]
+  }
+
+  for (const [tag, keys] of Object.entries(keywords)) {
+    if (keys.some(k => t.includes(k))) {
+      tags.add(tag)
+    }
+  }
+
+  // Fallback for minimal tagging if nothing matched
+  if (tags.size === 0) {
+    if (t.length > 500) tags.add("General Document")
+  }
+
+  return Array.from(tags)
+}
+
 function buildScientistBrief(rawText: string, sentences: string[], metrics: any[]) {
   const t = rawText.toLowerCase()
 
@@ -226,9 +284,9 @@ function buildScientistBrief(rawText: string, sentences: string[], metrics: any[
     methodSetupRaw.length > 0
       ? methodSetupRaw
       : [
-          "Method details not clearly extracted (PDF formatting/noise issue).",
-          "Suggestion: verify the Methods/Setup section manually for exact configuration.",
-        ]
+        "Method details not clearly extracted (PDF formatting/noise issue).",
+        "Suggestion: verify the Methods/Setup section manually for exact configuration.",
+      ]
 
   // ✅ NOVELTY / CONTRIBUTION (Extracted line + fallback)
   const noveltyLines = pickTop(
@@ -318,9 +376,9 @@ function buildScientistBrief(rawText: string, sentences: string[], metrics: any[
     Math.min(
       95,
       45 +
-        Math.min(25, keyNumbers.length * 5) +
-        Math.min(15, sentences.length / 40) +
-        (methodSetupRaw.length > 0 ? 5 : 0)
+      Math.min(25, keyNumbers.length * 5) +
+      Math.min(15, sentences.length / 40) +
+      (methodSetupRaw.length > 0 ? 5 : 0)
     ) | 0
 
   return {
@@ -357,6 +415,40 @@ function runPythonExtract(pdfPath: string): Promise<string> {
   })
 }
 
+function extractTimeline(text: string) {
+  const sentences = splitSentences(text)
+  const timeline: { date: string; event: string }[] = []
+
+  // Regex for years (1900-2099)
+  const yearRegex = /\b(19|20)\d{2}\b/
+
+  // Regex for Month Year (e.g., Jan 2023, February 2024)
+  const dateRegex = /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4}\b/i
+
+  for (const s of sentences) {
+    // Check for specific dates first
+    const dateMatch = s.match(dateRegex)
+    if (dateMatch) {
+      timeline.push({ date: dateMatch[0], event: s })
+      continue
+    }
+
+    // Check for years
+    const yearMatch = s.match(yearRegex)
+    if (yearMatch) {
+      timeline.push({ date: yearMatch[0], event: s })
+    }
+  }
+
+  // Sort by extracted date string
+  return timeline
+    .sort((a, b) => {
+      const yearA = parseInt(a.date.match(/\d{4}/)?.[0] || "0")
+      const yearB = parseInt(b.date.match(/\d{4}/)?.[0] || "0")
+      return yearA - yearB
+    })
+    .slice(0, 8) // Limit to top 8 events
+}
 
 export async function POST(req: Request) {
   let tempPath = ""
@@ -401,6 +493,8 @@ export async function POST(req: Request) {
         "pressure",
         "simulation",
         "achieved",
+        "measured",
+        "observed"
       ],
       4
     )
@@ -425,6 +519,12 @@ export async function POST(req: Request) {
     // ✅ Scientist Brief
     const brief = buildScientistBrief(rawText, sentences, metrics)
 
+    // ✅ Extract Tags
+    const tags = extractTags(rawText)
+
+    // ✅ Extract Timeline
+    const timeline = extractTimeline(rawText)
+
     const insights = {
       summary: uniqueSentences(summary.length ? summary : sentences.slice(0, 3)),
       keyFindings: uniqueSentences(keyFindings),
@@ -432,6 +532,8 @@ export async function POST(req: Request) {
       recommendations: uniqueSentences(recommendations),
       metrics,
       brief,
+      tags,
+      timeline
     }
 
     const doc = {
@@ -459,7 +561,7 @@ export async function POST(req: Request) {
     if (tempPath) {
       try {
         await unlink(tempPath)
-      } catch {}
+      } catch { }
     }
   }
 }

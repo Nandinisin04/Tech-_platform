@@ -34,9 +34,11 @@ function applyPreset(
     },
 
     relations: {
-      ...Object.fromEntries(Object.keys(f.relations).map((k) => [k, false])),
-      ...Object.fromEntries(enabledRelations.map((r) => [r, true])),
-    },
+  ...defaultKGFilters.relations,
+  ...Object.fromEntries(
+    enabledRelations.map((r) => [r, true])
+  ) as Partial<KGFilters["relations"]>,
+},
 
     // ✅ KEEP THESE so TS doesn’t cry
     minDegree: f.minDegree,
