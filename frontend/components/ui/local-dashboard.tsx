@@ -31,6 +31,11 @@ type Insights = {
   // Added timeline type
   timeline?: { date: string; event: string }[]
 }
+
+
+
+
+
 type LocalDoc = {
   id: string
   name: string
