@@ -9,20 +9,19 @@ import { KeyInsightsCards } from "@/components/key-insights-cards";
 import { VisualizationArea } from "@/components/visualization-area";
 import { SidebarPanels } from "@/components/sidebar-panels";
 import { KnowledgeGraph } from "@/components/knowledge-graph";
-import { applyFilters } from "@/lib/filters/applyFilters"
-import { defaultFilters, DashboardFilters } from "@/lib/filters/types"
-import { defaultKGFilters, KGFilters } from "@/lib/filters/types"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { filterKnowledgeGraph } from "@/lib/filters/filterKnowledgeGraph"
+import { applyFilters } from "@/lib/filters/applyFilters";
+import { defaultFilters, DashboardFilters } from "@/lib/filters/types";
+import { defaultKGFilters, KGFilters } from "@/lib/filters/types";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { filterKnowledgeGraph } from "@/lib/filters/filterKnowledgeGraph";
 import { fetchMultipleTechs } from "@/lib/utils/useCompareTech";
-import ModeToggle from "@/components/ui/mode-toggle"
-import LocalDashboard from "@/components/ui/local-dashboard"
-
+import ModeToggle from "@/components/ui/mode-toggle";
+import LocalDashboard from "@/components/ui/local-dashboard";
 
 function applyPreset(
   f: KGFilters,
   nodeTypes: Partial<KGFilters["nodeTypes"]>,
-  enabledRelations: string[]
+  enabledRelations: string[],
 ): KGFilters {
   return {
     ...f,
@@ -34,31 +33,33 @@ function applyPreset(
     },
 
     relations: {
-  ...defaultKGFilters.relations,
-  ...Object.fromEntries(
-    enabledRelations.map((r) => [r, true])
-  ) as Partial<KGFilters["relations"]>,
-},
+      ...defaultKGFilters.relations,
+      ...(Object.fromEntries(enabledRelations.map((r) => [r, true])) as Partial<
+        KGFilters["relations"]
+      >),
+    },
 
     // ✅ KEEP THESE so TS doesn’t cry
     minDegree: f.minDegree,
     keyword: f.keyword,
-  }
+  };
 }
 
 function FilterPill({
   title,
   children,
 }: {
-  title: string
-  children: React.ReactNode
+  title: string;
+  children: React.ReactNode;
 }) {
   return (
     <div className="rounded-lg border bg-background p-3 shadow-sm">
-      <p className="text-xs font-semibold text-muted-foreground mb-2">{title}</p>
+      <p className="text-xs font-semibold text-muted-foreground mb-2">
+        {title}
+      </p>
       <div className="space-y-2">{children}</div>
     </div>
-  )
+  );
 }
 
 const RELATION_LABELS: Record<string, string> = {
@@ -77,30 +78,28 @@ const RELATION_LABELS: Record<string, string> = {
 
   COUNTRY_PATENT_SIGNAL: "Paper → Country (Patent Signal)",
   COUNTRY_RESEARCH_SIGNAL: "Paper → Country (Research Signal)",
-}
+};
 
 function resetRelations(relations: Record<string, boolean>, enable: string[]) {
-  const base: Record<string, boolean> = {}
+  const base: Record<string, boolean> = {};
 
   Object.keys(relations).forEach((k) => {
-    base[k] = false
-  })
+    base[k] = false;
+  });
 
   enable.forEach((k) => {
-    base[k] = true
-  })
+    base[k] = true;
+  });
 
-  return base
+  return base;
 }
-
-
 
 function ChipButton({
   label,
   onClick,
 }: {
-  label: string
-  onClick: () => void
+  label: string;
+  onClick: () => void;
 }) {
   return (
     <button
@@ -109,9 +108,8 @@ function ChipButton({
     >
       {label}
     </button>
-  )
+  );
 }
-
 
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
@@ -131,9 +129,8 @@ function DashboardContent() {
   const [kg, setKg] = useState<any>(null);
   const [showKG, setShowKG] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<DashboardFilters>(defaultFilters)
-  const [kgFilters, setKgFilters] = useState<KGFilters>(defaultKGFilters)
-
+  const [filters, setFilters] = useState<DashboardFilters>(defaultFilters);
+  const [kgFilters, setKgFilters] = useState<KGFilters>(defaultKGFilters);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,22 +143,29 @@ function DashboardContent() {
         const encodedTech = encodeURIComponent(techName);
 
         // 1️⃣ Try cached data
-        let res = await fetch(`/api/tech/${encodedTech}`);
+        let res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}`,  // not sure if this api call has a backend counterpart
+        );
 
         // 2️⃣ Cache miss → run ML
         if (res.status === 404) {
           console.warn("⚠️ Cache miss. Running ML pipeline...");
 
-          const runRes = await fetch(`/api/tech/${encodedTech}/run`, {
-            method: "POST",
-          });
+          const runRes = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}/run`, 
+            {
+              method: "POST",
+            },
+          );
 
           if (!runRes.ok) {
             throw new Error("ML pipeline failed");
           }
 
           // 3️⃣ Fetch again after ML
-          res = await fetch(`/api/tech/${encodedTech}`);
+          res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}`,
+          );
         }
 
         if (!res.ok) {
@@ -189,44 +193,45 @@ function DashboardContent() {
     };
   }, [techName]);
   useEffect(() => {
-  if (!data?.entities?.patents?.length) return
+    if (!data?.entities?.patents?.length) return;
 
-  const years = data.entities.patents
-    .map((p: any) => p.year)
-    .filter((y: any) => typeof y === "number")
+    const years = data.entities.patents
+      .map((p: any) => p.year)
+      .filter((y: any) => typeof y === "number");
 
-  if (!years.length) return
+    if (!years.length) return;
 
-  const minYear = Math.min(...years)
-  const maxYear = Math.max(...years)
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
 
-  setFilters((prev) => ({
-    ...prev,
-    patentYearRange: [minYear, maxYear],
-  }))
-}, [data])
-
+    setFilters((prev) => ({
+      ...prev,
+      patentYearRange: [minYear, maxYear],
+    }));
+  }, [data]);
 
   const filteredData = useMemo(() => {
-    return applyFilters(data, filters)
-  }, [data, filters])
+    return applyFilters(data, filters);
+  }, [data, filters]);
 
   const patentYears = useMemo(() => {
-  if (!data?.patent_timeline?.length) return []
-  return data.patent_timeline
-    .map((p: any) => p.year)
-    .filter((y: any) => typeof y === "number")
-}, [data])
-const minPatentYear =
-  patentYears.length > 0 ? Math.min(...patentYears) : 2010
+    if (!data?.patent_timeline?.length) return [];
+    return data.patent_timeline
+      .map((p: any) => p.year)
+      .filter((y: any) => typeof y === "number");
+  }, [data]);
+  const minPatentYear =
+    patentYears.length > 0 ? Math.min(...patentYears) : 2010;
 
-const maxPatentYear =
-  patentYears.length > 0 ? Math.max(...patentYears) : new Date().getFullYear()
+  const maxPatentYear =
+    patentYears.length > 0
+      ? Math.max(...patentYears)
+      : new Date().getFullYear();
 
- const filteredKG = useMemo(() => {
-  if (!kg) return null
-  return filterKnowledgeGraph(kg, kgFilters)
-}, [kg, kgFilters])
+  const filteredKG = useMemo(() => {
+    if (!kg) return null;
+    return filterKnowledgeGraph(kg, kgFilters);
+  }, [kg, kgFilters]);
 
   if (error) {
     return (
@@ -243,32 +248,28 @@ const maxPatentYear =
       </div>
     );
   }
-  
 
-  console.log("marketValues:", data)
+  console.log("marketValues:", data);
   return (
     <main className="min-h-screen bg-background">
-     {/* Header */}
-<header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
-  <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
-    
-    {/* LEFT SIDE */}
-    <div className="flex items-center gap-4">
-      <Link href="/" className="flex items-center gap-2 text-primary">
-        <ChevronLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">Back</span>
-      </Link>
-      <h1 className="text-2xl font-bold">TechIntel</h1>
-    </div>
-    
+      {/* Header */}
+      <header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
+        <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
+          {/* LEFT SIDE */}
+          <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-2 text-primary">
+              <ChevronLeft className="w-5 h-5" />
+              <span className="text-sm font-medium">Back</span>
+            </Link>
+            <h1 className="text-2xl font-bold">TechIntel</h1>
+          </div>
 
-    {/* RIGHT SIDE */}
-    <div className="flex items-center">
-      <ThemeToggle />
-    </div>
-
-  </div>
-</header>
+          {/* RIGHT SIDE */}
+          <div className="flex items-center">
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
 
       <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
         <DashboardHeader techName={decodeURIComponent(techName)} />
@@ -309,7 +310,10 @@ const maxPatentYear =
                       <LegendItem color="bg-blue-600" label="Patent" />
                       <LegendItem color="bg-green-200" label="Paper" />
                       <LegendItem color="bg-pink-300" label="Country" />
-                      <LegendItem color="bg-yellow-400" label="Source Article" />
+                      <LegendItem
+                        color="bg-yellow-400"
+                        label="Source Article"
+                      />
                     </div>
 
                     {/* ✅ Layout: Graph Left + Controls Right */}
@@ -317,118 +321,128 @@ const maxPatentYear =
                       {/* LEFT = Graph */}
                       <div className="lg:col-span-3 h-[520px] w-full overflow-hidden rounded-md border bg-background">
                         {filteredKG && (
-                          <KnowledgeGraph nodes={filteredKG.nodes} edges={filteredKG.edges} />
+                          <KnowledgeGraph
+                            nodes={filteredKG.nodes}
+                            edges={filteredKG.edges}
+                          />
                         )}
                       </div>
 
                       {/* RIGHT = Controls Panel */}
                       <div className="lg:col-span-1 space-y-3">
                         {/* ✅ Analyst Questions */}
-                       <FilterPill title="ANALYST QUESTIONS">
-                      <div className="flex flex-wrap gap-2">
+                        <FilterPill title="ANALYST QUESTIONS">
+                          <div className="flex flex-wrap gap-2">
+                            <ChipButton
+                              label="🌍 Active Countries"
+                              onClick={() =>
+                                setKgFilters((f) =>
+                                  applyPreset(
+                                    f,
+                                    { technology: true, country: true },
+                                    ["ACTIVE_IN"],
+                                  ),
+                                )
+                              }
+                            />
 
-                        <ChipButton
-                          label="🌍 Active Countries"
-                          onClick={() =>
-                            setKgFilters((f) =>
-                              applyPreset(
-                                f,
-                                { technology: true, country: true },
-                                ["ACTIVE_IN"]
-                              )
-                            )
-                          }
-                        />
+                            <ChipButton
+                              label="🔗 Patent ↔ Paper Bridges"
+                              onClick={() =>
+                                setKgFilters((f) =>
+                                  applyPreset(
+                                    f,
+                                    {
+                                      technology: true,
+                                      patent: true,
+                                      paper: true,
+                                    },
+                                    ["RELATED_WORK", "HAS_PATENT", "HAS_PAPER"],
+                                  ),
+                                )
+                              }
+                            />
 
-                        <ChipButton
-                          label="🔗 Patent ↔ Paper Bridges"
-                          onClick={() =>
-                            setKgFilters((f) =>
-                              applyPreset(
-                                f,
-                                { technology: true, patent: true, paper: true },
-                                ["RELATED_WORK", "HAS_PATENT", "HAS_PAPER"]
-                              )
-                            )
-                          }
-                        />
+                            <ChipButton
+                              label="📄 Similar Papers"
+                              onClick={() =>
+                                setKgFilters((f) =>
+                                  applyPreset(f, { paper: true }, [
+                                    "SIMILAR_PAPER",
+                                  ]),
+                                )
+                              }
+                            />
 
-                        <ChipButton
-                          label="📄 Similar Papers"
-                          onClick={() =>
-                            setKgFilters((f) =>
-                              applyPreset(
-                                f,
-                                { paper: true },
-                                ["SIMILAR_PAPER"]
-                              )
-                            )
-                          }
-                        />
+                            <ChipButton
+                              label="🧩 Similar Patents"
+                              onClick={() =>
+                                setKgFilters((f) =>
+                                  applyPreset(f, { patent: true }, [
+                                    "SIMILAR_PATENT",
+                                  ]),
+                                )
+                              }
+                            />
+                          </div>
+                        </FilterPill>
 
-                        <ChipButton
-                          label="🧩 Similar Patents"
-                          onClick={() =>
-                            setKgFilters((f) =>
-                              applyPreset(
-                                f,
-                                { patent: true },
-                                ["SIMILAR_PATENT"]
-                              )
-                            )
-                          }
-                        />
-
-                      </div>
-                    </FilterPill>
-
-                          {/* ✅ Node Type Filters */}
-<FilterPill title="NODE TYPES">
-  <div className="grid grid-cols-1 gap-2 text-xs">
-    {Object.entries(kgFilters.nodeTypes).map(([key, value]) => (
-      <label key={key} className="flex items-center gap-2 capitalize">
-        <input
-          type="checkbox"
-          checked={value}
-          onChange={(e) =>
-            setKgFilters((f) => ({
-              ...f,
-              nodeTypes: {
-                ...f.nodeTypes,
-                [key]: e.target.checked,
-              },
-            }))
-          }
-        />
-        {key.replaceAll("_", " ")}
-      </label>
-    ))}
-  </div>
-</FilterPill>
-
+                        {/* ✅ Node Type Filters */}
+                        <FilterPill title="NODE TYPES">
+                          <div className="grid grid-cols-1 gap-2 text-xs">
+                            {Object.entries(kgFilters.nodeTypes).map(
+                              ([key, value]) => (
+                                <label
+                                  key={key}
+                                  className="flex items-center gap-2 capitalize"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={value}
+                                    onChange={(e) =>
+                                      setKgFilters((f) => ({
+                                        ...f,
+                                        nodeTypes: {
+                                          ...f.nodeTypes,
+                                          [key]: e.target.checked,
+                                        },
+                                      }))
+                                    }
+                                  />
+                                  {key.replaceAll("_", " ")}
+                                </label>
+                              ),
+                            )}
+                          </div>
+                        </FilterPill>
 
                         {/* ✅ Relation Filters */}
                         <FilterPill title="RELATION TYPES">
                           <div className="grid grid-cols-1 gap-2 text-xs max-h-[180px] overflow-auto pr-1">
-                            {Object.entries(kgFilters.relations).map(([key, value]) => (
-                            <label key={key} className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={value}
-                                onChange={(e) =>
-                                  setKgFilters((f) => ({
-                                    ...f,
-                                    relations: {
-                                      ...f.relations,
-                                      [key]: e.target.checked,
-                                    },
-                                  }))
-                                }
-                              />
-                              {RELATION_LABELS[key] ?? key.replaceAll("_", " ")}
-                            </label>
-                          ))}
-
+                            {Object.entries(kgFilters.relations).map(
+                              ([key, value]) => (
+                                <label
+                                  key={key}
+                                  className="flex items-center gap-2"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={value}
+                                    onChange={(e) =>
+                                      setKgFilters((f) => ({
+                                        ...f,
+                                        relations: {
+                                          ...f.relations,
+                                          [key]: e.target.checked,
+                                        },
+                                      }))
+                                    }
+                                  />
+                                  {RELATION_LABELS[key] ??
+                                    key.replaceAll("_", " ")}
+                                </label>
+                              ),
+                            )}
                           </div>
                         </FilterPill>
 
@@ -445,40 +459,39 @@ const maxPatentYear =
                 )}
               </div>
             )}
-
           </div>
 
           {/* RIGHT: SIDEBAR (ONCE) */}
-          {filteredData &&(
-          <SidebarPanels
-            alerts={filteredData.alerts ?? []}
-            companies={filteredData.entities?.companies ?? []}
-            publications={filteredData.entities?.papers ?? []}
-            patents={filteredData.entities?.patents ?? []}
-            filters={filters}
-             minPatentYear={minPatentYear}
-             maxPatentYear={maxPatentYear}
-             setFilters={setFilters}
-          />
+          {filteredData && (
+            <SidebarPanels
+              alerts={filteredData.alerts ?? []}
+              companies={filteredData.entities?.companies ?? []}
+              publications={filteredData.entities?.papers ?? []}
+              patents={filteredData.entities?.patents ?? []}
+              filters={filters}
+              minPatentYear={minPatentYear}
+              maxPatentYear={maxPatentYear}
+              setFilters={setFilters}
+            />
           )}
         </div>
       </div>
     </main>
   );
 }
-type Mode = "technology" | "local"
+type Mode = "technology" | "local";
 
 export default function DashboardPage() {
-  const [mode, setMode] = useState<Mode>("technology")
+  const [mode, setMode] = useState<Mode>("technology");
 
   useEffect(() => {
-    const saved = localStorage.getItem("intel_mode") as Mode | null
-    if (saved === "technology" || saved === "local") setMode(saved)
-  }, [])
+    const saved = localStorage.getItem("intel_mode") as Mode | null;
+    if (saved === "technology" || saved === "local") setMode(saved);
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("intel_mode", mode)
-  }, [mode])
+    localStorage.setItem("intel_mode", mode);
+  }, [mode]);
 
   return (
     <div className="min-h-screen">
@@ -502,7 +515,5 @@ export default function DashboardPage() {
         <LocalDashboard />
       )}
     </div>
-  )
+  );
 }
-
-

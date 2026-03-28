@@ -11,22 +11,25 @@ import { HeroIntro } from "@/components/hero-intro";
 
 // import { chartTheme } from "@/components/chart-theme"
 
-
 export default function HomePage() {
   const router = useRouter();
 
   const [globalData, setGlobalData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pendingSuggestion, setPendingSuggestion] = useState<string | null>(null)
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [pendingQuery, setPendingQuery] = useState<string | null>(null)
+  const [pendingSuggestion, setPendingSuggestion] = useState<string | null>(
+    null,
+  );
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingQuery, setPendingQuery] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadGlobal() {
       try {
-        const res = await fetch("/api/global");
+        const res = await fetch(
+          "${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global",
+        );
         if (!res.ok) throw new Error("Failed to load global data");
 
         const json = await res.json();
@@ -42,35 +45,35 @@ export default function HomePage() {
     };
   }, []);
   async function handleSearch(query: string) {
-     setShowConfirm(false)
-     setPendingSuggestion(null)
-   try {
-    const res = await fetch("/api/validate-tech", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query }),
-    })
+    setShowConfirm(false);
+    setPendingSuggestion(null);
+    try {
+      const res = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
 
-    const data = await res.json()
+      const data = await res.json();
 
-    if (data.decision === "reject") {
-      alert("This does not appear to be a technology.")
-      return
+      if (data.decision === "reject") {
+        alert("This does not appear to be a technology.");
+        return;
+      }
+
+      if (data.decision === "needs_confirmation") {
+        setPendingSuggestion(data.suggestion);
+        setPendingQuery(query);
+        setShowConfirm(true);
+        return;
+      }
+
+      // ✅ accepted
+      router.push(`/dashboard?tech=${encodeURIComponent(data.technology)}`);
+    } catch {
+      alert("Validation failed. Please try again.");
     }
-
-    if (data.decision === "needs_confirmation") {
-      setPendingSuggestion(data.suggestion)
-      setPendingQuery(query)
-      setShowConfirm(true)
-      return
-    }
-
-    // ✅ accepted
-    router.push(`/dashboard?tech=${encodeURIComponent(data.technology)}`)
-  } catch {
-    alert("Validation failed. Please try again.")
   }
-}
   return (
     <main className="min-h-screen bg-background">
       {/* HEADER */}
@@ -83,38 +86,37 @@ export default function HomePage() {
             </p>
           </div>
 
-        <div className="w-full max-w-2xl mx-6">
-              <SearchBar onSearch={handleSearch} />
-              {showConfirm && pendingSuggestion && (
-          <div className="absolute top-24 left-1/2 -translate-x-1/2 bg-background border border-border p-4 rounded shadow z-50">
-          <p className="mb-3">
-            Did you mean <b>{pendingSuggestion}</b>?
-          </p>
+          <div className="w-full max-w-2xl mx-6">
+            <SearchBar onSearch={handleSearch} />
+            {showConfirm && pendingSuggestion && (
+              <div className="absolute top-24 left-1/2 -translate-x-1/2 bg-background border border-border p-4 rounded shadow z-50">
+                <p className="mb-3">
+                  Did you mean <b>{pendingSuggestion}</b>?
+                </p>
 
-          <div className="flex gap-3 justify-end">
-            <button
-              className="px-3 py-1 bg-primary text-primary-foreground rounded"
-              onClick={() => {
-                setShowConfirm(false)
-                router.push(
-                  `/dashboard?tech=${encodeURIComponent(pendingSuggestion)}`
-                )
-              }}
-            >
-              Yes
-            </button>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    className="px-3 py-1 bg-primary text-primary-foreground rounded"
+                    onClick={() => {
+                      setShowConfirm(false);
+                      router.push(
+                        `/dashboard?tech=${encodeURIComponent(pendingSuggestion)}`,
+                      );
+                    }}
+                  >
+                    Yes
+                  </button>
 
-            <button
-              className="px-3 py-1 border rounded"
-              onClick={() => setShowConfirm(false)}
-            >
-              No
-            </button>
+                  <button
+                    className="px-3 py-1 border rounded"
+                    onClick={() => setShowConfirm(false)}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-
-      )}
-      </div>
 
           <ThemeToggle />
         </div>
@@ -124,8 +126,7 @@ export default function HomePage() {
       <div className="flex flex-col items-center px-4 py-10">
         <div className="w-full max-w-6xl">
           {/* SEARCH */}
-          <div className="mb-8">
-          </div>
+          <div className="mb-8"></div>
 
           {/* HERO INTRO */}
           <HeroIntro />

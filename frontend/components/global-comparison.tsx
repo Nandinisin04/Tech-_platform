@@ -1,28 +1,28 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
 /* ---------- Types ---------- */
 
 type Technology = {
-  signal_count: number
-  investment_percent: number
-  articles: any[]
-}
+  signal_count: number;
+  investment_percent: number;
+  articles: any[];
+};
 
 type CountryNode = {
-  total_signals: number
-  technologies: Record<string, Technology>
-}
+  total_signals: number;
+  technologies: Record<string, Technology>;
+};
 
-type GlobalInvestmentJSON = Record<string, CountryNode>
+type GlobalInvestmentJSON = Record<string, CountryNode>;
 
 /* ---------- Labels ---------- */
 
@@ -32,35 +32,35 @@ const COUNTRY_LABELS: Record<string, string> = {
   usa: "United States",
   japan: "Japan",
   germany: "Germany",
-}
+};
 
 /* ---------- Component ---------- */
 
 export function GlobalComparison() {
-  const [data, setData] = useState<GlobalInvestmentJSON | null>(null)
-  const [selectedCountry, setSelectedCountry] = useState("")
+  const [data, setData] = useState<GlobalInvestmentJSON | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState("");
 
   useEffect(() => {
-    fetch("/api/global-investment")
+    fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global/investment") // not sure if this api call has a backend counterpart
       .then((res) => res.json())
       .then((json: GlobalInvestmentJSON) => {
-        setData(json)
-        const first = Object.keys(json)[0]
-        if (first) setSelectedCountry(first)
+        setData(json);
+        const first = Object.keys(json)[0];
+        if (first) setSelectedCountry(first);
       })
-      .catch(console.error)
-  }, [])
+      .catch(console.error);
+  }, []);
 
   if (!data) {
     return (
       <p className="text-muted-foreground text-center">
         Loading investment data…
       </p>
-    )
+    );
   }
 
-  const countryKeys = Object.keys(data).sort()
-  const activeCountry = data[selectedCountry]
+  const countryKeys = Object.keys(data).sort();
+  const activeCountry = data[selectedCountry];
 
   return (
     <div className="w-full space-y-8">
@@ -78,7 +78,7 @@ export function GlobalComparison() {
           {/* ---------- Country Selector ---------- */}
           <div className="flex flex-wrap gap-3">
             {countryKeys.map((key) => {
-              const isActive = key === selectedCountry
+              const isActive = key === selectedCountry;
 
               return (
                 <button
@@ -93,7 +93,7 @@ export function GlobalComparison() {
                 >
                   {COUNTRY_LABELS[key] ?? key.toUpperCase()}
                 </button>
-              )
+              );
             })}
           </div>
 
@@ -116,8 +116,7 @@ export function GlobalComparison() {
 
               {Object.entries(activeCountry.technologies)
                 .sort(
-                  (a, b) =>
-                    b[1].investment_percent - a[1].investment_percent
+                  (a, b) => b[1].investment_percent - a[1].investment_percent,
                 )
                 .map(([tech, info], index) => (
                   <div key={tech} className="space-y-1">
@@ -146,5 +145,5 @@ export function GlobalComparison() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

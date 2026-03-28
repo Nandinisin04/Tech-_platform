@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { TechPanel } from "./tech-panel"
+import { useEffect, useState } from "react";
+import { TechPanel } from "./tech-panel";
 
-type TechStatus = "ready" | "processing" | "missing"
+type TechStatus = "ready" | "processing" | "missing";
 
 export function CompareDashboard({ techs }: { techs: string[] }) {
-  const [statusMap, setStatusMap] = useState<Record<string, TechStatus>>({})
+  const [statusMap, setStatusMap] = useState<Record<string, TechStatus>>({});
 
   async function checkStatus(tech: string) {
     try {
-      const res = await fetch(`/api/tech/${tech}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`);
       if (res.ok) {
         setStatusMap((prev) => ({
           ...prev,
           [tech]: "ready",
-        }))
+        }));
       }
     } catch {}
   }
@@ -24,9 +24,11 @@ export function CompareDashboard({ techs }: { techs: string[] }) {
     setStatusMap((prev) => ({
       ...prev,
       [tech]: "processing",
-    }))
+    }));
 
-    await fetch(`/api/tech/${tech}/run`, { method: "POST" })
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}/run`, {
+      method: "POST",
+    });
   }
 
   // 🔁 POLLING
@@ -34,13 +36,13 @@ export function CompareDashboard({ techs }: { techs: string[] }) {
     const interval = setInterval(() => {
       techs.forEach((tech) => {
         if (statusMap[tech] === "processing") {
-          checkStatus(tech)
+          checkStatus(tech);
         }
-      })
-    }, 5000)
+      });
+    }, 5000);
 
-    return () => clearInterval(interval)
-  }, [statusMap, techs])
+    return () => clearInterval(interval);
+  }, [statusMap, techs]);
 
   return (
     <div className="grid grid-cols-2 gap-6">
@@ -53,5 +55,5 @@ export function CompareDashboard({ techs }: { techs: string[] }) {
         />
       ))}
     </div>
-  )
+  );
 }

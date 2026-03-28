@@ -1,51 +1,52 @@
-import { TechData } from "@/lib/filters/types"
+import { TechData } from "@/lib/filters/types";
 
 type ProcessingState = {
-  status: "processing"
-}
+  status: "processing";
+};
 
 export async function fetchTechData(
-  tech: string
+  tech: string,
 ): Promise<TechData | ProcessingState> {
-
-  const res = await fetch(`http://localhost:3000/api/tech/${tech}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`, {
     cache: "no-store",
-  })
+  });
 
   // ✅ Case 1: Data exists
   if (res.ok) {
-    return res.json()
+    return res.json();
   }
 
   // ✅ Case 2: Cache miss → trigger ML
-  const body = await res.json()
+  const body = await res.json();
 
   if (body?.error?.includes("Cache miss")) {
     // fire-and-forget ML trigger
-    await fetch(`http://localhost:3000/api/tech/${tech}/run`, {
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}/run`, {
       method: "POST",
-    })
+    });
 
-    return { status: "processing" }
+    return { status: "processing" };
   }
 
   // ❌ Genuine failure
-  throw new Error(`Failed to fetch tech: ${tech}`)
+  throw new Error(`Failed to fetch tech: ${tech}`);
 }
 
 export async function fetchMultipleTechs(
-  techs: string[]
+  techs: string[],
 ): Promise<Record<string, TechData | { status: "processing" }>> {
-
   const results = await Promise.all(
     techs.map(async (tech) => ({
       tech,
       data: await fetchTechData(tech),
-    }))
-  )
+    })),
+  );
 
-  return results.reduce((acc, { tech, data }) => {
-    acc[tech] = data
-    return acc
-  }, {} as Record<string, TechData | { status: "processing" }>)
+  return results.reduce(
+    (acc, { tech, data }) => {
+      acc[tech] = data;
+      return acc;
+    },
+    {} as Record<string, TechData | { status: "processing" }>,
+  );
 }

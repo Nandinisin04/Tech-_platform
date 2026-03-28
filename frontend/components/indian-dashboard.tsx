@@ -8,16 +8,15 @@ import { motion } from "framer-motion";
 type SignalType = "publications" | "patents" | "investments";
 
 type SignalItem = {
-  title: string
-  link?: string
-  pdf_link?: string
-  year?: number
-  academic_weight?: number
-  strategic_weight?: number
-  confidence_weight?: number
-  institute?: string
-}
-
+  title: string;
+  link?: string;
+  pdf_link?: string;
+  year?: number;
+  academic_weight?: number;
+  strategic_weight?: number;
+  confidence_weight?: number;
+  institute?: string;
+};
 
 type IndiaPulseData = {
   summary: {
@@ -40,7 +39,7 @@ export function IndiaPulseSection() {
   const [activeTab, setActiveTab] = useState<SignalType>("publications");
 
   useEffect(() => {
-    fetch("/api/india")
+    fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global/india")
       .then((r) => r.json())
       .then(setData)
       .catch(() => setError("India pulse unavailable"));
@@ -58,15 +57,13 @@ export function IndiaPulseSection() {
     );
   }
 
-  const items = [...data.signals[activeTab]]
-    .sort((a, b) => {
-      const wa =
-        a.academic_weight ?? a.strategic_weight ?? a.confidence_weight ?? 0;
-      const wb =
-        b.academic_weight ?? b.strategic_weight ?? b.confidence_weight ?? 0;
-      return wb - wa;
-    })
-   
+  const items = [...data.signals[activeTab]].sort((a, b) => {
+    const wa =
+      a.academic_weight ?? a.strategic_weight ?? a.confidence_weight ?? 0;
+    const wb =
+      b.academic_weight ?? b.strategic_weight ?? b.confidence_weight ?? 0;
+    return wb - wa;
+  });
 
   return (
     <motion.section
@@ -109,8 +106,8 @@ export function IndiaPulseSection() {
 
       {/* ---------- List ---------- */}
       <div
-  id="india-pulse-list"
-  className="
+        id="india-pulse-list"
+        className="
     grid gap-3
     max-h-[420px]
     overflow-y-auto
@@ -120,8 +117,7 @@ export function IndiaPulseSection() {
     scrollbar-thumb-muted
     scrollbar-track-transparent
   "
->
-
+      >
         {items.map((item, i) => {
           const href = item.pdf_link || item.link;
           return (
@@ -130,36 +126,32 @@ export function IndiaPulseSection() {
               className="rounded-lg px-4 py-3 bg-muted/40 hover:bg-muted transition"
             >
               {href ? (
-  <div className="overflow-visible">
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="block whitespace-normal break-words font-medium leading-snug hover:underline"
-  >
-    {item.title}
-  </a>
-</div>
+                <div className="overflow-visible">
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block whitespace-normal break-words font-medium leading-snug hover:underline"
+                  >
+                    {item.title}
+                  </a>
+                </div>
+              ) : (
+                <p className="font-medium leading-snug whitespace-normal break-words">
+                  {item.title}
+                </p>
+              )}
 
-) : (
-  <p className="font-medium leading-snug whitespace-normal break-words">
-    {item.title}
-  </p>
-)}
+              {/* Institute tag (patents only will have this) */}
+              {item.institute && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {item.institute}
+                </p>
+              )}
 
-{/* Institute tag (patents only will have this) */}
-{item.institute && (
-  <p className="text-xs text-muted-foreground mt-1">
-    {item.institute}
-  </p>
-)}
-
-{item.year && (
-  <p className="text-xs text-muted-foreground">
-    {item.year}
-  </p>
-)}
-
+              {item.year && (
+                <p className="text-xs text-muted-foreground">{item.year}</p>
+              )}
             </div>
           );
         })}
