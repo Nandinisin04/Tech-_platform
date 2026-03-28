@@ -10,6 +10,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("🚀 Tech Intel Backend is running");
+});
+
 app.use("/api/technologies", techRoutes);
 app.use("/api/global", globalRoutes);
 app.use("/api/validate", validationRoutes);

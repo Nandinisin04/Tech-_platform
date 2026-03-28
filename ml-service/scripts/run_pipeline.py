@@ -9,7 +9,9 @@ import numpy as np
 from serpapi import GoogleSearch
 import networkx as nx
 import requests
+from dotenv import load_dotenv
 
+load_dotenv()
 
 
 # ================== CONFIG ==================

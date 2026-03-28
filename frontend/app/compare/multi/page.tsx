@@ -11,6 +11,11 @@ import { buildUnifiedKG } from "@/lib/knowledge-graph/buildUnifiedKG";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BackButton } from "@/components/back-button";
 
+//helper to unwrap data that may be nested under latest_json  
+
+function unwrapTechData(raw: any) {
+  return raw?.latest_json ? raw.latest_json : raw;
+}
 /* ================= TYPES ================= */
 
 type MetricType = "trend" | "market" | "patents" | "investment" | "kg";
@@ -87,13 +92,22 @@ function normalizeInvestmentBars(dataMap: TechDataMap) {
   const countryMap: Record<string, any> = {};
   const techList = Object.keys(dataMap);
 
-  // 1) Build countryMap normally
+    // 1) Build countryMap normally
   Object.entries(dataMap).forEach(([tech, data]) => {
-    const values =
-      data?.dashboard?.country_investment?.values ||
-      data?.dashboard?.investment_index?.values ||
-      data?.dashboard?.values ||
-      {};
+    const rawInvestment =
+    data?.dashboard?.country_investment ||
+    data?.dashboard?.investment_index ||
+    data?.dashboard?.values ||
+    {};
+
+  // handle BOTH cases:
+  // 1. { values: {...} }
+  // 2. { USA: 100, India: 50 }
+
+  const values =
+    rawInvestment?.values && typeof rawInvestment.values === "object"
+      ? rawInvestment.values
+      : rawInvestment;
 
     Object.entries(values).forEach(([country, value]: any) => {
       const c =
@@ -254,17 +268,21 @@ function generateComparativeParagraphs(dataMap: TechDataMap, techs: string[]) {
   const m = top3(entries, (e) => e.market);
 
   return {
-    patent: `In terms of patent activity, ${p[0].tech} leads with the highest recent filing volume, indicating strong innovation momentum. ${p[1]?.tech} follows with substantial patent presence but trails the leader in recent activity, while ${p[2]?.tech} ranks next with comparatively moderate patenting intensity.`,
-    adoption: `Looking at adoption trends, ${a[0].tech} demonstrates the strongest position, driven by the highest current adoption levels and consistent growth. ${a[1]?.tech} follows closely with solid adoption but slower recent acceleration, whereas ${a[2]?.tech} shows more limited uptake across use cases.`,
-    investment: `From an investment perspective, ${i[0].tech} attracts the largest cumulative investment, supported by broad geographic participation. ${i[1]?.tech} remains a strong second with significant funding but a narrower investment footprint, while ${i[2]?.tech} receives comparatively lower overall investment.`,
-    market: `In terms of market size, ${m[0].tech} dominates with the largest estimated market, reflecting wide commercial adoption. ${m[1]?.tech} follows with a substantial but smaller market presence, and ${m[2]?.tech} occupies a more niche position with lower overall market scale.`,
+  patent: `In terms of patent activity, ${p[0]?.tech ?? "N/A"} leads with the highest recent filing volume. ${p[1]?.tech ?? "The second technology"} follows${p[2] ? `, while ${p[2].tech} ranks next.` : "."}`,
+
+  adoption: `Looking at adoption trends, ${a[0]?.tech ?? "N/A"} shows strongest adoption. ${a[1]?.tech ?? "The second technology"} follows${a[2] ? `, while ${a[2].tech} lags behind.` : "."}`,
+
+  investment: `From an investment perspective, ${i[0]?.tech ?? "N/A"} attracts the most funding. ${i[1]?.tech ?? "The second technology"} follows${i[2] ? `, while ${i[2].tech} receives less.` : "."}`,
+
+  market: `In terms of market size, ${m[0]?.tech ?? "N/A"} leads. ${m[1]?.tech ?? "The second technology"} follows${m[2] ? `, and ${m[2].tech} remains smaller.` : "."}`,
   };
 }
 
 /* ================= PAGE ================= */
 
 export default function MultiComparePage() {
-  const baseTech = useSearchParams().get("base")?.toLowerCase() || "ai";
+  const searchParams = useSearchParams();
+  const baseTech = searchParams.get("base")?.toLowerCase() || "ai";
 
   const [techs, setTechs] = useState<string[]>([baseTech]);
   const [dataMap, setDataMap] = useState<TechDataMap>({});
@@ -278,15 +296,43 @@ export default function MultiComparePage() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   /* ================= VALIDATED ADD ================= */
+  useEffect(() => {
+  async function validateBaseTech() {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ technology: baseTech }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.decision === "accept" && data.technology) {
+        setTechs([data.technology]);
+      } else if (data.decision === "needs_confirmation" && data.suggestion) {
+        setTechs([data.suggestion]);
+      } else {
+        setTechs([baseTech]); // fallback
+      }
+    } catch {
+      setTechs([baseTech]);
+    }
+  }
+
+  validateBaseTech();
+}, [baseTech]);
 
   async function handleAddTech(query: string) {
     try {
       const res = await fetch(
-        "${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate",
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query }),
+          body: JSON.stringify({ technology:query }),
         },
       );
 
@@ -323,20 +369,43 @@ export default function MultiComparePage() {
   /* ================= FETCH ================= */
 
   useEffect(() => {
-    techs.forEach(async (tech) => {
-      if (dataMap[tech]) return;
+  async function fetchTech(tech: string) {
+    if (dataMap[tech]) return;
 
-      let res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`);
+    try {
+      let res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`
+      );
+
       if (res.status === 404) {
-        await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}/run`, { method: "POST" }); 
-        res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`); 
-      }
-      if (!res.ok) return;
-      const json = await res.json();
+        await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}/run`,
+          { method: "POST" }
+        );
 
-      setDataMap((p) => ({ ...p, [tech]: json }));
-    });
-  }, [techs]);
+        res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`
+        );
+      }
+
+      if (!res.ok) return;
+
+      const json = await res.json();
+        const normalized = unwrapTechData(json);
+
+        setDataMap((prev) => ({
+          ...prev,
+          [tech]: normalized,
+        }));
+    } catch (err) {
+      console.error(`Failed to fetch ${tech}:`, err);
+    }
+  }
+
+  techs.forEach((tech) => {
+    fetchTech(tech);
+  });
+}, [techs]);
   console.log("DATA MAP:", dataMap);
   console.log(
     "INVESTMENT RAW:",
@@ -378,7 +447,7 @@ export default function MultiComparePage() {
     metric === "market" &&
     Array.isArray(chartData) &&
     chartData.some((t: any) => Array.isArray(t.points) && t.points.length > 0);
-
+  console.log("FULL TECH DATA:", dataMap["hypersonics"]);
   /* ================= UI ================= */
 
   return (

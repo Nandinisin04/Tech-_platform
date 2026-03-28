@@ -123,7 +123,9 @@ function LegendItem({ color, label }: { color: string; label: string }) {
 function DashboardContent() {
   const searchParams = useSearchParams();
   const techParam = searchParams.get("tech") || "hypersonics";
-  const techName = techParam.toLowerCase();
+
+  const techName = techParam.toLowerCase().trim();
+  const normalizedTech = techName.replace(/\s+/g, "_");
 
   const [data, setData] = useState<any>(null);
   const [kg, setKg] = useState<any>(null);
@@ -139,47 +141,54 @@ function DashboardContent() {
       try {
         setError(null);
         setData(null);
+        setKg(null);
 
-        const encodedTech = encodeURIComponent(techName);
+        const encodedTech = encodeURIComponent(normalizedTech);
 
-        // 1️⃣ Try cached data
+        console.log("🔍 FRONTEND FETCHING:", normalizedTech);
+
+        // 1️⃣ Try cached DB data first
         let res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}`,  // not sure if this api call has a backend counterpart
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}`
         );
 
-        // 2️⃣ Cache miss → run ML
+        // 2️⃣ If not found, trigger ML pipeline
         if (res.status === 404) {
-          console.warn("⚠️ Cache miss. Running ML pipeline...");
+          console.warn("⚠️ Not in DB, running ML pipeline for:", normalizedTech);
 
           const runRes = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}/run`, 
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}/run`,
             {
               method: "POST",
-            },
+            }
           );
 
           if (!runRes.ok) {
             throw new Error("ML pipeline failed");
           }
 
-          // 3️⃣ Fetch again after ML
+          // 3️⃣ Fetch again after ML finishes
           res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}`
           );
         }
 
         if (!res.ok) {
-          throw new Error("Technology data not available");
+          throw new Error(`Technology data not available (${res.status})`);
         }
 
         const json = await res.json();
 
+        console.log("✅ DASHBOARD RAW RESPONSE:", json);
+
+        const finalData = json.dashboard ?? json.data ?? json;
+
         if (!cancelled) {
-          setData(json.dashboard ?? json.data ?? json);
-          setKg(json.knowledge_graph ?? null);
+          setData(finalData);
+          setKg(json.knowledge_graph ?? finalData.knowledge_graph ?? null);
         }
       } catch (err) {
-        console.error(err);
+        console.error("❌ Dashboard load error:", err);
         if (!cancelled) {
           setError("Technology data not available");
         }
@@ -191,7 +200,7 @@ function DashboardContent() {
     return () => {
       cancelled = true;
     };
-  }, [techName]);
+  }, [normalizedTech]);
   useEffect(() => {
     if (!data?.entities?.patents?.length) return;
 
@@ -272,7 +281,7 @@ function DashboardContent() {
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
-        <DashboardHeader techName={decodeURIComponent(techName)} />
+        <DashboardHeader techName={techName.replace(/_/g, " ")} />
 
         <KeyInsightsCards insights={filteredData.summary} />
 

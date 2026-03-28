@@ -1,4 +1,6 @@
-import mongoose, { Schema, model, models } from "mongoose"
+import mongoose from "mongoose";
+
+const { Schema, model, models } = mongoose;
 
 const TechnologySchema = new Schema(
   {
@@ -7,7 +9,9 @@ const TechnologySchema = new Schema(
     updated_at: { type: Date, default: Date.now },
   },
   { timestamps: true }
-)
+);
 
-export const Technology =
-  models.Technology || model("Technology", TechnologySchema)
+const Technology =
+  models.Technology || model("Technology", TechnologySchema);
+
+export default Technology;

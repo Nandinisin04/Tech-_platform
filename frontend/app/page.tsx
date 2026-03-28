@@ -28,7 +28,7 @@ export default function HomePage() {
     async function loadGlobal() {
       try {
         const res = await fetch(
-          "${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global",
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global`,
         );
         if (!res.ok) throw new Error("Failed to load global data");
 
@@ -48,10 +48,10 @@ export default function HomePage() {
     setShowConfirm(false);
     setPendingSuggestion(null);
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ technology: query }),
       });
 
       const data = await res.json();

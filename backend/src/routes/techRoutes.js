@@ -1,15 +1,15 @@
 import express from "express";
 import {
-  getTechnology,
-  runTechnologyGeneration,
+  getTechnologyData,
+  runTechnologyPipeline,
 } from "../controllers/techController.js";
 
 const router = express.Router();
 
-// GET technology data
-router.get("/:name", getTechnology);
+// Get cached tech data
+router.get("/:technology", getTechnologyData);
 
-// Force run ML generation
-router.post("/:name/run", runTechnologyGeneration);
+// Trigger ML pipeline + save to DB
+router.post("/:technology/run", runTechnologyPipeline);
 
 export default router;
