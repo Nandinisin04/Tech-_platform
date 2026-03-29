@@ -11,37 +11,77 @@ import { buildUnifiedKG } from "@/lib/knowledge-graph/buildUnifiedKG";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BackButton } from "@/components/back-button";
 
-//helper to unwrap data that may be nested under latest_json  
-
+// helper to unwrap data that may be nested under latest_json
 function unwrapTechData(raw: any) {
   return raw?.latest_json ? raw.latest_json : raw;
 }
+
 /* ================= TYPES ================= */
 
 type MetricType = "trend" | "market" | "patents" | "investment" | "kg";
 
 type TechDataMap = Record<string, any>;
 
+/* ================= SAFE ACCESS HELPERS ================= */
+
+function getArray(data: any, ...paths: string[][]) {
+  for (const path of paths) {
+    const value = path.reduce((obj: any, key: string) => obj?.[key], data);
+    if (Array.isArray(value)) return value;
+  }
+  return [];
+}
+
+function getObject(data: any, ...paths: string[][]) {
+  for (const path of paths) {
+    const value = path.reduce((obj: any, key: string) => obj?.[key], data);
+    if (value && typeof value === "object" && !Array.isArray(value)) return value;
+  }
+  return {};
+}
+
 /* ================= NORMALIZERS ================= */
-/* (UNCHANGED – exactly as you had them) */
+/* (kept all functions, but fixed to support your real backend shape) */
 
 function normalizeCurve(dataMap: TechDataMap, key: string) {
-  const yearSet = new Set<number>();
-  const perTech: Record<string, Record<number, number>> = {};
+  const yearSet = new Set<number | string>();
+  const perTech: Record<string, Record<number | string, number>> = {};
+
+  console.log("📈 normalizeCurve() called with key:", key);
+  console.log("📈 normalizeCurve() dataMap:", dataMap);
 
   Object.entries(dataMap).forEach(([tech, data]) => {
-    const raw = key.includes(".")
-      ? key.split(".").reduce((o: any, k) => o?.[k], data?.dashboard)
-      : data?.dashboard?.[key];
+    let raw: any[] = [];
+
+    if (key === "trend_curve") {
+      raw = getArray(
+        data,
+        ["adoption_curve"],
+        ["trend_curve"],
+        ["dashboard", "adoption_curve"],
+        ["dashboard", "trend_curve"]
+      );
+    } else {
+      raw = getArray(
+        data,
+        [key],
+        ["dashboard", key]
+      );
+    }
+
+    console.log(`📈 [${tech}] raw curve for ${key}:`, raw);
 
     if (!Array.isArray(raw)) return;
     perTech[tech] = {};
 
     raw.forEach((v: any, i: number) => {
-      if (typeof v === "object" && typeof v.year === "number") {
-        yearSet.add(v.year);
-        perTech[tech][v.year] = v.value ?? v.count ?? 0;
+      if (typeof v === "object") {
+        const year = v.year ?? v.x ?? `P${i + 1}`;
+        const value = v.value ?? v.count ?? v.y ?? 0;
+        yearSet.add(year);
+        perTech[tech][year] = Number(value) || 0;
       }
+
       if (typeof v === "number") {
         const year = 2020 + i;
         yearSet.add(year);
@@ -50,8 +90,8 @@ function normalizeCurve(dataMap: TechDataMap, key: string) {
     });
   });
 
-  return Array.from(yearSet)
-    .sort()
+  const result = Array.from(yearSet)
+    .sort((a: any, b: any) => String(a).localeCompare(String(b)))
     .map((year) => {
       const row: any = { year };
       Object.keys(perTech).forEach((tech) => {
@@ -59,26 +99,40 @@ function normalizeCurve(dataMap: TechDataMap, key: string) {
       });
       return row;
     });
+
+  console.log(`📈 normalizeCurve() result for ${key}:`, result);
+  return result;
 }
 
 function normalizePatentCurve(dataMap: TechDataMap) {
-  const yearSet = new Set<number>();
-  const perTech: Record<string, Record<number, number>> = {};
+  const yearSet = new Set<number | string>();
+  const perTech: Record<string, Record<number | string, number>> = {};
+
+  console.log("🧠 normalizePatentCurve() dataMap:", dataMap);
 
   Object.entries(dataMap).forEach(([tech, data]) => {
     perTech[tech] = {};
-    const timeline = data?.dashboard?.patent_timeline ?? [];
 
-    timeline.forEach((p: any) => {
-      if (typeof p.year === "number") {
-        yearSet.add(p.year);
-        perTech[tech][p.year] = (perTech[tech][p.year] ?? 0) + (p.count ?? 1);
-      }
+    const timeline = getArray(
+      data,
+      ["patent_timeline"],
+      ["paper_timeline"],
+      ["dashboard", "patent_timeline"],
+      ["dashboard", "paper_timeline"]
+    );
+
+    console.log(`🧠 [${tech}] patent timeline:`, timeline);
+
+    timeline.forEach((p: any, i: number) => {
+      const year = p.year ?? p.x ?? `P${i + 1}`;
+      const value = p.count ?? p.value ?? p.y ?? 1;
+      yearSet.add(year);
+      perTech[tech][year] = (perTech[tech][year] ?? 0) + (Number(value) || 0);
     });
   });
 
-  return Array.from(yearSet)
-    .sort()
+  const result = Array.from(yearSet)
+    .sort((a: any, b: any) => String(a).localeCompare(String(b)))
     .map((year) => {
       const row: any = { year };
       Object.keys(perTech).forEach((tech) => {
@@ -86,28 +140,33 @@ function normalizePatentCurve(dataMap: TechDataMap) {
       });
       return row;
     });
+
+  console.log("🧠 normalizePatentCurve() result:", result);
+  return result;
 }
 
 function normalizeInvestmentBars(dataMap: TechDataMap) {
   const countryMap: Record<string, any> = {};
   const techList = Object.keys(dataMap);
 
-    // 1) Build countryMap normally
+  console.log("💰 normalizeInvestmentBars() dataMap:", dataMap);
+
   Object.entries(dataMap).forEach(([tech, data]) => {
     const rawInvestment =
-    data?.dashboard?.country_investment ||
-    data?.dashboard?.investment_index ||
-    data?.dashboard?.values ||
-    {};
+      getObject(
+        data,
+        ["country_investment"],
+        ["dashboard", "country_investment"],
+        ["investment_index"],
+        ["dashboard", "investment_index"]
+      ) || {};
 
-  // handle BOTH cases:
-  // 1. { values: {...} }
-  // 2. { USA: 100, India: 50 }
+    console.log(`💰 [${tech}] rawInvestment:`, rawInvestment);
 
-  const values =
-    rawInvestment?.values && typeof rawInvestment.values === "object"
-      ? rawInvestment.values
-      : rawInvestment;
+    const values =
+      rawInvestment?.values && typeof rawInvestment.values === "object"
+        ? rawInvestment.values
+        : rawInvestment;
 
     Object.entries(values).forEach(([country, value]: any) => {
       const c =
@@ -121,14 +180,16 @@ function normalizeInvestmentBars(dataMap: TechDataMap) {
     });
   });
 
-  // ✅ 2) Fill missing tech keys with 0 for every country row
   Object.values(countryMap).forEach((row: any) => {
     techList.forEach((tech) => {
       if (row[tech] === undefined) row[tech] = 0;
     });
   });
 
-  return Object.values(countryMap);
+  const result = Object.values(countryMap);
+
+  console.log("💰 normalizeInvestmentBars() result:", result);
+  return result;
 }
 
 function parseMarketSizeToBillion(raw?: string): number | null {
@@ -143,40 +204,89 @@ function parseMarketSizeToBillion(raw?: string): number | null {
 }
 
 function normalizeMarketDistribution(dataMap: TechDataMap) {
-  const result: { tech: string; points: any[] }[] = [];
+  const yearSet = new Set<number | string>();
+  const perTech: Record<string, Record<number | string, number>> = {};
+
+  console.log("📊 normalizeMarketDistribution() dataMap:", dataMap);
 
   Object.entries(dataMap).forEach(([tech, data]) => {
+    perTech[tech] = {};
+
     const reports =
-      data?.dashboard?.market_reports ??
-      data?.dashboard?.entities?.market_reports ??
+      data?.market_timeline ||
+      data?.dashboard?.market_timeline ||
+      data?.dashboard?.market_reports ||
+      data?.dashboard?.entities?.market_reports ||
       [];
 
-    const points: any[] = [];
+    console.log(`📊 [${tech}] market reports/timeline:`, reports);
 
-    reports.forEach((r: any) => {
-      const value = parseMarketSizeToBillion(r.market_size);
-      if (value === null) return;
-      points.push({
-        value,
-        title: r.title,
-        source: r.source ?? "Market Report",
-      });
+    reports.forEach((r: any, i: number) => {
+      // CASE 1: timeline already has year + value
+      if (
+        r?.year !== undefined &&
+        (
+          r?.value !== undefined ||
+          r?.market !== undefined ||
+          r?.y !== undefined ||
+          r?.count !== undefined
+        )
+      ) {
+        const year = r.year;
+        const value = Number(r.value ?? r.market ?? r.y ?? r.count ?? 0);
+
+        if (!isNaN(value)) {
+          yearSet.add(year);
+          perTech[tech][year] = value;
+        }
+
+        return;
+      }
+
+      // CASE 2: market report text format
+      if (r?.market_size) {
+        const value = parseMarketSizeToBillion(r.market_size);
+        if (value === null) return;
+
+        const year =
+          r.year ||
+          r.report_year ||
+          r.forecast_year ||
+          `Report ${i + 1}`;
+
+        yearSet.add(year);
+        perTech[tech][year] = value;
+      }
     });
-
-    result.push({ tech, points });
   });
 
+  const result = Array.from(yearSet)
+    .sort((a: any, b: any) => String(a).localeCompare(String(b)))
+    .map((year) => {
+      const row: any = { year };
+      Object.keys(perTech).forEach((tech) => {
+        row[tech] = perTech[tech][year] ?? null;
+      });
+      return row;
+    });
+
+  console.log("📊 normalizeMarketDistribution() result:", result);
   return result;
 }
 /* ================= COMPARATIVE HELPERS ================= */
 
 // ---- Patent signal ----
 function getPatentSignal(data: any) {
-  const timeline = data?.dashboard?.patent_timeline ?? [];
+  const timeline = getArray(
+    data,
+    ["patent_timeline"],
+    ["dashboard", "patent_timeline"]
+  );
+
   if (timeline.length === 0) return { recent: 0, growth: 0 };
 
-  const last = timeline[timeline.length - 1]?.count ?? 0;
-  const prev = timeline[timeline.length - 2]?.count ?? 0;
+  const last = timeline[timeline.length - 1]?.count ?? timeline[timeline.length - 1]?.value ?? 0;
+  const prev = timeline[timeline.length - 2]?.count ?? timeline[timeline.length - 2]?.value ?? 0;
   const growth = prev > 0 ? (last - prev) / prev : last;
 
   return { recent: last, growth };
@@ -184,29 +294,46 @@ function getPatentSignal(data: any) {
 
 // ---- Adoption signal ----
 function getAdoptionSignal(data: any) {
-  const curve = data?.dashboard?.trend_curve ?? [];
+  const curve = getArray(
+    data,
+    ["adoption_curve"],
+    ["trend_curve"],
+    ["dashboard", "adoption_curve"],
+    ["dashboard", "trend_curve"]
+  );
+
   if (curve.length === 0) return { latest: 0, slope: 0 };
 
   const first =
-    typeof curve[0] === "number" ? curve[0] : (curve[0]?.value ?? 0);
+    typeof curve[0] === "number" ? curve[0] : (curve[0]?.value ?? curve[0]?.y ?? 0);
   const last =
     typeof curve[curve.length - 1] === "number"
       ? curve[curve.length - 1]
-      : (curve[curve.length - 1]?.value ?? 0);
+      : (curve[curve.length - 1]?.value ?? curve[curve.length - 1]?.y ?? 0);
 
   return { latest: last, slope: last - first };
 }
 
 // ---- Investment signal ----
 function getInvestmentSignal(data: any) {
+  const valuesObj =
+    getObject(
+      data,
+      ["country_investment"],
+      ["dashboard", "country_investment"],
+      ["investment_index"],
+      ["dashboard", "investment_index"]
+    ) || {};
+
   const values =
-    data?.dashboard?.country_investment?.values ??
-    data?.dashboard?.investment_index?.values ??
-    {};
+    valuesObj?.values && typeof valuesObj.values === "object"
+      ? valuesObj.values
+      : valuesObj;
 
   const nums = Object.values(values)
     .map(Number)
     .filter((v) => !isNaN(v));
+
   return {
     total: nums.reduce((a, b) => a + b, 0),
     breadth: nums.length,
@@ -215,25 +342,36 @@ function getInvestmentSignal(data: any) {
 
 // ---- Market size signal ----
 function getMarketSizeBillion(data: any) {
-  const reports =
-    data?.dashboard?.entities?.market_reports ??
-    data?.dashboard?.market_reports ??
-    [];
+  const reports = getArray(
+    data,
+    ["market_timeline"],
+    ["market_reports"],
+    ["dashboard", "market_timeline"],
+    ["dashboard", "market_reports"],
+    ["dashboard", "entities", "market_reports"]
+  );
 
   let max = 0;
-  for (const r of reports) {
-    const raw = r.market_size;
-    if (!raw) continue;
-    const s = raw.toLowerCase().replace(/[$,]/g, "");
-    const num = parseFloat(s);
-    if (isNaN(num)) continue;
 
-    if (s.includes("trillion")) max = Math.max(max, num * 1000);
-    else if (s.includes("billion")) max = Math.max(max, num);
-    else if (s.includes("million")) max = Math.max(max, num / 1000);
+  for (const r of reports) {
+    if (r?.market_size) {
+      const raw = r.market_size;
+      const s = raw.toLowerCase().replace(/[$,]/g, "");
+      const num = parseFloat(s);
+      if (isNaN(num)) continue;
+
+      if (s.includes("trillion")) max = Math.max(max, num * 1000);
+      else if (s.includes("billion")) max = Math.max(max, num);
+      else if (s.includes("million")) max = Math.max(max, num / 1000);
+    } else {
+      const val = Number(r?.value ?? r?.market ?? r?.y ?? r?.count ?? 0);
+      if (!isNaN(val)) max = Math.max(max, val);
+    }
   }
+
   return max;
 }
+
 function generateComparativeParagraphs(dataMap: TechDataMap, techs: string[]) {
   if (techs.length < 2) return null;
 
@@ -268,13 +406,10 @@ function generateComparativeParagraphs(dataMap: TechDataMap, techs: string[]) {
   const m = top3(entries, (e) => e.market);
 
   return {
-  patent: `In terms of patent activity, ${p[0]?.tech ?? "N/A"} leads with the highest recent filing volume. ${p[1]?.tech ?? "The second technology"} follows${p[2] ? `, while ${p[2].tech} ranks next.` : "."}`,
-
-  adoption: `Looking at adoption trends, ${a[0]?.tech ?? "N/A"} shows strongest adoption. ${a[1]?.tech ?? "The second technology"} follows${a[2] ? `, while ${a[2].tech} lags behind.` : "."}`,
-
-  investment: `From an investment perspective, ${i[0]?.tech ?? "N/A"} attracts the most funding. ${i[1]?.tech ?? "The second technology"} follows${i[2] ? `, while ${i[2].tech} receives less.` : "."}`,
-
-  market: `In terms of market size, ${m[0]?.tech ?? "N/A"} leads. ${m[1]?.tech ?? "The second technology"} follows${m[2] ? `, and ${m[2].tech} remains smaller.` : "."}`,
+    patent: `In terms of patent activity, ${p[0]?.tech ?? "N/A"} leads with the highest recent filing volume. ${p[1]?.tech ?? "The second technology"} follows${p[2] ? `, while ${p[2].tech} ranks next.` : "."}`,
+    adoption: `Looking at adoption trends, ${a[0]?.tech ?? "N/A"} shows strongest adoption. ${a[1]?.tech ?? "The second technology"} follows${a[2] ? `, while ${a[2].tech} lags behind.` : "."}`,
+    investment: `From an investment perspective, ${i[0]?.tech ?? "N/A"} attracts the most funding. ${i[1]?.tech ?? "The second technology"} follows${i[2] ? `, while ${i[2].tech} receives less.` : "."}`,
+    market: `In terms of market size, ${m[0]?.tech ?? "N/A"} leads. ${m[1]?.tech ?? "The second technology"} follows${m[2] ? `, and ${m[2].tech} remains smaller.` : "."}`,
   };
 }
 
@@ -289,54 +424,59 @@ export default function MultiComparePage() {
   const [metric, setMetric] = useState<MetricType>("trend");
   const [input, setInput] = useState("");
 
-  // 🔹 confirmation state
-  const [pendingSuggestion, setPendingSuggestion] = useState<string | null>(
-    null,
-  );
+  // confirmation state
+  const [pendingSuggestion, setPendingSuggestion] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
   /* ================= VALIDATED ADD ================= */
   useEffect(() => {
-  async function validateBaseTech() {
+    async function validateBaseTech() {
+      try {
+        console.log("🔍 Validating baseTech:", baseTech);
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ technology: baseTech }),
+          }
+        );
+
+        const data = await res.json();
+        console.log("✅ Base validation response:", data);
+
+        if (data.decision === "accept" && data.technology) {
+          setTechs([data.technology]);
+        } else if (data.decision === "needs_confirmation" && data.suggestion) {
+          setTechs([data.suggestion]);
+        } else {
+          setTechs([baseTech]); // fallback
+        }
+      } catch (err) {
+        console.error("❌ Base validation failed:", err);
+        setTechs([baseTech]);
+      }
+    }
+
+    validateBaseTech();
+  }, [baseTech]);
+
+  async function handleAddTech(query: string) {
     try {
+      console.log("➕ Adding tech:", query);
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ technology: baseTech }),
+          body: JSON.stringify({ technology: query }),
         }
       );
 
       const data = await res.json();
-
-      if (data.decision === "accept" && data.technology) {
-        setTechs([data.technology]);
-      } else if (data.decision === "needs_confirmation" && data.suggestion) {
-        setTechs([data.suggestion]);
-      } else {
-        setTechs([baseTech]); // fallback
-      }
-    } catch {
-      setTechs([baseTech]);
-    }
-  }
-
-  validateBaseTech();
-}, [baseTech]);
-
-  async function handleAddTech(query: string) {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ technology:query }),
-        },
-      );
-
-      const data = await res.json();
+      console.log("✅ Add tech validation response:", data);
 
       if (data.decision === "reject") {
         alert("This does not appear to be a technology.");
@@ -352,12 +492,15 @@ export default function MultiComparePage() {
       if (!techs.includes(data.technology)) {
         setTechs((prev) => [...prev, data.technology]);
       }
-    } catch {
+    } catch (err) {
+      console.error("❌ Validation failed while adding tech:", err);
       alert("Validation failed.");
     }
   }
 
   const removeTech = (tech: string) => {
+    console.log("🗑 Removing tech:", tech);
+
     setTechs((prev) => prev.filter((t) => t !== tech));
     setDataMap((prev) => {
       const copy = { ...prev };
@@ -367,56 +510,86 @@ export default function MultiComparePage() {
   };
 
   /* ================= FETCH ================= */
-
   useEffect(() => {
-  async function fetchTech(tech: string) {
-    if (dataMap[tech]) return;
-
-    try {
-      let res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`
-      );
-
-      if (res.status === 404) {
-        await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}/run`,
-          { method: "POST" }
-        );
-
-        res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`
-        );
+    async function fetchTech(tech: string) {
+      if (dataMap[tech]) {
+        console.log(`⏭ Skipping fetch for ${tech}, already in dataMap`);
+        return;
       }
 
-      if (!res.ok) return;
+      try {
+        console.log(`🌐 Fetching tech: ${tech}`);
 
-      const json = await res.json();
+        let res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`
+        );
+
+        console.log(`📡 GET /api/technologies/${tech} status:`, res.status);
+
+        if (res.status === 404) {
+          console.log(`⚙️ ${tech} not found, triggering run...`);
+
+          await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}/run`,
+            { method: "POST" }
+          );
+
+          res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${tech}`
+          );
+
+          console.log(`📡 Re-fetch after run for ${tech}:`, res.status);
+        }
+
+        if (!res.ok) {
+          console.warn(`⚠️ Fetch failed for ${tech} with status ${res.status}`);
+          return;
+        }
+
+        const json = await res.json();
         const normalized = unwrapTechData(json);
+
+        console.log("📦 RAW TECH DATA:", tech, json);
+        console.log("🧼 UNWRAPPED TECH DATA:", tech, normalized);
 
         setDataMap((prev) => ({
           ...prev,
           [tech]: normalized,
         }));
-    } catch (err) {
-      console.error(`Failed to fetch ${tech}:`, err);
+      } catch (err) {
+        console.error(`❌ Failed to fetch ${tech}:`, err);
+      }
     }
-  }
 
-  techs.forEach((tech) => {
-    fetchTech(tech);
-  });
-}, [techs]);
-  console.log("DATA MAP:", dataMap);
+    techs.forEach((tech) => {
+      fetchTech(tech);
+    });
+  }, [techs, dataMap]);
+
+  console.log("🗂 DATA MAP:", dataMap);
+  console.log("🧪 TECHS:", techs);
+  console.log("🧪 DATA MAP KEYS:", Object.keys(dataMap));
+
   console.log(
-    "INVESTMENT RAW:",
+    "💰 INVESTMENT RAW:",
     Object.keys(dataMap).map((t) => ({
       tech: t,
-      values: dataMap[t]?.dashboard?.country_investment?.values,
-    })),
+      values:
+        dataMap[t]?.country_investment?.values ||
+        dataMap[t]?.country_investment ||
+        dataMap[t]?.dashboard?.country_investment?.values ||
+        dataMap[t]?.dashboard?.country_investment,
+    }))
   );
 
   const chartData = useMemo(() => {
-    if (techs.length < 2) return null;
+    if (techs.length < 2) {
+      console.log("⚠️ chartData skipped because less than 2 techs selected");
+      return null;
+    }
+
+    console.log("📊 Building chartData for metric:", metric);
+
     switch (metric) {
       case "trend":
         return normalizeCurve(dataMap, "trend_curve");
@@ -426,28 +599,45 @@ export default function MultiComparePage() {
         return normalizeInvestmentBars(dataMap);
       case "market":
         return normalizeMarketDistribution(dataMap);
+      default:
+        return null;
     }
   }, [dataMap, metric, techs.length]);
 
   const unifiedKG = useMemo(() => {
     const inputs = Object.entries(dataMap)
-      .map(([tech, data]) =>
-        data?.knowledge_graph ? { tech, kg: data.knowledge_graph } : null,
-      )
+      .map(([tech, data]) => {
+        const kg = data?.knowledge_graph || data?.dashboard?.knowledge_graph;
+        return kg ? { tech, kg } : null;
+      })
       .filter(Boolean) as { tech: string; kg: any }[];
 
+    console.log("🕸 KG INPUTS:", inputs);
+
     if (inputs.length === 0) return null;
-    return buildUnifiedKG(inputs);
+
+    const built = buildUnifiedKG(inputs);
+    console.log("🕸 BUILT UNIFIED KG:", built);
+
+    return built;
   }, [dataMap]);
+
   const comparativeParagraphs = useMemo(() => {
-    return generateComparativeParagraphs(dataMap, techs);
+    const generated = generateComparativeParagraphs(dataMap, techs);
+    console.log("📝 Comparative Paragraphs:", generated);
+    return generated;
   }, [dataMap, techs]);
 
   const hasMarketPoints =
-    metric === "market" &&
-    Array.isArray(chartData) &&
-    chartData.some((t: any) => Array.isArray(t.points) && t.points.length > 0);
-  console.log("FULL TECH DATA:", dataMap["hypersonics"]);
+  metric === "market" &&
+  Array.isArray(chartData) &&
+  chartData.length > 0;
+
+  console.log("📊 FINAL chartData:", chartData);
+  console.log("📊 hasMarketPoints:", hasMarketPoints);
+  console.log("📊 current metric:", metric);
+  console.log("📦 FULL TECH DATA:", dataMap);
+
   /* ================= UI ================= */
 
   return (
@@ -480,6 +670,7 @@ export default function MultiComparePage() {
                   <button
                     className="px-3 py-1 bg-primary text-primary-foreground rounded"
                     onClick={() => {
+                      console.log("✅ Confirmed suggestion:", pendingSuggestion);
                       setShowConfirm(false);
                       if (!techs.includes(pendingSuggestion)) {
                         setTechs((p) => [...p, pendingSuggestion]);
@@ -490,7 +681,10 @@ export default function MultiComparePage() {
                   </button>
                   <button
                     className="px-3 py-1 border rounded"
-                    onClick={() => setShowConfirm(false)}
+                    onClick={() => {
+                      console.log("❌ Rejected suggestion:", pendingSuggestion);
+                      setShowConfirm(false);
+                    }}
                   >
                     No
                   </button>
@@ -548,6 +742,7 @@ export default function MultiComparePage() {
             ))}
           </div>
         </div>
+
         {comparativeParagraphs && (
           <div className="rounded-lg border bg-card p-4 space-y-4">
             <h2 className="text-base font-semibold">
@@ -592,8 +787,10 @@ export default function MultiComparePage() {
             data={chartData as ReturnType<typeof normalizeInvestmentBars>}
           />
         ) : metric === "market" ? (
-          <MultiTechMarketDistribution
+          <MultiTechLineChart
             data={chartData as ReturnType<typeof normalizeMarketDistribution>}
+            title="Market Size"
+            yLabel="Market Size (Billion USD)"
           />
         ) : (
           <MultiTechLineChart

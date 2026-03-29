@@ -1,56 +1,95 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import CompareDashboardContent from "@/components/compare/compare-dashboard-content";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BackButton } from "@/components/back-button";
 
+/* ================= NORMALIZER ================= */
+
+function normalizeTechName(input: string): string {
+  if (!input) return "";
+
+  const cleaned = input.toLowerCase().trim();
+
+  // aliases / shorthand
+  const aliasMap: Record<string, string> = {
+    ml: "machine_learning",
+    "machine learning": "machine_learning",
+    dl: "deep_learning",
+    "deep learning": "deep_learning",
+    ai: "artificial_intelligence",
+    "artificial intelligence": "artificial_intelligence",
+  };
+
+  if (aliasMap[cleaned]) return aliasMap[cleaned];
+
+  return cleaned.replace(/\s+/g, "_");
+}
+
 export default function ComparePage() {
   const searchParams = useSearchParams();
 
   // 🔒 FIXED LEFT DASHBOARD
-  const baseTech = searchParams.get("base")?.toLowerCase() || "ai";
+  const baseTech = useMemo(() => {
+    const rawBase = searchParams.get("base") || "machine_learning";
+    return normalizeTechName(rawBase);
+  }, [searchParams]);
 
   // 🔁 RIGHT DASHBOARD
   const [rightTech, setRightTech] = useState<string | null>(null);
 
   // 🔹 Confirmation state
-  const [pendingSuggestion, setPendingSuggestion] = useState<string | null>(
-    null,
-  );
+  const [pendingSuggestion, setPendingSuggestion] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
   /* ================= VALIDATED SEARCH ================= */
 
-  async function handleCompareSearch(query: string) {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate`, {
+async function handleCompareSearch(query: string) {
+  try {
+    const normalizedQuery = normalizeTechName(query);
+
+    console.log("🔍 Compare search input:", query);
+    console.log("🧼 Normalized compare query:", normalizedQuery);
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/validate`,
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
-
-      const data = await res.json();
-
-      if (data.decision === "reject") {
-        alert("This does not appear to be a valid technology.");
-        return;
+        body: JSON.stringify({ technology: normalizedQuery }),
       }
+    );
 
-      if (data.decision === "needs_confirmation") {
-        setPendingSuggestion(data.suggestion);
-        setShowConfirm(true);
-        return;
-      }
+    const data = await res.json();
 
-      // ✅ accepted
-      setRightTech(data.technology);
-    } catch {
-      alert("Validation failed. Please try again.");
+    console.log("✅ Validation response:", data);
+
+    if (data.decision === "reject") {
+      alert("This does not appear to be a valid technology.");
+      return;
     }
+
+    if (data.decision === "needs_confirmation") {
+      const suggested = normalizeTechName(data.suggestion || "");
+      setPendingSuggestion(suggested);
+      setShowConfirm(true);
+      return;
+    }
+
+    // ✅ accepted
+    const acceptedTech = normalizeTechName(
+      data.technology || normalizedQuery
+    );
+
+    setRightTech(acceptedTech);
+  } catch (error) {
+    console.error("❌ Compare validation failed:", error);
+    alert("Validation failed. Please try again.");
   }
+}
 
   return (
     <div className="w-full">
@@ -70,8 +109,9 @@ export default function ComparePage() {
               className="border px-4 py-2 rounded-md w-full max-w-lg bg-background"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  const value = e.currentTarget.value.toLowerCase().trim();
+                  const value = e.currentTarget.value.trim();
                   if (!value) return;
+
                   handleCompareSearch(value);
                   e.currentTarget.value = "";
                 }
@@ -82,7 +122,7 @@ export default function ComparePage() {
             {showConfirm && pendingSuggestion && (
               <div className="absolute top-14 bg-background border border-border p-4 rounded shadow z-50 w-[320px]">
                 <p className="mb-3 text-sm">
-                  Did you mean <b>{pendingSuggestion}</b>?
+                  Did you mean <b>{pendingSuggestion.replaceAll("_", " ")}</b>?
                 </p>
                 <div className="flex gap-3 justify-end">
                   <button
@@ -96,7 +136,10 @@ export default function ComparePage() {
                   </button>
                   <button
                     className="px-3 py-1 border rounded"
-                    onClick={() => setShowConfirm(false)}
+                    onClick={() => {
+                      setShowConfirm(false);
+                      setPendingSuggestion(null);
+                    }}
                   >
                     No
                   </button>
@@ -113,7 +156,7 @@ export default function ComparePage() {
       </header>
 
       {/* ================= DASHBOARDS ================= */}
-      <div className="mx-auto max-w-7xl grid grid-cols-2 gap-6 p-6">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
         <CompareDashboardContent tech={baseTech} />
         {rightTech && <CompareDashboardContent tech={rightTech} />}
       </div>

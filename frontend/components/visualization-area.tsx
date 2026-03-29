@@ -1,6 +1,5 @@
 "use client";
 
-
 import {
   Card,
   CardContent,
@@ -25,10 +24,6 @@ import {
   Scatter,
 } from "recharts";
 
-import { makeTrendData } from "@/lib/trendUtils"
-import { TrendTooltip } from "@/components/common/TrendTooltip"
-
-
 type PatentPoint = {
   year: number;
   count: number;
@@ -39,26 +34,35 @@ type MarketReport = {
   market_size: string;
 };
 
+type TrendPoint =
+  | number
+  | {
+      year?: number;
+      count?: number;
+      cum?: number;
+      adoption?: number;
+      value?: number;
+    };
 
 type VisualizationAreaProps = {
-  trendCurve: number[];
+  trendCurve: TrendPoint[];
   countryInvestment: Record<string, number>;
   patentTimeline: PatentPoint[];
   marketReports?: MarketReport[];
 };
 
 function computeBoxPlotStats(values: number[]) {
-  if (values.length === 0) return null
+  if (values.length === 0) return null;
 
-  const sorted = [...values].sort((a, b) => a - b)
+  const sorted = [...values].sort((a, b) => a - b);
 
   const percentile = (p: number) => {
-    const index = (p / 100) * (sorted.length - 1)
-    const lower = Math.floor(index)
-    const upper = Math.ceil(index)
-    if (lower === upper) return sorted[lower]
-    return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower)
-  }
+    const index = (p / 100) * (sorted.length - 1);
+    const lower = Math.floor(index);
+    const upper = Math.ceil(index);
+    if (lower === upper) return sorted[lower];
+    return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower);
+  };
 
   return {
     min: sorted[0],
@@ -66,7 +70,88 @@ function computeBoxPlotStats(values: number[]) {
     median: percentile(50),
     q3: percentile(75),
     max: sorted[sorted.length - 1],
+  };
+}
+
+function normalizeTrendCurve(trendCurve: TrendPoint[]) {
+  if (!Array.isArray(trendCurve) || trendCurve.length === 0) return [];
+
+  // CASE 1: old format [1,2,3,4]
+  if (typeof trendCurve[0] === "number") {
+    return (trendCurve as number[]).map((value, index) => ({
+      step: `T${index + 1}`,
+      year: index + 1,
+      value,
+      raw: value,
+    }));
   }
+
+  // CASE 2: new format [{year,count,cum,adoption}]
+  return (trendCurve as Exclude<TrendPoint, number>[])
+    .map((point, index) => {
+      const value =
+        typeof point.adoption === "number"
+          ? point.adoption
+          : typeof point.count === "number"
+          ? point.count
+          : typeof point.value === "number"
+          ? point.value
+          : 0;
+
+      return {
+        step: point.year ? String(point.year) : `T${index + 1}`,
+        year: point.year ?? index + 1,
+        value,
+        count: point.count ?? null,
+        cum: point.cum ?? null,
+        adoption: point.adoption ?? null,
+        raw: point,
+      };
+    })
+    .filter((p) => typeof p.value === "number");
+}
+
+function TrendTooltipContent({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}) {
+  if (!active || !payload || !payload.length) return null;
+
+  const point = payload[0]?.payload;
+  if (!point) return null;
+
+  return (
+    <div className="rounded-md border bg-background px-3 py-2 shadow-sm">
+      <div className="text-sm font-medium">{label ?? point.step}</div>
+
+      <div className="text-xs text-muted-foreground mt-1">
+        Trend Value: {typeof point.value === "number" ? point.value.toFixed(2) : "N/A"}
+      </div>
+
+      {point.count !== null && point.count !== undefined && (
+        <div className="text-xs text-muted-foreground">
+          Count: {point.count}
+        </div>
+      )}
+
+      {point.cum !== null && point.cum !== undefined && (
+        <div className="text-xs text-muted-foreground">
+          Cumulative: {point.cum}
+        </div>
+      )}
+
+      {point.adoption !== null && point.adoption !== undefined && (
+        <div className="text-xs text-muted-foreground">
+          Adoption: {point.adoption}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function VisualizationArea({
@@ -76,15 +161,7 @@ export function VisualizationArea({
   marketReports = [],
 }: VisualizationAreaProps) {
   // ---------- SAFE TRANSFORMS ----------
-  const forecastData =
-  trendCurve.length > 0
-    ? trendCurve.map((value, index) => ({
-        step: `T${index + 1}`,
-        value,
-        index, // ✅ added (important for delta calc tooltip)
-      }))
-    : [];
-
+  const forecastData = normalizeTrendCurve(trendCurve);
 
   const investmentData =
     countryInvestment && Object.keys(countryInvestment).length > 0
@@ -95,61 +172,49 @@ export function VisualizationArea({
       : [];
 
   const marketDistribution = (marketReports || [])
-  .map((report, index) => {
-    if (!report.market_size || typeof report.market_size !== "string") {
-      return null
-    }
+    .map((report, index) => {
+      if (!report.market_size || typeof report.market_size !== "string") {
+        return null;
+      }
 
-    const numericValue = parseFloat(
-      report.market_size.replace(/[^0-9.]/g, "")
-    )
+      const numericValue = parseFloat(
+        report.market_size.replace(/[^0-9.]/g, "")
+      );
 
-    if (isNaN(numericValue)) return null
+      if (isNaN(numericValue)) return null;
 
-    return {
-      source: `Report ${index + 1}`,
-      value: numericValue,
-      title: report.title,
-    }
-  })
-  .filter(Boolean)
+      return {
+        source: `Report ${index + 1}`,
+        value: numericValue,
+        title: report.title,
+      };
+    })
+    .filter(Boolean) as { source: string; value: number; title: string }[];
 
-const marketValues = marketDistribution
-  .map((d) => (d && typeof d.value === "number" ? d.value : null))
-  .filter((v): v is number => v !== null)
+  const marketValues = marketDistribution
+    .map((d) => (d && typeof d.value === "number" ? d.value : null))
+    .filter((v): v is number => v !== null);
 
+  const boxStats = computeBoxPlotStats(marketValues);
 
-const boxStats = computeBoxPlotStats(marketValues);
-const scatterData = marketDistribution.map((d) => ({
-  x: Math.random() * 0.4 - 0.2, // horizontal jitter
-  y: d.value,
-  title: d.title || "Unknown source",
-}))
-
+  const scatterData = marketDistribution.map((d) => ({
+    x: Math.random() * 0.4 - 0.2,
+    y: d.value,
+    title: d.title || "Unknown source",
+  }));
 
   const hasForecast = forecastData.length > 0;
   const hasInvestment = investmentData.length > 0;
   const hasPatents = patentTimeline.length > 0;
 
-
-console.log("marketValues:", marketValues)
-console.log("boxStats:", boxStats)
-console.log("scatterData:", scatterData)
-
-const summaryDots = boxStats
-  ? [
-      { x: 0, y: boxStats.min, label: "Min" },
-      { x: 0, y: boxStats.q1, label: "Q1" },
-      { x: 0, y: boxStats.median, label: "Median" },
-      { x: 0, y: boxStats.q3, label: "Q3" },
-      { x: 0, y: boxStats.max, label: "Max" },
-    ]
-  : []
-
+  console.log("📈 forecastData:", forecastData);
+  console.log("💰 marketValues:", marketValues);
+  console.log("📦 boxStats:", boxStats);
+  console.log("🎯 scatterData:", scatterData);
 
   return (
     <div className="space-y-6">
-      {/* ================= Market Forecasting ================= */}
+      {/* ================= Market Forecasting / Adoption Trend ================= */}
       <Card>
         <CardHeader>
           <CardTitle>Market Forecasting</CardTitle>
@@ -170,7 +235,7 @@ const summaryDots = boxStats
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="step" />
                 <YAxis />
-                <Tooltip content={<TrendTooltip data={forecastData} />} />
+                <Tooltip content={<TrendTooltipContent />} />
                 <Area
                   type="monotone"
                   dataKey="value"
@@ -205,7 +270,7 @@ const summaryDots = boxStats
                 <XAxis dataKey="country" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="value"  fill="#003f60" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="value" fill="#003f60" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -249,109 +314,87 @@ const summaryDots = boxStats
         </CardContent>
       </Card>
 
-{/* ================= Market Size Distribution ================= */}
-{boxStats && (
-  <Card>
-    <CardHeader>
-      <CardTitle>Market Size Estimate Distribution</CardTitle>
-      <CardDescription>
-        Independent market size estimates across reports
-      </CardDescription>
-    </CardHeader>
+      {/* ================= Market Size Distribution ================= */}
+      {boxStats && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Market Size Estimate Distribution</CardTitle>
+            <CardDescription>
+              Independent market size estimates across reports
+            </CardDescription>
+          </CardHeader>
 
-    <CardContent>
-      <ResponsiveContainer width="100%" height={320}>
-        <ScatterChart>
-          {/* X axis is fake & hidden */}
-          <XAxis
-            type="number"
-            dataKey="x"
-            domain={[-5, 5]}
-            hide
-          />
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <ScatterChart>
+                <XAxis type="number" dataKey="x" domain={[-5, 5]} hide />
 
-          {/* Y axis is real */}
-          <YAxis
-            label={{
-              value: "Market Size (USD Billion)",
-              angle: -90,
-              position: "insideLeft",
-              style: {
-      textAnchor: "middle",
-    },
-    offset: 10,
-            }}
-            domain={[
-              (min: number) => Math.floor(min * 0.9),
-              (max: number) => Math.ceil(max * 1.1),
-            ]}
-          />
+                <YAxis
+                  label={{
+                    value: "Market Size (USD Billion)",
+                    angle: -90,
+                    position: "insideLeft",
+                    style: {
+                      textAnchor: "middle",
+                    },
+                    offset: 10,
+                  }}
+                  domain={[
+                    (min: number) => Math.floor(min * 0.9),
+                    (max: number) => Math.ceil(max * 1.1),
+                  ]}
+                />
 
-          <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" />
 
-          {/* MIN */}
-          <ReferenceLine
-            y={boxStats.min}
-            stroke="#94a3b8"
-            strokeDasharray="3 3"
-          />
+                <ReferenceLine
+                  y={boxStats.min}
+                  stroke="#94a3b8"
+                  strokeDasharray="3 3"
+                />
 
-          {/* MEDIAN */}
-          <ReferenceLine
-            y={boxStats.median}
-            stroke="#0f172a"
-            strokeWidth={3}
-          />
+                <ReferenceLine
+                  y={boxStats.median}
+                  stroke="#0f172a"
+                  strokeWidth={3}
+                />
 
-          {/* MAX */}
-          <ReferenceLine
-            y={boxStats.max}
-            stroke="#94a3b8"
-            strokeDasharray="3 3"
-          />
+                <ReferenceLine
+                  y={boxStats.max}
+                  stroke="#94a3b8"
+                  strokeDasharray="3 3"
+                />
 
-          {/* DOTS */}
-          <Scatter
-            data={scatterData}
-            dataKey="y"
-            fill="#2563eb"
-          />
+                <Scatter data={scatterData} dataKey="y" fill="#2563eb" />
 
-          {/* TOOLTIP */}
-          <Tooltip
-  cursor={{ strokeDasharray: "3 3" }}
-  content={({ payload }) => {
-    if (!payload || !payload.length) return null
+                <Tooltip
+                  cursor={{ strokeDasharray: "3 3" }}
+                  content={({ payload }) => {
+                    if (!payload || !payload.length) return null;
 
-    const point = payload[0].payload
+                    const point = payload[0].payload;
 
-    return (
-      <div className="rounded-md border bg-background px-3 py-2 shadow-sm">
-        <div className="text-sm font-medium">
-          {point.title}
-        </div>
-        <div className="text-xs text-muted-foreground mt-1">
-          Market Size: {point.y.toFixed(1)} B USD
-        </div>
-      </div>
-    )
-  }}
-/>
+                    return (
+                      <div className="rounded-md border bg-background px-3 py-2 shadow-sm">
+                        <div className="text-sm font-medium">{point.title}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Market Size: {point.y.toFixed(1)} B USD
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+              </ScatterChart>
+            </ResponsiveContainer>
 
-        </ScatterChart>
-      </ResponsiveContainer>
-
-      {/* Summary stats */}
-      <div className="mt-4 grid grid-cols-3 gap-1 text-sm text-muted-foreground">
-        <div>Min: {boxStats.min.toFixed(1)} B</div>
-        <div>Median: {boxStats.median.toFixed(1)} B</div>
-        <div>Max: {boxStats.max.toFixed(1)} B</div>
-      </div>
-    </CardContent>
-  </Card>
-)}
-
-
+            <div className="mt-4 grid grid-cols-3 gap-1 text-sm text-muted-foreground">
+              <div>Min: {boxStats.min.toFixed(1)} B</div>
+              <div>Median: {boxStats.median.toFixed(1)} B</div>
+              <div>Max: {boxStats.max.toFixed(1)} B</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
