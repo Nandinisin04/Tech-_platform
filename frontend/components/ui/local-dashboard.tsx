@@ -2,9 +2,14 @@
 
 import { useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { X, Plus, Filter } from "lucide-react";
+import { X, Plus } from "lucide-react";
 
-type MetricObj = { label: string; value: string; context: string };
+type MetricObj = {
+  label: string;
+  value: string;
+  context: string;
+  conclusion?: string;
+};
 
 type ScientistBrief = {
   objective: string;
@@ -27,7 +32,6 @@ type Insights = {
   metrics?: string[] | MetricObj[];
   brief?: ScientistBrief;
   tags?: string[];
-  // Added timeline type
   timeline?: { date: string; event: string }[];
 };
 
@@ -45,47 +49,15 @@ type LocalDoc = {
 };
 
 function normalizeMetrics(metrics?: string[] | MetricObj[]) {
-  if (!metrics || metrics.length === 0)
+  if (!metrics || metrics.length === 0) {
     return { chips: [] as string[], cards: [] as MetricObj[] };
+  }
 
   if (typeof metrics[0] === "string") {
     return { chips: metrics as string[], cards: [] as MetricObj[] };
   }
 
   return { chips: [] as string[], cards: metrics as MetricObj[] };
-}
-
-function getMetricConclusion(label: string, value: string) {
-  const v = value.toLowerCase();
-
-  if (label.toLowerCase().includes("temperature")) {
-    if (
-      v.includes("530") ||
-      v.includes("900") ||
-      v.includes("1100") ||
-      v.includes("700")
-    ) {
-      return "Conclusion: Temperature varies significantly → system is temperature-sensitive.";
-    }
-    return "Conclusion: Temperature strongly impacts ignition/combustion behavior.";
-  }
-
-  if (label.toLowerCase().includes("pressure")) {
-    return "Conclusion: Pressure affects density, stability and feasibility.";
-  }
-
-  if (label.toLowerCase().includes("time")) {
-    return "Conclusion: Microsecond-scale events → ignition/transition is very fast & critical.";
-  }
-
-  if (
-    label.toLowerCase().includes("concentration") ||
-    label.toLowerCase().includes("percentage")
-  ) {
-    return "Conclusion: Small % changes may significantly alter reaction initiation.";
-  }
-
-  return "Conclusion: Metric extracted from document context.";
 }
 
 export default function LocalDashboard() {
@@ -95,23 +67,9 @@ export default function LocalDashboard() {
   const [selectedDoc, setSelectedDoc] = useState<LocalDoc | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  // ✅ Tagging State
-  const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
+  // UI-only tag state
   const [newTagInput, setNewTagInput] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
-
-  // ✅ Computed: All unique tags across all docs
-  const allTags = Array.from(
-    new Set(docs.flatMap((d) => d.insights?.tags || [])),
-  );
-
-  // ✅ Filtered Docs
-  const filteredDocs =
-    activeTagFilters.length === 0
-      ? docs
-      : docs.filter((d) =>
-          d.insights?.tags?.some((tag) => activeTagFilters.includes(tag)),
-        );
 
   const { chips: metricChips, cards: metricCards } = normalizeMetrics(
     selectedDoc?.insights?.metrics,
@@ -124,21 +82,29 @@ export default function LocalDashboard() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/local/upload", {
-        method: "POST",
-        body: formData,
-      });
+      console.log("📤 Uploading local file:", file.name);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/local/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       const json = await res.json();
-      console.log("UPLOAD RESPONSE JSON:", json);
+      console.log("📥 LOCAL UPLOAD RESPONSE:", json);
 
-      if (!res.ok) throw new Error(json?.error || "Upload failed");
+      if (!res.ok) {
+        throw new Error(json?.error || "Upload failed");
+      }
 
       const newDoc: LocalDoc = json.doc;
       setDocs((prev) => [newDoc, ...prev]);
       setSelectedDoc(newDoc);
     } catch (e: any) {
-      alert(e.message);
+      console.error("❌ Local upload failed:", e);
+      alert(e.message || "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -146,6 +112,7 @@ export default function LocalDashboard() {
 
   function deleteDoc(e: React.MouseEvent, id: string) {
     e.stopPropagation();
+
     const newDocs = docs.filter((d) => d.id !== id);
     setDocs(newDocs);
 
@@ -156,40 +123,42 @@ export default function LocalDashboard() {
 
   function addTag(docId: string, tag: string) {
     if (!tag.trim()) return;
-    const t = tag.trim();
+    const cleanTag = tag.trim();
 
     setDocs((prev) =>
       prev.map((d) => {
-        if (d.id === docId) {
-          const oldTags = d.insights?.tags || [];
-          if (oldTags.includes(t)) return d;
-          return {
-            ...d,
-            insights: {
-              ...d.insights!,
-              tags: [...oldTags, t],
-            },
-          };
-        }
-        return d;
+        if (d.id !== docId) return d;
+
+        const oldTags = d.insights?.tags || [];
+        if (oldTags.includes(cleanTag)) return d;
+
+        return {
+          ...d,
+          insights: {
+            ...d.insights!,
+            tags: [...oldTags, cleanTag],
+          },
+        };
       }),
     );
 
-    // Update selectedDoc if it's the one being modified
     if (selectedDoc?.id === docId) {
       setSelectedDoc((prev) => {
         if (!prev || !prev.insights) return prev;
+
         const oldTags = prev.insights.tags || [];
-        if (oldTags.includes(t)) return prev;
+        if (oldTags.includes(cleanTag)) return prev;
+
         return {
           ...prev,
           insights: {
             ...prev.insights,
-            tags: [...oldTags, t],
+            tags: [...oldTags, cleanTag],
           },
         };
       });
     }
+
     setNewTagInput("");
     setShowTagInput(false);
   }
@@ -197,22 +166,22 @@ export default function LocalDashboard() {
   function removeTag(docId: string, tag: string) {
     setDocs((prev) =>
       prev.map((d) => {
-        if (d.id === docId) {
-          return {
-            ...d,
-            insights: {
-              ...d.insights!,
-              tags: d.insights?.tags?.filter((t) => t !== tag) || [],
-            },
-          };
-        }
-        return d;
+        if (d.id !== docId) return d;
+
+        return {
+          ...d,
+          insights: {
+            ...d.insights!,
+            tags: d.insights?.tags?.filter((t) => t !== tag) || [],
+          },
+        };
       }),
     );
 
     if (selectedDoc?.id === docId) {
       setSelectedDoc((prev) => {
         if (!prev || !prev.insights) return prev;
+
         return {
           ...prev,
           insights: {
@@ -226,6 +195,7 @@ export default function LocalDashboard() {
 
   return (
     <div className="mt-5 space-y-4 p-4 md:p-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Private Workspace</h2>
@@ -259,9 +229,9 @@ export default function LocalDashboard() {
         </div>
       </div>
 
-      {/* ✅ 3 column layout for scientist use */}
+      {/* Main 3-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* ✅ LEFT: LIBRARY + METRICS */}
+        {/* LEFT: DOCUMENT LIBRARY + METRICS */}
         <Card className="rounded-2xl">
           <CardContent className="p-4">
             <h3 className="font-semibold">Document Library</h3>
@@ -270,16 +240,12 @@ export default function LocalDashboard() {
             </p>
 
             <div className="mt-3 space-y-2">
-              {/* Tag filtering UI removed per user request */}
-
-              {filteredDocs.length === 0 ? (
+              {docs.length === 0 ? (
                 <p className="text-xs text-gray-400">
-                  {docs.length === 0
-                    ? "No documents uploaded yet."
-                    : "No documents match selected filters."}
+                  No documents uploaded yet.
                 </p>
               ) : (
-                filteredDocs.map((d) => (
+                docs.map((d) => (
                   <div
                     key={d.id}
                     onClick={() => setSelectedDoc(d)}
@@ -297,7 +263,7 @@ export default function LocalDashboard() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100">
+                      <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-black">
                         PDF
                       </span>
                       <button
@@ -313,9 +279,9 @@ export default function LocalDashboard() {
               )}
             </div>
 
-            {/* ✅ METRICS */}
+            {/* METRICS */}
             {selectedDoc && (
-              <div className="mt-4">
+              <div className="mt-5">
                 <p className="text-xs font-semibold text-muted-foreground mb-2">
                   KEY METRICS (SELECTED DOC)
                 </p>
@@ -356,7 +322,7 @@ export default function LocalDashboard() {
                           </p>
 
                           <p className="text-[11px] text-gray-400">
-                            {getMetricConclusion(m.label, m.value)}
+                            {m.conclusion || "Conclusion not available."}
                           </p>
                         </div>
                       </div>
@@ -374,8 +340,8 @@ export default function LocalDashboard() {
           </CardContent>
         </Card>
 
-        {/* ✅ MIDDLE: SCIENTIST BRIEF */}
-        <Card className="rounded-2xl lg:col-span-1">
+        {/* MIDDLE: SCIENTIST BRIEF */}
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <h3 className="font-semibold">Scientist Brief (1-Page)</h3>
             <p className="text-sm text-gray-500 mt-1">
@@ -399,16 +365,12 @@ export default function LocalDashboard() {
                   </span>
                 </div>
 
-                {/* Objective */}
                 <BriefBlock title="OBJECTIVE">
-                  <p className="text-sm">
-                    {selectedDoc.insights.brief.objective}
-                  </p>
+                  <p>{selectedDoc.insights.brief.objective}</p>
                 </BriefBlock>
 
-                {/* Method */}
                 <BriefBlock title="METHOD / SETUP">
-                  <ul className="list-disc pl-5 space-y-1 text-sm">
+                  <ul className="list-disc pl-5 space-y-1">
                     {selectedDoc.insights.brief.methodSetup?.length ? (
                       selectedDoc.insights.brief.methodSetup.map((x, i) => (
                         <li key={i}>{x}</li>
@@ -419,14 +381,10 @@ export default function LocalDashboard() {
                   </ul>
                 </BriefBlock>
 
-                {/* Novelty */}
                 <BriefBlock title="NOVELTY / CONTRIBUTION">
-                  <p className="text-sm">
-                    {selectedDoc.insights.brief.novelty}
-                  </p>
+                  <p>{selectedDoc.insights.brief.novelty}</p>
                 </BriefBlock>
 
-                {/* Key Numbers */}
                 <BriefBlock title="KEY NUMBERS">
                   <div className="flex flex-wrap gap-2">
                     {selectedDoc.insights.brief.keyNumbers?.length ? (
@@ -434,7 +392,6 @@ export default function LocalDashboard() {
                         <span
                           key={i}
                           className="text-xs px-2 py-1 rounded-full border bg-background"
-                          title={m.label}
                         >
                           <span className="font-medium">{m.label}:</span>{" "}
                           {m.value}
@@ -448,34 +405,44 @@ export default function LocalDashboard() {
                   </div>
                 </BriefBlock>
 
-                {/* Assumptions */}
                 <BriefBlock title="ASSUMPTIONS">
-                  <ul className="list-disc pl-5 space-y-1 text-sm">
-                    {selectedDoc.insights.brief.assumptions?.map((x, i) => (
-                      <li key={i}>{x}</li>
-                    ))}
+                  <ul className="list-disc pl-5 space-y-1">
+                    {selectedDoc.insights.brief.assumptions?.length ? (
+                      selectedDoc.insights.brief.assumptions.map((x, i) => (
+                        <li key={i}>{x}</li>
+                      ))
+                    ) : (
+                      <li className="text-gray-400">No assumptions extracted</li>
+                    )}
                   </ul>
                 </BriefBlock>
 
-                {/* Risks */}
                 <BriefBlock title="RISKS / GAPS">
-                  <ul className="list-disc pl-5 space-y-1 text-sm">
-                    {selectedDoc.insights.brief.risks?.map((x, i) => (
-                      <li key={i}>{x}</li>
-                    ))}
+                  <ul className="list-disc pl-5 space-y-1">
+                    {selectedDoc.insights.brief.risks?.length ? (
+                      selectedDoc.insights.brief.risks.map((x, i) => (
+                        <li key={i}>{x}</li>
+                      ))
+                    ) : (
+                      <li className="text-gray-400">No risks extracted</li>
+                    )}
                   </ul>
                 </BriefBlock>
 
-                {/* Action items */}
                 <BriefBlock title="ACTION ITEMS (NEXT STEPS)">
-                  <ul className="list-disc pl-5 space-y-1 text-sm">
-                    {selectedDoc.insights.brief.actionItems?.map((x, i) => (
-                      <li key={i}>{x}</li>
-                    ))}
+                  <ul className="list-disc pl-5 space-y-1">
+                    {selectedDoc.insights.brief.actionItems?.length ? (
+                      selectedDoc.insights.brief.actionItems.map((x, i) => (
+                        <li key={i}>{x}</li>
+                      ))
+                    ) : (
+                      <li className="text-gray-400">
+                        No action items extracted
+                      </li>
+                    )}
                   </ul>
                 </BriefBlock>
 
-                {/* Confidence */}
                 <BriefBlock title="EXTRACTION CONFIDENCE">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-600">
@@ -486,8 +453,7 @@ export default function LocalDashboard() {
                     </span>
                   </div>
                   <p className="text-[11px] text-gray-400 mt-1">
-                    Heuristic score based on extracted signals (metrics +
-                    high-value sentences).
+                    Heuristic score based on extracted signals.
                   </p>
                 </BriefBlock>
               </div>
@@ -495,8 +461,8 @@ export default function LocalDashboard() {
           </CardContent>
         </Card>
 
-        {/* ✅ RIGHT: INSIGHTS */}
-        <Card className="rounded-2xl lg:col-span-1">
+        {/* RIGHT: GENERATED INSIGHTS */}
+        <Card className="rounded-2xl">
           <CardContent className="p-4">
             <h3 className="font-semibold">Generated Insights</h3>
             <p className="text-sm text-gray-500 mt-1">
@@ -511,7 +477,7 @@ export default function LocalDashboard() {
               <div className="mt-4 space-y-4 text-sm">
                 <Section title="SUMMARY" items={selectedDoc.insights.summary} />
 
-                {/* ✅ TAGS (Below Summary) */}
+                {/* TAGS */}
                 <div className="mt-4 mb-4">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-xs font-semibold text-muted-foreground">
@@ -526,7 +492,6 @@ export default function LocalDashboard() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {/* Show Input */}
                     {showTagInput && (
                       <div className="flex items-center gap-1 animate-in fade-in zoom-in duration-200">
                         <input
@@ -549,7 +514,6 @@ export default function LocalDashboard() {
                       </div>
                     )}
 
-                    {/* List Tags */}
                     {(selectedDoc.insights.tags || []).map((tag, i) => (
                       <span
                         key={i}
@@ -575,7 +539,7 @@ export default function LocalDashboard() {
                   </div>
                 </div>
 
-                {/* ✅ TIMELINE VIEW */}
+                {/* TIMELINE */}
                 {selectedDoc.insights.timeline &&
                   selectedDoc.insights.timeline.length > 0 && (
                     <div className="mt-6 mb-6">
@@ -585,15 +549,10 @@ export default function LocalDashboard() {
                       <div className="relative border-l border-muted ml-2 space-y-6">
                         {selectedDoc.insights.timeline.map((item, i) => (
                           <div key={i} className="ml-4 relative">
-                            {/* Dot */}
                             <div className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-primary border border-background"></div>
-
-                            {/* Date */}
                             <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground mb-1">
                               {item.date}
                             </span>
-
-                            {/* Event Text */}
                             <p className="text-xs text-gray-700 dark:text-gray-300 leading-snug">
                               {item.event}
                             </p>
