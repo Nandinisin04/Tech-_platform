@@ -39,7 +39,7 @@ export function IndiaPulseSection() {
   const [activeTab, setActiveTab] = useState<SignalType>("publications");
 
   useEffect(() => {
-    fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global/india")
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global/india`)
       .then((r) => r.json())
       .then(setData)
       .catch(() => setError("India pulse unavailable"));

@@ -19,10 +19,12 @@ type Technology = {
 
 type CountryNode = {
   total_signals: number;
-  technologies: Record<string, Technology>;
+  technologies: Record<string, Technology >;
 };
 
-type GlobalInvestmentJSON = Record<string, CountryNode>;
+type GlobalInvestmentJSON = {
+  investments: Record<string, CountryNode>;
+};
 
 /* ---------- Labels ---------- */
 
@@ -40,16 +42,17 @@ export function GlobalComparison() {
   const [data, setData] = useState<GlobalInvestmentJSON | null>(null);
   const [selectedCountry, setSelectedCountry] = useState("");
 
-  useEffect(() => {
-    fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global/investment") // not sure if this api call has a backend counterpart
-      .then((res) => res.json())
-      .then((json: GlobalInvestmentJSON) => {
-        setData(json);
-        const first = Object.keys(json)[0];
-        if (first) setSelectedCountry(first);
-      })
-      .catch(console.error);
-  }, []);
+useEffect(() => {
+  fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global`)
+    .then((res) => res.json())
+    .then((json: GlobalInvestmentJSON) => {
+      setData(json);
+
+      const first = Object.keys(json.investments ?? {})[0];
+      if (first) setSelectedCountry(first);
+    })
+    .catch(console.error);
+}, []);
 
   if (!data) {
     return (
@@ -59,8 +62,9 @@ export function GlobalComparison() {
     );
   }
 
-  const countryKeys = Object.keys(data).sort();
-  const activeCountry = data[selectedCountry];
+  const countries = data?.investments ?? {};
+  const countryKeys = Object.keys(countries).sort();
+  const activeCountry = countries[selectedCountry];
 
   return (
     <div className="w-full space-y-8">
@@ -98,50 +102,49 @@ export function GlobalComparison() {
           </div>
 
           {/* ---------- Summary ---------- */}
-          {activeCountry && (
-            <div className="text-sm text-muted-foreground">
-              Total investment signals:{" "}
+          {activeCountry ? (
+  <>
+    <div className="text-sm text-muted-foreground">
+      Total investment signals:{" "}
+      <span className="font-semibold text-foreground">
+        {activeCountry.total_signals}
+      </span>
+    </div>
+
+    <div className="space-y-5">
+      <h4 className="font-semibold text-base text-foreground">
+        {COUNTRY_LABELS[selectedCountry]} — Technology Allocation
+      </h4>
+
+      {Object.entries(activeCountry.technologies)
+        .sort(
+          (a, b) => b[1].investment_percent - a[1].investment_percent
+        )
+        .map(([tech, info]) => (
+          <div key={tech} className="space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="capitalize">
+                {tech.replace("_", " ")}
+              </span>
               <span className="font-semibold text-foreground">
-                {activeCountry.total_signals}
+                {info.investment_percent.toFixed(1)}%
               </span>
             </div>
-          )}
 
-          {/* ---------- Technology Breakdown ---------- */}
-          {activeCountry && (
-            <div className="space-y-5">
-              <h4 className="font-semibold text-base text-foreground">
-                {COUNTRY_LABELS[selectedCountry]} — Technology Allocation
-              </h4>
-
-              {Object.entries(activeCountry.technologies)
-                .sort(
-                  (a, b) => b[1].investment_percent - a[1].investment_percent,
-                )
-                .map(([tech, info], index) => (
-                  <div key={tech} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="capitalize">
-                        {tech.replace("_", " ")}
-                      </span>
-                      <span className="font-semibold text-foreground">
-                        {info.investment_percent.toFixed(1)}%
-                      </span>
-                    </div>
-
-                    <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{
-                          width: `${info.investment_percent}%`,
-                          backgroundColor: `var(--chart-1)`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
+            <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${info.investment_percent}%`,
+                  backgroundColor: `var(--chart-1)`,
+                }}
+              />
             </div>
-          )}
+          </div>
+        ))}
+    </div>
+  </>
+) : null}
         </CardContent>
       </Card>
     </div>

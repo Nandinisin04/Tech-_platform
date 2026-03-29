@@ -63,7 +63,7 @@ export default function CategoryPage() {
 
         /* ================= TRENDS ================= */
         if (type === "trends") {
-          const res = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global");
+          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global`);
           if (!res.ok) throw new Error("Trends API failed");
 
           const json = await res.json();
@@ -87,7 +87,7 @@ export default function CategoryPage() {
 
         /* ================= PATENTS ================= */
         if (type === "patents") {
-          const res = await fetch("${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global");
+          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global`);
           if (!res.ok) throw new Error("Patents API failed");
 
           const json = await res.json();
@@ -112,14 +112,16 @@ export default function CategoryPage() {
         /* ================= INVESTMENTS ================= */
         if (type === "investments") {
           const res = await fetch(
-            "${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global/investment",
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/global`
           );
+          
           if (!res.ok) throw new Error("Investment API failed");
 
           const json = await res.json();
 
+          console.log("Investment data:", json);
           const rows: CategoryItem[] = [];
-          const countries = json ?? {};
+          const countries = json.investments ?? {};
 
           Object.entries(countries).forEach(([country, countryData]: any) => {
             const technologies = countryData?.technologies ?? {};

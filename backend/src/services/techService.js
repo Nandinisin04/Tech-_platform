@@ -1,4 +1,4 @@
-import Technology from "../models/technology.js";
+import {Technology} from "../models/technology.js";
 import axios from "axios";
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL;

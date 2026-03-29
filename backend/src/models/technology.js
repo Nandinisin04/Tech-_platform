@@ -11,7 +11,13 @@ const TechnologySchema = new Schema(
   { timestamps: true }
 );
 
-const Technology =
-  models.Technology || model("Technology", TechnologySchema);
+// ✅ Proper model reuse (important for dev reloads)
 
-export default Technology;
+export const Technology =
+  models.Technology || model("Technology", TechnologySchema, "technologies");
+
+export const Global =
+  models.Global || model("Global", TechnologySchema, "globals");
+
+export const India =
+  models.India || model("India", TechnologySchema, "indias");
