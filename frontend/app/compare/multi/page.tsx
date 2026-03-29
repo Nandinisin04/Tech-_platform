@@ -204,13 +204,12 @@ function parseMarketSizeToBillion(raw?: string): number | null {
 }
 
 function normalizeMarketDistribution(dataMap: TechDataMap) {
-  const yearSet = new Set<number | string>();
-  const perTech: Record<string, Record<number | string, number>> = {};
+  const result: { tech: string; points: any[] }[] = [];
 
   console.log("📊 normalizeMarketDistribution() dataMap:", dataMap);
 
   Object.entries(dataMap).forEach(([tech, data]) => {
-    perTech[tech] = {};
+    const points: any[] = [];
 
     const reports =
       data?.market_timeline ||
@@ -219,10 +218,10 @@ function normalizeMarketDistribution(dataMap: TechDataMap) {
       data?.dashboard?.entities?.market_reports ||
       [];
 
-    console.log(`📊 [${tech}] market reports/timeline:`, reports);
+    console.log(`📊 [${tech}] raw market data:`, reports);
 
     reports.forEach((r: any, i: number) => {
-      // CASE 1: timeline already has year + value
+      // ✅ CASE 1: timeline numeric values (NEW backend)
       if (
         r?.year !== undefined &&
         (
@@ -232,45 +231,38 @@ function normalizeMarketDistribution(dataMap: TechDataMap) {
           r?.count !== undefined
         )
       ) {
-        const year = r.year;
         const value = Number(r.value ?? r.market ?? r.y ?? r.count ?? 0);
 
-        if (!isNaN(value)) {
-          yearSet.add(year);
-          perTech[tech][year] = value;
+        if (!isNaN(value) && value > 0) {
+          points.push({
+            value,
+            title: `Year ${r.year}`,
+            source: "timeline",
+          });
         }
-
         return;
       }
 
-      // CASE 2: market report text format
+      // ✅ CASE 2: market reports (OLD backend style)
       if (r?.market_size) {
         const value = parseMarketSizeToBillion(r.market_size);
         if (value === null) return;
 
-        const year =
-          r.year ||
-          r.report_year ||
-          r.forecast_year ||
-          `Report ${i + 1}`;
-
-        yearSet.add(year);
-        perTech[tech][year] = value;
+        points.push({
+          value,
+          title: r.title || `Report ${i + 1}`,
+          source: r.source || "market report",
+        });
       }
     });
+
+    console.log(`📊 [${tech}] final points:`, points);
+
+    result.push({ tech, points });
   });
 
-  const result = Array.from(yearSet)
-    .sort((a: any, b: any) => String(a).localeCompare(String(b)))
-    .map((year) => {
-      const row: any = { year };
-      Object.keys(perTech).forEach((tech) => {
-        row[tech] = perTech[tech][year] ?? null;
-      });
-      return row;
-    });
-
   console.log("📊 normalizeMarketDistribution() result:", result);
+
   return result;
 }
 /* ================= COMPARATIVE HELPERS ================= */
@@ -373,17 +365,17 @@ function getMarketSizeBillion(data: any) {
 }
 
 function generateComparativeParagraphs(dataMap: TechDataMap, techs: string[]) {
-  if (techs.length < 2) return null;
+  if (techs.length < 2) return null
 
   const entries = techs
     .map((tech) => {
-      const data = dataMap[tech];
-      if (!data) return null;
+      const data = dataMap[tech]
+      if (!data) return null
 
-      const patent = getPatentSignal(data);
-      const adoption = getAdoptionSignal(data);
-      const investment = getInvestmentSignal(data);
-      const market = getMarketSizeBillion(data);
+      const patent = getPatentSignal(data)
+      const adoption = getAdoptionSignal(data)
+      const investment = getInvestmentSignal(data)
+      const market = getMarketSizeBillion(data)
 
       return {
         tech,
@@ -391,26 +383,26 @@ function generateComparativeParagraphs(dataMap: TechDataMap, techs: string[]) {
         adoption,
         investment,
         market,
-      };
+      }
     })
-    .filter(Boolean) as any[];
+    .filter(Boolean) as any[]
 
-  if (entries.length < 2) return null;
+  if (entries.length < 2) return null
 
   const top3 = (arr: any[], key: (e: any) => number) =>
-    [...arr].sort((a, b) => key(b) - key(a)).slice(0, 3);
+    [...arr].sort((a, b) => key(b) - key(a)).slice(0, 3)
 
-  const p = top3(entries, (e) => e.patent.recent);
-  const a = top3(entries, (e) => e.adoption.latest);
-  const i = top3(entries, (e) => e.investment.total);
-  const m = top3(entries, (e) => e.market);
+  const p = top3(entries, e => e.patent.recent)
+  const a = top3(entries, e => e.adoption.latest)
+  const i = top3(entries, e => e.investment.total)
+  const m = top3(entries, e => e.market)
 
   return {
-    patent: `In terms of patent activity, ${p[0]?.tech ?? "N/A"} leads with the highest recent filing volume. ${p[1]?.tech ?? "The second technology"} follows${p[2] ? `, while ${p[2].tech} ranks next.` : "."}`,
-    adoption: `Looking at adoption trends, ${a[0]?.tech ?? "N/A"} shows strongest adoption. ${a[1]?.tech ?? "The second technology"} follows${a[2] ? `, while ${a[2].tech} lags behind.` : "."}`,
-    investment: `From an investment perspective, ${i[0]?.tech ?? "N/A"} attracts the most funding. ${i[1]?.tech ?? "The second technology"} follows${i[2] ? `, while ${i[2].tech} receives less.` : "."}`,
-    market: `In terms of market size, ${m[0]?.tech ?? "N/A"} leads. ${m[1]?.tech ?? "The second technology"} follows${m[2] ? `, and ${m[2].tech} remains smaller.` : "."}`,
-  };
+    patent: `In terms of patent activity, ${p[0].tech} leads with the highest recent filing volume, indicating strong innovation momentum. ${p[1]?.tech} follows with substantial patent presence but trails the leader in recent activity, while ${p[2]?.tech} ranks next with comparatively moderate patenting intensity.`,
+    adoption: `Looking at adoption trends, ${a[0].tech} demonstrates the strongest position, driven by the highest current adoption levels and consistent growth. ${a[1]?.tech} follows closely with solid adoption but slower recent acceleration, whereas ${a[2]?.tech} shows more limited uptake across use cases.`,
+    investment: `From an investment perspective, ${i[0].tech} attracts the largest cumulative investment, supported by broad geographic participation. ${i[1]?.tech} remains a strong second with significant funding but a narrower investment footprint, while ${i[2]?.tech} receives comparatively lower overall investment.`,
+    market: `In terms of market size, ${m[0].tech} dominates with the largest estimated market, reflecting wide commercial adoption. ${m[1]?.tech} follows with a substantial but smaller market presence, and ${m[2]?.tech} occupies a more niche position with lower overall market scale.`,
+  }
 }
 
 /* ================= PAGE ================= */
@@ -787,12 +779,10 @@ export default function MultiComparePage() {
             data={chartData as ReturnType<typeof normalizeInvestmentBars>}
           />
         ) : metric === "market" ? (
-          <MultiTechLineChart
+          <MultiTechMarketDistribution
             data={chartData as ReturnType<typeof normalizeMarketDistribution>}
-            title="Market Size"
-            yLabel="Market Size (Billion USD)"
           />
-        ) : (
+                  ) : (
           <MultiTechLineChart
             data={chartData as ReturnType<typeof normalizeCurve>}
             title={metric === "trend" ? "Adoption Trend" : "Patent Activity"}

@@ -59,19 +59,39 @@ export function MultiTechMarketDistribution({
     />
 
     <Tooltip
-      content={({ payload }) => {
-        if (!payload?.length) return null
-        const p = payload[0].payload
-        return (
-          <div className="rounded-md border bg-white p-2 shadow">
-            <div className="font-medium">{p.title}</div>
-            <div className="text-xs text-muted-foreground">
-              Market Size: {p.value} B USD
-            </div>
+  content={({ payload }) => {
+    if (!payload || payload.length === 0) return null
+
+    const p = payload[0]?.payload
+    const tech = String(payload[0]?.name ?? "Unknown Tech")
+
+    const prettyTech = tech
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase())
+
+    return (
+      <div className="rounded-lg border border-border bg-background p-3 shadow-lg text-sm">
+        <div className="font-semibold text-foreground mb-1">
+          {prettyTech}
+        </div>
+
+        <div className="text-muted-foreground">
+          {p?.title || "Market Data"}
+        </div>
+
+        <div className="mt-1 text-primary font-medium">
+          💰 {p?.value} B USD
+        </div>
+
+        {p?.source && (
+          <div className="text-xs text-muted-foreground mt-1">
+            Source: {p.source}
           </div>
-        )
-      }}
-    />
+        )}
+      </div>
+    )
+  }}
+/>
 
     {data.map((techData, techIndex) => {
   const color = COLOR_PALETTE[techIndex % COLOR_PALETTE.length]
