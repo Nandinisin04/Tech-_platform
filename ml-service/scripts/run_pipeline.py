@@ -1232,9 +1232,152 @@ def serialize_knowledge_graph(G):
         })
 
     return {"nodes": nodes, "edges": edges}
+import re
+import pandas as pd
+
+STOPWORDS = {
+    "quantum", "computing", "companies", "technology",
+    "systems", "machine", "learning", "ai", "best", "top",
+    "here", "what", "this", "that", "these", "those",
+    "leading", "current", "state"
+}
+
+KNOWN_COMPANIES = [
+    "IBM", "Google", "Microsoft", "Amazon",
+    "D-Wave", "IonQ", "Xanadu", "Intel", "Nvidia"
+]
 
 
-#======pipeline=============
+def enrich_companies(companies_df):
+
+    if companies_df.empty:
+        return companies_df
+
+    extracted = {}
+
+    for _, r in companies_df.iterrows():
+
+        text = f"{r.get('name', '')} {r.get('description', '')}"
+        link = r.get("link")
+        title = r.get("name")
+
+        # -------------------------
+        # 1️⃣ Known companies (high confidence)
+        # -------------------------
+        for company in KNOWN_COMPANIES:
+            if company.lower() in text.lower():
+
+                if company not in extracted:
+                    extracted[company] = {
+                        "name": company,
+                        "mentions": 0,
+                        "evidence": []
+                    }
+
+                extracted[company]["mentions"] += 1
+
+                if link and not any(e["link"] == link for e in extracted[company]["evidence"]):
+                    extracted[company]["evidence"].append({
+                        "title": title,
+                        "link": link
+                    })
+
+        # -------------------------
+        # 2️⃣ Improved entity extraction
+        # (captures multi-word names like "Google AI", "Amazon Web")
+        # -------------------------
+        matches = re.findall(r"\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\b", text)
+
+        for m in matches:
+
+            name = m.strip()
+
+            # Normalize (keep first word if it's like "Google AI")
+            name = name.split()[0]
+
+            # -------------------------
+            # Filters (IMPORTANT)
+            # -------------------------
+            if name.lower() in STOPWORDS:
+                continue
+
+            if len(name) <= 3:
+                continue
+
+            if name in KNOWN_COMPANIES:
+                continue  # already handled
+
+            # Must appear more than once in combined text OR across dataset
+            count_in_text = text.lower().count(name.lower())
+
+            if count_in_text <= 1:
+                continue
+
+            # Skip words that are not likely orgs
+            if not name[0].isupper():
+                continue
+
+            # -------------------------
+            # Store
+            # -------------------------
+            if name not in extracted:
+                extracted[name] = {
+                    "name": name,
+                    "mentions": 0,
+                    "evidence": []
+                }
+
+            extracted[name]["mentions"] += 1
+
+            if link and not any(e["link"] == link for e in extracted[name]["evidence"]):
+                extracted[name]["evidence"].append({
+                    "title": title,
+                    "link": link
+                })
+
+    # -------------------------
+    # 3️⃣ Ranking & cleaning
+    # -------------------------
+    sorted_companies = sorted(
+        extracted.values(),
+        key=lambda x: x["mentions"],
+        reverse=True
+    )
+
+    # Keep only meaningful ones
+    sorted_companies = [
+        c for c in sorted_companies
+        if c["mentions"] >= 2 and len(c["evidence"]) > 0
+    ][:5]
+
+    # -------------------------
+    # 4️⃣ Generate insights
+    # -------------------------
+    result = []
+
+    for c in sorted_companies:
+
+        mentions = c["mentions"]
+
+        if mentions >= 4:
+            importance = "high"
+            insight = f"{c['name']} appears across multiple independent sources, indicating strong ecosystem presence."
+        elif mentions >= 2:
+            importance = "medium"
+            insight = f"{c['name']} appears in several signals, suggesting active involvement."
+        else:
+            importance = "low"
+            insight = f"{c['name']} appears in limited signals."
+
+        result.append({
+            "name": c["name"],
+            "importance": importance,
+            "insight": insight,
+            "implication": f"{c['name']} is likely a relevant player in this technology ecosystem.",
+            "evidence": c["evidence"][:2]  # max 2 unique sources
+        })
+
+    return pd.DataFrame(result)
 
 def run_pipeline_for_tech(tech: str):
     print(f"Running pipeline for: {tech}")
@@ -1253,6 +1396,7 @@ def run_pipeline_for_tech(tech: str):
         patents_df   = add_trl(add_patent_year_country(patents_df))
         papers_df    = add_trl(add_paper_year_country(papers_df))
         companies_df = add_company_country(companies_df)
+        companies_df = enrich_companies(companies_df)
         funding_df   = add_year_from_snippet(funding_df)
         market_df    = process_market(add_year_from_snippet(market_df))
 
@@ -1769,6 +1913,82 @@ LENGTH RULES:
 
     return text
 
+# import re
+
+# KNOWN_COMPANIES = [
+#     "IBM", "Google", "Microsoft", "Amazon",
+#     "D-Wave", "IonQ", "Xanadu", "Intel", "Nvidia"
+# ]
+
+# def enrich_companies(companies_df):
+
+#     if companies_df.empty:
+#         return companies_df
+
+#     extracted = {}
+
+#     for _, r in companies_df.iterrows():
+
+#         text = f"{r.get('name', '')} {r.get('description', '')}"
+
+#         # 1️⃣ Try known companies
+#         for company in KNOWN_COMPANIES:
+#             if company.lower() in text.lower():
+
+#                 if company not in extracted:
+#                     extracted[company] = {
+#                         "name": company,
+#                         "mentions": 0,
+#                         "evidence": []
+#                     }
+
+#                 extracted[company]["mentions"] += 1
+#                 extracted[company]["evidence"].append({
+#                     "title": r.get("name"),
+#                     "link": r.get("link")
+#                 })
+
+#         # 2️⃣ Fallback: extract capitalized words
+#         matches = re.findall(r"\b[A-Z][a-zA-Z]{2,}\b", text)
+
+#         for m in matches:
+#             if m.lower() in ["top", "best", "companies", "quantum"]:
+#                 continue
+
+#             if m not in extracted:
+#                 extracted[m] = {
+#                     "name": m,
+#                     "mentions": 0,
+#                     "evidence": []
+#                 }
+
+#             extracted[m]["mentions"] += 1
+#             extracted[m]["evidence"].append({
+#                 "title": r.get("name"),
+#                 "link": r.get("link")
+#             })
+
+#     # Sort by importance
+#     sorted_companies = sorted(
+#         extracted.values(),
+#         key=lambda x: x["mentions"],
+#         reverse=True
+#     )[:5]
+
+#     # Final format
+#     result = []
+
+#     for c in sorted_companies:
+#         result.append({
+#             "name": c["name"],
+#             "importance": "high" if c["mentions"] > 2 else "medium",
+#             "insight": f"{c['name']} is frequently mentioned in quantum computing ecosystem signals.",
+#             "implication": f"{c['name']} is likely a key active player.",
+#             "evidence": c["evidence"][:3]
+#         })
+
+#     return pd.DataFrame(result)
+
 # ================== JSON EXPORT ==================
 
 def export_dashboard_json(tech: str, result: dict):
@@ -1792,7 +2012,7 @@ def export_dashboard_json(tech: str, result: dict):
     papers    = papers.replace({np.nan: None})
     companies = companies.replace({np.nan: None})
     market    = market.replace({np.nan: None})
-
+     
 
 
     def safe(val):
@@ -1887,6 +2107,9 @@ def export_dashboard_json(tech: str, result: dict):
                     "name": r.get("name"),
                     "description": r.get("description"),
                     "link": safe(r.get("link")),
+                    "importance": r.get("importance"),
+                    "insight": r.get("insight"),
+                    "implication": r.get("implication"),
                 }
                 for _, r in companies.iterrows()
             ] if isinstance(companies, pd.DataFrame) else [],

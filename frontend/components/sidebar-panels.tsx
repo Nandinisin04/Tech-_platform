@@ -31,7 +31,15 @@ type Alert = {
 type Company = {
   name: string
   description?: string
-  link?: string
+
+  importance?: "low" | "medium" | "high"
+  insight?: string
+  implication?: string
+
+  evidence?: {
+    title?: string
+    link?: string
+  }[]
 }
 
 type Publication = {
@@ -214,32 +222,62 @@ export function SidebarPanels({
               No companies available
             </p>
           )}
+{companies.map((company, i) => (
+  <div
+    key={i}
+    className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-2"
+  >
+    {/* Name + Importance */}
+    <div className="flex items-center justify-between">
+      <p className="text-sm font-semibold">{company.name}</p>
 
-          {companies.map((company, i) => (
-            <div
-              key={i}
-              className="p-2 rounded-md border border-border/30 bg-secondary/30"
-            >
-              {company.link ? (
-                <a
-                  href={company.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  {company.name}
-                </a>
-              ) : (
-                <p className="text-sm font-medium">{company.name}</p>
-              )}
+      {company.importance && (
+        <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground">
+          {company.importance.toUpperCase()}
+        </span>
+      )}
+    </div>
 
-              {company.description && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {company.description}
-                </p>
-              )}
-            </div>
-          ))}
+    {/* Insight */}
+    {company.insight && (
+      <p className="text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">Insight:</span>{" "}
+        {company.insight}
+      </p>
+    )}
+
+    {/* Why it matters */}
+    {company.implication && (
+      <p className="text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">Why it matters:</span>{" "}
+        {company.implication}
+      </p>
+    )}
+    {/* Evidence links */}
+    {company.evidence && company.evidence.length > 0 && (
+    <div className="flex flex-col gap-1">
+    {company.evidence.slice(0, 2).map((e, idx) => (
+      <a
+        key={idx}
+        href={e.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs text-blue-500 hover:underline"
+      >
+        Source: {e.title?.slice(0, 60)}...
+      </a>
+    ))}
+  </div>
+)}
+
+    {/* Optional description fallback */}
+    {!company.insight && company.description && (
+      <p className="text-xs text-muted-foreground">
+        {company.description}
+      </p>
+    )}
+  </div>
+))}
         </CardContent>
       </Card>
 
