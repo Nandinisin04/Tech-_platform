@@ -8,8 +8,13 @@ import localRoutes from "./routes/localRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://tech-platform-y7q1.vercel.app"
+  ],
+  credentials: true
+}))
 
 app.get("/", (req, res) => {
   res.send("🚀 Tech Intel Backend is running");
