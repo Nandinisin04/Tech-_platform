@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, Plus } from "lucide-react";
+import LocalIntelPanels from "@/components/ui/local-intel-panels";
 
 type MetricObj = {
   label: string;
@@ -35,13 +36,43 @@ type Insights = {
   timeline?: { date: string; event: string }[];
 };
 
+type LocalPatent = {
+  title: string;
+  year: number | null;
+  assignee: string | null;
+  patentNumber: string | null;
+  snippet: string | null;
+};
+
+type LocalPublication = {
+  title: string;
+  authors: string | null;
+  year: number | null;
+  venue: string | null;
+  snippet: string | null;
+};
+
+type LocalCompany = {
+  name: string;
+  context: string;
+  role: "developer" | "researcher" | "funder" | "mentioned";
+};
+
+type LocalIntel = {
+  patents: LocalPatent[];
+  publications: LocalPublication[];
+  companies: LocalCompany[];
+};
+
 type LocalDoc = {
   id: string;
   name: string;
   size: number;
   type: string;
   uploadedAt: string;
+  rawText?: string;
   insights?: Insights;
+  intel?: LocalIntel;
   security?: {
     storedFile: boolean;
     externalCalls: boolean;
@@ -79,18 +110,20 @@ export default function LocalDashboard() {
     try {
       setUploading(true);
 
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      if (!backendUrl) {
+        throw new Error("NEXT_PUBLIC_BACKEND_URL is not configured");
+      }
+
       const formData = new FormData();
       formData.append("file", file);
 
       console.log("📤 Uploading local file:", file.name);
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/local/upload`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+      const res = await fetch(`${backendUrl}/api/local/upload`, {
+        method: "POST",
+        body: formData,
+      });
 
       const json = await res.json();
       console.log("📥 LOCAL UPLOAD RESPONSE:", json);
@@ -576,6 +609,9 @@ export default function LocalDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* FULL-WIDTH ROW: Document Intelligence — Publications, Patents, Companies */}
+      {selectedDoc?.intel && <LocalIntelPanels intel={selectedDoc.intel} />}
     </div>
   );
 }
