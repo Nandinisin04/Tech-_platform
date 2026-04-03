@@ -63,7 +63,7 @@ def fetch_patents_for_institute(institute):
 
 # ================= MAIN PIPELINE =================
 
-def export_patents_by_institute():
+def run_india_patents_pipeline():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     all_patents = []
@@ -103,13 +103,14 @@ def export_patents_by_institute():
         "patents": all_patents
     }
 
-    out_path = os.path.join(OUTPUT_DIR, "patents.json")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2)
+    # out_path = os.path.join(OUTPUT_DIR, "patents.json")
+    # with open(out_path, "w", encoding="utf-8") as f:
+    #     json.dump(output, f, indent=2)
 
-    print("\n✅ Done!")
-    print("📄 Output file:", os.path.abspath(out_path))
-    print("📦 Total patents:", len(all_patents))
+    # print("\n✅ Done!")
+    # print("📄 Output file:", os.path.abspath(out_path))
+    # print("📦 Total patents:", len(all_patents))
+    return output
 
 
 # ================= ENTRY =================

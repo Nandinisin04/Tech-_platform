@@ -140,7 +140,7 @@ def normalize_country_investments(country_block):
 
 
 # ================== PIPELINE ==================
-def run_global_pulse():
+def run_global_investments_pipeline():
     print("🚀 Running Global Investment Pulse pipeline...")
 
     output = {
@@ -157,18 +157,18 @@ def run_global_pulse():
 
 
 # ================== EXPORT ==================
-def export_global_pulse_json():
-    result = run_global_pulse()
+# def export_global_pulse_json():
+#     result = run_global_investments()
 
-    os.makedirs("data/global", exist_ok=True)
-    path = "data/global/global_tech_pulse.json"
+#     os.makedirs("data/global", exist_ok=True)
+#     path = "data/global/global_tech_pulse.json"
 
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=2, ensure_ascii=False)
+#     with open(path, "w", encoding="utf-8") as f:
+#         json.dump(result, f, indent=2, ensure_ascii=False)
 
-    print(f"\n✅ Global tech pulse written to {path}")
+#     print(f"\n✅ Global tech pulse written to {path}")
 
 
-# ================== ENTRY ==================
-if __name__ == "__main__":
-    export_global_pulse_json()
+# # ================== ENTRY ==================
+# if __name__ == "__main__":
+#     export_global_pulse_json()

@@ -236,6 +236,7 @@ const CANONICAL_TECHS = [
   "web development",
   "frontend engineering",
   "react js",
+  "dotnet",
   "next js",
   "single page applications",
 

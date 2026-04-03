@@ -81,19 +81,81 @@ def fetch_patents(tech, num=20):
     results = serpapi_search(params)
     organic = results.get("organic_results", []) or []
 
-    return pd.DataFrame([
-        {
+    patents = []
+
+    for r in organic:
+        pub_no = (
+            r.get("publication_number")
+            or extract_patent_publication_number(
+                r.get("link"),
+                r.get("title"),
+                r.get("snippet")
+            )
+        )
+
+        patents.append({
             "title": r.get("title"),
             "snippet": r.get("snippet"),
             "link": r.get("link"),
+            "publication_number": pub_no,
             "publication_date": r.get("publication_date"),
             "filing_date": r.get("filing_date"),
             "priority_date": r.get("priority_date"),
-            "technology" : tech ##change
-        }
-        for r in organic
-    ])
+            "technology": tech
+        })
 
+    return pd.DataFrame(patents)
+def extract_patent_publication_number(link, title=None, snippet=None):
+    """
+    Try extracting patent publication number from link/title/snippet.
+    Example:
+    https://patents.google.com/patent/US20220123456A1/en -> US20220123456A1
+    """
+    candidates = [link, title, snippet]
+
+    for text in candidates:
+        if not isinstance(text, str):
+            continue
+
+        # common patent number patterns
+        m = re.search(r'\b([A-Z]{2}\d{6,}[A-Z]?\d?)\b', text.upper())
+        if m:
+            return m.group(1)
+
+        # patents.google style path
+        m2 = re.search(r'/patent/([A-Z]{2}\d+[A-Z]?\d?)', text.upper())
+        if m2:
+            return m2.group(1)
+
+    return None
+def extract_country_from_patent_number(pub_no):
+    if not isinstance(pub_no, str):
+        return None
+
+    pub_no = pub_no.strip().upper()
+
+    mapping = {
+        "US": "United States",
+        "CN": "China",
+        "JP": "Japan",
+        "KR": "South Korea",
+        "IN": "India",
+        "EP": "Europe",
+        "WO": "WIPO",
+        "GB": "United Kingdom",
+        "DE": "Germany",
+        "FR": "France",
+        "CA": "Canada",
+        "AU": "Australia",
+        "RU": "Russia",
+        "IL": "Israel",
+        "SG": "Singapore",
+        "NL": "Netherlands",
+        "CH": "Switzerland"
+    }
+
+    prefix = pub_no[:2]
+    return mapping.get(prefix, None)
 
 def fetch_papers(tech, num=20):
     params = {
@@ -108,25 +170,43 @@ def fetch_papers(tech, num=20):
     papers = []
 
     for r in organic:
-
         pub_info = r.get("publication_info") or {}
+        resources = r.get("resources") or []
 
         papers.append({
             "title": r.get("title"),
             "snippet": r.get("snippet"),
             "link": r.get("link"),
+            "result_id": r.get("result_id"),   # useful unique-ish id from SerpAPI
             "year": pub_info.get("year"),
             "authors": pub_info.get("authors"),
-            "venue": pub_info.get("summary"),   # journal / conference
+            "venue": pub_info.get("summary"),
             "citations": (
                 (r.get("inline_links") or {})
                 .get("cited_by", {})
                 .get("total")
             ),
+            "resources": resources,
             "technology": tech
         })
 
     return pd.DataFrame(papers)
+
+
+
+def extract_country_from_affiliations(affiliations):
+    if affiliations is None:
+        return "Unknown"
+
+    if isinstance(affiliations, list):
+        text = " ".join([str(a) for a in affiliations if a])
+    else:
+        text = str(affiliations)
+
+    return infer_country_from_text(text)
+
+
+
 def enrich_papers_with_crossref(papers_df):
 
     enriched_rows = []
@@ -239,34 +319,30 @@ def enrich_from_semantic_scholar(row):
     title = row.get("title")
 
     try:
-
         # Prefer DOI search
         if doi:
             url = f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}"
             params = {
-                "fields": "abstract,citationCount,fieldsOfStudy,openAccessPdf"
+                "fields": "abstract,citationCount,fieldsOfStudy,openAccessPdf,authors"
             }
-
         else:
             # Fallback: title search
             url = "https://api.semanticscholar.org/graph/v1/paper/search"
             params = {
                 "query": title,
                 "limit": 1,
-                "fields": "abstract,citationCount,fieldsOfStudy,openAccessPdf"
+                "fields": "abstract,citationCount,fieldsOfStudy,openAccessPdf,authors"
             }
 
         res = requests.get(url, params=params, timeout=10)
         data = res.json()
 
-        # Handle search vs DOI response
         paper = (
             data.get("data", [{}])[0]
             if "data" in data
             else data
         )
 
-        # ---------- Extract fields ----------
         if not row.get("abstract"):
             row["abstract"] = paper.get("abstract")
 
@@ -275,10 +351,21 @@ def enrich_from_semantic_scholar(row):
 
         row["fields_of_study"] = paper.get("fieldsOfStudy")
 
-        # Open access PDF detection
         oa_pdf = paper.get("openAccessPdf", {})
         if oa_pdf:
             row["open_pdf"] = oa_pdf.get("url")
+
+        # NEW: author affiliations / institutions if present
+        authors_data = paper.get("authors", [])
+        ss_affiliations = []
+
+        for author in authors_data:
+            affiliations = author.get("affiliations", [])
+            if affiliations:
+                ss_affiliations.extend(affiliations)
+
+        if ss_affiliations and not row.get("affiliations"):
+            row["affiliations"] = ss_affiliations
 
         row["source"] = "semantic_scholar"
 
@@ -290,44 +377,64 @@ def enrich_from_semantic_scholar(row):
 def enrich_from_openalex(row):
 
     doi = row.get("doi")
-
-    if not doi:
-        return row
+    title = row.get("title")
 
     try:
-
-        url = f"https://api.openalex.org/works/doi:{doi}"
-        res = requests.get(url, timeout=10)
+        if doi:
+            url = f"https://api.openalex.org/works/doi:{doi}"
+            res = requests.get(url, timeout=10)
+        else:
+            res = requests.get(
+                "https://api.openalex.org/works",
+                params={"search": title, "per-page": 1},
+                timeout=10
+            )
 
         if res.status_code != 200:
             return row
 
         data = res.json()
 
+        if "results" in data:
+            results = data.get("results", [])
+            if not results:
+                return row
+            data = results[0]
+
         # ---------- Abstract reconstruction ----------
         inverted_index = data.get("abstract_inverted_index")
 
         if inverted_index and not row.get("abstract"):
-
             words = []
-
-            # Flatten inverted index
             for word, positions in inverted_index.items():
                 for pos in positions:
                     words.append((pos, word))
 
-            # Sort by position
             words_sorted = sorted(words, key=lambda x: x[0])
-
             abstract = " ".join([w[1] for w in words_sorted])
-
             row["abstract"] = abstract
 
-        # ---------- Extra metadata ----------
         row["openalex_citations"] = data.get("cited_by_count")
 
         concepts = data.get("concepts", [])
         row["concepts"] = [c.get("display_name") for c in concepts[:5]]
+
+        # NEW: institution extraction
+        institutions = []
+
+        for authorship in data.get("authorships", []):
+            for inst in authorship.get("institutions", []):
+                display_name = inst.get("display_name")
+                country_code = inst.get("country_code")
+
+                if display_name:
+                    if country_code:
+                        institutions.append(f"{display_name} ({country_code})")
+                    else:
+                        institutions.append(display_name)
+
+        if institutions and not row.get("affiliations"):
+            row["affiliations"] = institutions
 
         row["source"] = "openalex"
 
@@ -627,24 +734,31 @@ def infer_country_from_text(text):
     text = text.lower()
 
     country_keywords = {
-        "united states": ["usa", "united states", "us-based", "american"],
-        "china": ["china", "chinese"],
-        "india": ["india", "indian"],
-        "japan": ["japan", "japanese"],
-        "germany": ["germany", "german"],
-        "france": ["france", "french"],
-        "uk": ["uk", "united kingdom", "british"],
-        "south korea": ["korea", "south korea"],
-        "israel": ["israel", "israeli"]
+        "United States": [
+            "usa", "u.s.a", "united states", "us-based", "american", "u.s."
+        ],
+        "China": ["china", "chinese", "beijing", "shanghai"],
+        "India": ["india", "indian", "iit", "iiit", "isro", "drdo", "bengaluru", "bangalore", "delhi", "mumbai"],
+        "Japan": ["japan", "japanese", "tokyo", "osaka"],
+        "Germany": ["germany", "german", "berlin", "munich"],
+        "France": ["france", "french", "paris"],
+        "United Kingdom": ["uk", "u.k.", "united kingdom", "british", "england", "london", "oxford", "cambridge"],
+        "South Korea": ["south korea", "korea", "korean", "seoul"],
+        "Israel": ["israel", "israeli", "tel aviv"],
+        "Canada": ["canada", "canadian", "toronto", "vancouver"],
+        "Australia": ["australia", "australian", "sydney", "melbourne"],
+        "Russia": ["russia", "russian", "moscow"],
+        "Singapore": ["singapore", "ntu singapore", "nus singapore"],
+        "Switzerland": ["switzerland", "swiss", "zurich"],
+        "Netherlands": ["netherlands", "dutch", "amsterdam"],
     }
 
     for country, keywords in country_keywords.items():
         for kw in keywords:
             if kw in text:
-                return country.title()
+                return country
 
     return "Unknown"
-
 # ================== ENRICHMENT ==================
 
 def extract_patent_country(link):
@@ -767,35 +881,122 @@ def extract_country_from_domain(link):
         return "Spain"
 
     return None
-
 def add_patent_year_country(df):
     if df.empty:
         return df
+
     df = df.copy()
 
     def year_from_row(row):
         for d in [row.get("publication_date"), row.get("filing_date"), row.get("priority_date")]:
             if isinstance(d, str) and len(d) >= 4 and d[:4].isdigit():
                 return int(d[:4])
-        return extract_year_from_text(row.get("snippet")) or extract_year_from_text(row.get("title"))
+
+        return (
+            extract_year_from_text(row.get("snippet"))
+            or extract_year_from_text(row.get("title"))
+        )
+
+    def patent_country_from_row(row):
+        # 1. Best source = publication number
+        country = extract_country_from_patent_number(row.get("publication_number"))
+        if country:
+            return country
+
+        # 2. Fallback = patent link
+        country = extract_patent_country(row.get("link"))
+        if country and country != "Unknown":
+            return country
+
+        # 3. Weak fallback = title/snippet
+        country = infer_country_from_text(
+            f"{row.get('title', '')} {row.get('snippet', '')}"
+        )
+        if country and country != "Unknown":
+            return country
+
+        return "Unknown"
 
     df["year"] = df.apply(year_from_row, axis=1)
-    df["country"] = df["link"].apply(extract_patent_country)
-    df["country"] = (df["country"].fillna("Unknown").astype(str))
-    df["country"] = df["title"].apply(infer_country_from_text)
+    df["country"] = df.apply(patent_country_from_row, axis=1)
+    df["country"] = df["country"].fillna("Unknown").astype(str)
+
+    return df
+    def year_from_row(row):
+        for d in [row.get("publication_date"), row.get("filing_date"), row.get("priority_date")]:
+            if isinstance(d, str) and len(d) >= 4 and d[:4].isdigit():
+                return int(d[:4])
+
+        return (
+            extract_year_from_text(row.get("snippet"))
+            or extract_year_from_text(row.get("title"))
+        )
+
+    def patent_country_from_row(row):
+        # 1. Try patent link
+        country = extract_patent_country(row.get("link"))
+        if country and country != "Unknown":
+            return country
+
+        # 2. Try title + snippet
+        country = infer_country_from_text(
+            f"{row.get('title', '')} {row.get('snippet', '')}"
+        )
+        if country and country != "Unknown":
+            return country
+
+        return "Unknown"
+
+    df["year"] = df.apply(year_from_row, axis=1)
+    df["country"] = df.apply(patent_country_from_row, axis=1)
+    df["country"] = df["country"].fillna("Unknown").astype(str)
 
     return df
 
 def add_paper_year_country(df):
     if df.empty:
         return df
+
     df = df.copy()
+
     df["year"] = pd.to_numeric(df["year"], errors="coerce")
     df["year"] = df["year"].fillna(df["snippet"].apply(extract_year_from_text))
     df["year"] = df["year"].fillna(df["title"].apply(extract_year_from_text))
-    df["country"] = df["link"].apply(extract_country_from_domain)
-    return df
 
+    def paper_country_from_row(row):
+        # 1. Best = affiliations / institutions
+        country = extract_country_from_affiliations(row.get("affiliations"))
+        if country and country != "Unknown":
+            return country
+
+        # 2. Domain
+        country = extract_country_from_domain(row.get("link"))
+        if country and country != "Unknown":
+            return country
+
+        # 3. Publisher / venue / journal
+        country = infer_country_from_text(
+            f"{row.get('publisher', '')} "
+            f"{row.get('journal', '')} "
+            f"{row.get('venue', '')} "
+            f"{row.get('conference', '')}"
+        )
+        if country and country != "Unknown":
+            return country
+
+        # 4. Weak fallback
+        country = infer_country_from_text(
+            f"{row.get('title', '')} {row.get('snippet', '')}"
+        )
+        if country and country != "Unknown":
+            return country
+
+        return "Unknown"
+
+    df["country"] = df.apply(paper_country_from_row, axis=1)
+    df["country"] = df["country"].fillna("Unknown").astype(str)
+
+    return df
 def add_company_country(df):
     if df.empty:
         return df
@@ -2014,6 +2215,7 @@ def export_dashboard_json(tech: str, result: dict):
                     "link": safe(r.get("link")),
                     "year": safe(r.get("year")),
                     "trl": safe(r.get("trl")),
+                    "country": safe(r.get("country")),
                 }
                 for _, r in patents.iterrows()
             ] if isinstance(patents, pd.DataFrame) else [],
@@ -2029,6 +2231,7 @@ def export_dashboard_json(tech: str, result: dict):
                     "link": r.get("link"),
                     "year": r.get("year"),
                     "insights": r.get("insights"),
+                    "country": safe(r.get("country")),
                 }
                 for _, r in papers.iterrows()
             ] if isinstance(papers, pd.DataFrame) else [],
@@ -2041,6 +2244,7 @@ def export_dashboard_json(tech: str, result: dict):
                     "importance": r.get("importance"),
                     "insight": r.get("insight"),
                     "implication": r.get("implication"),
+                    "country": safe(r.get("country")),
                 }
                 for _, r in companies.iterrows()
             ] if isinstance(companies, pd.DataFrame) else [],

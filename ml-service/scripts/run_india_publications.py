@@ -162,7 +162,7 @@ def fetch_field_publications(field, keywords):
 
 # ================== EXPORT ==================
 
-def export_india_fields_json():
+def run_india_publications_pipeline():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     output = {
@@ -180,13 +180,13 @@ def export_india_fields_json():
             }
         }
 
-    out_path = f"{OUTPUT_DIR}/india_publications_fields.json"
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
+    # out_path = f"{OUTPUT_DIR}/india_publications_fields.json"
+    # with open(out_path, "w", encoding="utf-8") as f:
+    #     json.dump(output, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ India publications JSON written → {out_path}")
+    return output
 
 # ================== ENTRY ==================
 
-if __name__ == "__main__":
-    export_india_fields_json()
+# if __name__ == "__main__":
+#     export_india_fields_json()
