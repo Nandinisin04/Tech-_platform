@@ -1,18 +1,34 @@
 import { connectDB } from "../config/db.js";
 import { Global, India } from "../models/technology.js";
+import { refreshGlobal } from "../jobs/refreshGlobal.js";
+import { refreshIndia } from "../jobs/refreshIndia.js";
+
 export const getGlobalData = async (req, res) => {
   try {
     console.log("🌍 getGlobalData called");
 
     await connectDB();
 
-    const doc = await Global.findOne({ name: "__global__" });
+    let doc = await Global.findOne({ name: "__global__" });
+
+    /* ================= HANDLE EMPTY ================= */
 
     if (!doc || !doc.latest_json?.global) {
-      return res.status(404).json({
-        error: "Global data not found",
-      });
+      console.log("⚠️ No global data found. Triggering refresh...");
+
+      await refreshGlobal();
+
+      // 🔥 re-fetch AFTER refresh
+      doc = await Global.findOne({ name: "__global__" });
+
+      if (!doc || !doc.latest_json?.global) {
+        return res.status(500).json({
+          error: "Failed to populate global data",
+        });
+      }
     }
+
+    /* ================= SAFE ACCESS ================= */
 
     const { patents, trends, investments } = doc.latest_json.global;
 
@@ -33,6 +49,7 @@ export const getGlobalData = async (req, res) => {
       trends: trends?.signals ?? [],
       investments: investments?.countries ?? {},
     });
+
   } catch (error) {
     console.error("❌ Error fetching global data:", error);
     return res.status(500).json({ error: "Failed to fetch global data" });
@@ -46,14 +63,24 @@ export const getIndiaData = async (req, res) => {
 
     await connectDB();
 
-    const indiaDoc = await India.findOne({ name: "__india__" });
+    
     const globalDoc = await Global.findOne({ name: "__global__" });
 
-    if (!indiaDoc?.latest_json?.india) {
-      return res.status(404).json({
-        error: "India signals not available",
-      });
-    }
+let indiaDoc = await India.findOne({ name: "__india__" });
+
+if (!indiaDoc?.latest_json?.india) {
+  console.log("⚠️ No India data found. Triggering refresh...");
+
+  await refreshIndia();
+
+  indiaDoc = await India.findOne({ name: "__india__" });
+
+  if (!indiaDoc?.latest_json?.india) {
+    return res.status(500).json({
+      error: "Failed to populate India data",
+    });
+  }
+}
 
     /* ================= PUBLICATIONS ================= */
 

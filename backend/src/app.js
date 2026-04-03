@@ -5,6 +5,7 @@ import techRoutes from "./routes/techRoutes.js";
 import globalRoutes from "./routes/globalRoutes.js";
 import validationRoutes from "./routes/validationRoutes.js";
 import localRoutes from "./routes/localRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 const app = express();
 
 app.use(cors());
@@ -14,6 +15,8 @@ app.get("/", (req, res) => {
   res.send("🚀 Tech Intel Backend is running");
 });
 
+
+app.use("/api/admin", adminRoutes);
 app.use("/api/technologies", techRoutes);
 app.use("/api/global", globalRoutes);
 app.use("/api/validate", validationRoutes);
