@@ -80,6 +80,118 @@ const ABBREVIATIONS = {
   hri: "human robot interaction",
   crispr: "genome editing technology",
   synbio: "synthetic biology",
+  /* ================= LANGUAGES / DEV ================= */
+py: "python",
+cpp: "c plus plus",
+cs: "c sharp",
+rb: "ruby",
+kt: "kotlin",
+tsc: "typescript compiler",
+
+/* ================= FRONTEND ================= */
+dom: "document object model",
+bom: "browser object model",
+csr: "client side rendering",
+ssr: "server side rendering",
+isr: "incremental static regeneration",
+spa_app: "single page application",
+mpa: "multi page application",
+
+/* ================= BACKEND ================= */
+mvc: "model view controller",
+mvp: "model view presenter",
+mvvm: "model view viewmodel",
+rest: "representational state transfer",
+restful: "rest api architecture",
+ws: "web services",
+
+/* ================= DATABASE ================= */
+sql: "structured query language",
+nosql: "non relational database",
+acid: "atomicity consistency isolation durability",
+base: "basically available soft state eventual consistency",
+rdbms: "relational database management system",
+dbms: "database management system",
+
+/* ================= CLOUD / DEVOPS ================= */
+aws: "amazon web services",
+gcp: "google cloud platform",
+azure: "microsoft azure",
+vm: "virtual machine",
+lb: "load balancer",
+alb: "application load balancer",
+elb: "elastic load balancer",
+autoscaling: "automatic scaling systems",
+ami: "amazon machine image",
+ecs: "elastic container service",
+eks: "elastic kubernetes service",
+
+/* ================= DATA / ML ================= */
+eda: "exploratory data analysis",
+cv_ml: "cross validation",
+nlp_task: "natural language processing tasks",
+asr: "automatic speech recognition",
+tts: "text to speech",
+recsys: "recommendation systems",
+knn: "k nearest neighbors",
+svm: "support vector machine",
+xgboost: "extreme gradient boosting",
+lstm: "long short term memory",
+rnn: "recurrent neural network",
+cnn: "convolutional neural network",
+gpt: "generative pretrained transformer",
+bert: "bidirectional encoder representations from transformers",
+
+/* ================= SECURITY ================= */
+auth: "authentication",
+authz: "authorization",
+mfa: "multi factor authentication",
+rbac: "role based access control",
+abac: "attribute based access control",
+dos: "denial of service",
+ddos: "distributed denial of service",
+xss: "cross site scripting",
+csrf: "cross site request forgery",
+
+/* ================= NETWORKING ================= */
+tcp: "transmission control protocol",
+udp: "user datagram protocol",
+ip: "internet protocol",
+dns: "domain name system",
+http: "hypertext transfer protocol",
+https: "secure hypertext transfer protocol",
+ftp: "file transfer protocol",
+ssh: "secure shell",
+
+/* ================= SOFTWARE / SYSTEM DESIGN ================= */
+oop: "object oriented programming",
+fp: "functional programming",
+dsa: "data structures and algorithms",
+os: "operating system",
+db: "database",
+fs: "file system",
+
+/* ================= ENTERPRISE / BUSINESS ================= */
+crm: "customer relationship management",
+erp: "enterprise resource planning",
+hrms: "human resource management system",
+cms: "content management system",
+kms: "knowledge management system",
+plm: "product lifecycle management",
+
+/* ================= FINTECH ================= */
+upi: "unified payments interface",
+rtgs: "real time gross settlement",
+neft: "national electronic funds transfer",
+imps: "immediate payment service",
+kyc: "know your customer",
+
+/* ================= MISC / INDUSTRY ================= */
+sdk: "software development kit",
+cli: "command line interface",
+gui: "graphical user interface",
+ide: "integrated development environment",
+lts: "long term support",
 }
 
 /* ================== TECH SIGNALS ================== */
@@ -90,7 +202,7 @@ const TECH_KEYWORDS = [
   "distributed","scalable","parallel","real time","autonomous",
   "secure","encrypted","privacy","trust","fault tolerant",
   "digital","virtual","augmented","cyber","robotic","neural",
-  "bio","genomic","synthetic","adaptive","quantum",
+  "bio","genomic","synthetic","adaptive","quantum","js",
 ]
 
 const TECH_NOUNS = [
@@ -144,6 +256,7 @@ const CANONICAL_TECHS = [
   "cybersecurity",
   "zero trust security",
   "cryptographic systems",
+  "cryptography",
 
   "internet of things",
   "software defined networking",
@@ -170,6 +283,146 @@ const CANONICAL_TECHS = [
 
   "aerospace systems",
   "hypersonic technology",
+   /* ================= INDUSTRY LANGUAGES ================= */
+"javascript",
+"typescript",
+"python",
+"java",
+"c++",
+"c",
+"c sharp",
+"go programming",
+"rust programming",
+"kotlin",
+"swift",
+"php",
+"ruby",
+"scala",
+"r programming",
+"matlab",
+
+/* ================= FRONTEND / UI ================= */
+"html",
+"css",
+"tailwind css",
+"bootstrap",
+"angular",
+"vue js",
+"svelte",
+"redux",
+"webpack",
+"vite",
+
+/* ================= BACKEND / FRAMEWORKS ================= */
+"node js",
+"express js",
+"spring boot",
+"django",
+"flask",
+"fastapi",
+"laravel",
+"ruby on rails",
+"asp net",
+"nestjs",
+
+/* ================= DATABASES ================= */
+"mysql",
+"postgresql",
+"mongodb",
+"redis",
+"cassandra",
+"firebase",
+"oracle database",
+"sql server",
+"dynamodb",
+"neo4j",
+"elasticsearch",
+
+/* ================= CLOUD / INFRA ================= */
+"amazon web services",
+"aws",
+"microsoft azure",
+"google cloud",
+"docker",
+"kubernetes",
+"terraform",
+"ansible",
+"jenkins",
+"github actions",
+"gitlab ci cd",
+"nginx",
+"apache server",
+
+/* ================= DATA / ANALYTICS ================= */
+"pandas",
+"numpy",
+"scikit learn",
+"tensorflow",
+"pytorch",
+"keras",
+"apache spark",
+"apache hadoop",
+"apache kafka",
+"airflow",
+"databricks",
+"power bi",
+"tableau",
+
+/* ================= TESTING / QUALITY ================= */
+"jest",
+"mocha",
+"chai",
+"selenium",
+"cypress",
+"playwright",
+"junit",
+
+/* ================= MOBILE DEVELOPMENT ================= */
+"android development",
+"ios development",
+"react native",
+"flutter",
+"xamarin",
+
+/* ================= DEV TOOLS ================= */
+"git",
+"github",
+"gitlab",
+"bitbucket",
+"postman",
+"swagger",
+
+/* ================= ENTERPRISE / BUSINESS TECH ================= */
+"sap",
+"sap hana",
+"salesforce",
+"crm systems",
+"erp systems",
+"oracle enterprise",
+"workday",
+"servicenow",
+
+/* ================= FINTECH / PAYMENTS ================= */
+"stripe",
+"razorpay",
+"paypal",
+"payment gateways",
+"digital payments",
+
+/* ================= MARKETING / ANALYTICS ================= */
+"google analytics",
+"adobe analytics",
+"seo",
+"search engine optimization",
+"performance marketing",
+"marketing automation",
+
+/* ================= SECURITY ================= */
+"oauth",
+"jwt authentication",
+"ssl tls",
+"penetration testing",
+"ethical hacking",
 ]
 
 

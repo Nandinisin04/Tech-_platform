@@ -1446,7 +1446,12 @@ def run_pipeline_for_tech(tech: str):
         )
 
         kg_json = serialize_knowledge_graph(G)
-
+        # ================== 🧠 GEMINI SUMMARY ==================
+        try:
+          summary_text = generate_summary(tech)
+        except Exception as e:
+          print("Gemini failed:", e)
+          summary_text = None
         # ================== ✅ FINAL RETURN ==================
         return {
             "patents": patents_df,
@@ -1470,6 +1475,7 @@ def run_pipeline_for_tech(tech: str):
             "knowledge_graph": kg_json,
             "country_investment": country_investment,
             "trend_curve": trend_curve,
+            "summary_text":summary_text,
         }
 
     except Exception as e:
@@ -1873,7 +1879,6 @@ def generate_summary(tech: str) -> str:
     """
     from google import genai
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    API_KEY = ""
 
     prompt = f"""
 Write a precise, textbook-style technical explanation of {tech}.
@@ -1902,7 +1907,7 @@ LENGTH RULES:
     client = genai.Client(api_key=GEMINI_API_KEY)
 
     response = client.models.generate_content(
-        model="models/gemini-3-flash-preview",
+        model="models/gemini-2.5-flash",
         contents=prompt
     )
 
@@ -1913,81 +1918,7 @@ LENGTH RULES:
 
     return text
 
-# import re
 
-# KNOWN_COMPANIES = [
-#     "IBM", "Google", "Microsoft", "Amazon",
-#     "D-Wave", "IonQ", "Xanadu", "Intel", "Nvidia"
-# ]
-
-# def enrich_companies(companies_df):
-
-#     if companies_df.empty:
-#         return companies_df
-
-#     extracted = {}
-
-#     for _, r in companies_df.iterrows():
-
-#         text = f"{r.get('name', '')} {r.get('description', '')}"
-
-#         # 1️⃣ Try known companies
-#         for company in KNOWN_COMPANIES:
-#             if company.lower() in text.lower():
-
-#                 if company not in extracted:
-#                     extracted[company] = {
-#                         "name": company,
-#                         "mentions": 0,
-#                         "evidence": []
-#                     }
-
-#                 extracted[company]["mentions"] += 1
-#                 extracted[company]["evidence"].append({
-#                     "title": r.get("name"),
-#                     "link": r.get("link")
-#                 })
-
-#         # 2️⃣ Fallback: extract capitalized words
-#         matches = re.findall(r"\b[A-Z][a-zA-Z]{2,}\b", text)
-
-#         for m in matches:
-#             if m.lower() in ["top", "best", "companies", "quantum"]:
-#                 continue
-
-#             if m not in extracted:
-#                 extracted[m] = {
-#                     "name": m,
-#                     "mentions": 0,
-#                     "evidence": []
-#                 }
-
-#             extracted[m]["mentions"] += 1
-#             extracted[m]["evidence"].append({
-#                 "title": r.get("name"),
-#                 "link": r.get("link")
-#             })
-
-#     # Sort by importance
-#     sorted_companies = sorted(
-#         extracted.values(),
-#         key=lambda x: x["mentions"],
-#         reverse=True
-#     )[:5]
-
-#     # Final format
-#     result = []
-
-#     for c in sorted_companies:
-#         result.append({
-#             "name": c["name"],
-#             "importance": "high" if c["mentions"] > 2 else "medium",
-#             "insight": f"{c['name']} is frequently mentioned in quantum computing ecosystem signals.",
-#             "implication": f"{c['name']} is likely a key active player.",
-#             "evidence": c["evidence"][:3]
-#         })
-
-#     return pd.DataFrame(result)
 
 # ================== JSON EXPORT ==================
 
@@ -2005,7 +1936,7 @@ def export_dashboard_json(tech: str, result: dict):
     market    = result.get("market", pd.DataFrame())
     trend_pat = result.get("patents_year", pd.DataFrame())
     forecast  = result.get("market_forecast")
-    #summary_text = generate_summary(tech)
+    summary_text = generate_summary(tech)
         # ================== NaN SANITIZATION ==================
 
     patents   = patents.replace({np.nan: None})
@@ -2034,7 +1965,7 @@ def export_dashboard_json(tech: str, result: dict):
 
     output = {
         "technology": tech_key,
-        # "overview":{ "text":summary_text},
+        "overview":{ "text":summary_text},
         # ================= SUMMARY =================
         "summary": {
             "trl": (

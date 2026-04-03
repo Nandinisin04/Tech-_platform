@@ -36,8 +36,10 @@ def format_pipeline_result(tech_name, result):
     )
 
     # --- overview block ---
-    overview_text = f"{tech_name.replace('_', ' ').title()} is an emerging technology tracked in Tech Intel."
-
+    overview_text = result.get(
+      "summary_text",
+      f"{tech_name.replace('_', ' ').title()} is an emerging technology tracked in Tech Intel."
+    )   
     return {
         "dashboard": {
             "technology": tech_name,
