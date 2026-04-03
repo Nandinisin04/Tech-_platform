@@ -309,6 +309,7 @@ function DashboardContent() {
               trendCurve={filteredData.trend_curve ?? []}
               countryInvestment={filteredData.country_investment?.values ?? {}}
               patentTimeline={filteredData.patent_timeline ?? []}
+              patentsCountry={filteredData.patents_country ?? []}
               marketReports={filteredData.entities?.market_reports ?? []}
             />
 

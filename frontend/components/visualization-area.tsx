@@ -1,5 +1,5 @@
 "use client";
-
+import { PatentTooltip } from "@/components/common/patent-tooltip";
 import {
   Card,
   CardContent,
@@ -27,6 +27,7 @@ import {
 type PatentPoint = {
   year: number;
   count: number;
+  countries?: string[];
 };
 
 type MarketReport = {
@@ -47,8 +48,10 @@ type TrendPoint =
 type VisualizationAreaProps = {
   trendCurve: TrendPoint[];
   countryInvestment: Record<string, number>;
-  patentTimeline: PatentPoint[];
+  patentTimeline?: PatentPoint[];
+  patentsCountry?: any[];
   marketReports?: MarketReport[];
+
 };
 
 function computeBoxPlotStats(values: number[]) {
@@ -154,14 +157,55 @@ function TrendTooltipContent({
   );
 }
 
+function buildTimelineFromCountryData(patentsCountry: any[]) {
+  const yearMap: Record<number, { count: number; countries: Set<string> }> = {}
+
+  patentsCountry.forEach((item) => {
+    const year = Number(item.year)
+    if (!year) return
+
+    if (!yearMap[year]) {
+      yearMap[year] = {
+        count: 0,
+        countries: new Set(),
+      }
+    }
+
+    // ✅ FIXED COUNT
+    yearMap[year].count += 1
+
+    // ✅ SAFE COUNTRY ADD
+    if (item.country) {
+      yearMap[year].countries.add(String(item.country))
+    }
+  })
+
+  return Object.entries(yearMap)
+    .map(([year, data]) => ({
+      year: Number(year),
+      count: data.count,
+      countries: Array.from(data.countries),
+    }))
+    .sort((a, b) => a.year - b.year)
+}
 export function VisualizationArea({
   trendCurve = [],
   countryInvestment = {},
   patentTimeline = [],
+  patentsCountry = [],
   marketReports = [],
-}: VisualizationAreaProps) {
+}: VisualizationAreaProps){
   // ---------- SAFE TRANSFORMS ----------
   const forecastData = normalizeTrendCurve(trendCurve);
+  const finalPatentTimeline =
+  patentsCountry.length > 0
+    ? buildTimelineFromCountryData(patentsCountry)
+    : patentTimeline;
+
+    console.log("🟣 patentTimeline prop:", patentTimeline)
+console.log("🟡 patentsCountry prop:", patentsCountry)
+console.log("🟢 finalPatentTimeline:", finalPatentTimeline)
+
 
   const investmentData =
     countryInvestment && Object.keys(countryInvestment).length > 0
@@ -205,8 +249,7 @@ export function VisualizationArea({
 
   const hasForecast = forecastData.length > 0;
   const hasInvestment = investmentData.length > 0;
-  const hasPatents = patentTimeline.length > 0;
-
+  const hasPatents = finalPatentTimeline.length > 0;
   console.log("📈 forecastData:", forecastData);
   console.log("💰 marketValues:", marketValues);
   console.log("📦 boxStats:", boxStats);
@@ -282,7 +325,7 @@ export function VisualizationArea({
       </Card>
 
       {/* ================= Patent Activity ================= */}
-      <Card>
+       <Card>
         <CardHeader>
           <CardTitle>Patent Activity Timeline</CardTitle>
           <CardDescription>
@@ -292,11 +335,11 @@ export function VisualizationArea({
         <CardContent>
           {hasPatents ? (
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={patentTimeline}>
+              <LineChart data={finalPatentTimeline}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="year" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<PatentTooltip />} />
                 <Line
                   type="monotone"
                   dataKey="count"
