@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import axios from "axios";
+import FormData from "form-data";
 import { execFile } from "child_process";
 import { promisify } from "util";
 
@@ -547,6 +549,31 @@ export const uploadLocalDocument = async (req, res) => {
     console.log("   size:", req.file.size);
     console.log("   type:", req.file.mimetype);
 
+    // ✅ If running in production / Render, call deployed ML service instead
+    if (process.env.NODE_ENV === "production" && process.env.ML_SERVICE_URL) {
+      console.log("🌐 Production mode: forwarding file to ML service...");
+
+      const form = new FormData();
+      form.append("file", req.file.buffer, {
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+      });
+
+      const mlResponse = await axios.post(
+        `${process.env.ML_SERVICE_URL}/local/upload`,
+        form,
+        {
+          headers: form.getHeaders(),
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
+        }
+      );
+
+      console.log("✅ ML service response received");
+      return res.status(200).json(mlResponse.data);
+    }
+
+    // ✅ Local development mode: run Python script directly
     const tempDir = path.join(process.cwd(), "temp");
     console.log("📂 tempDir:", tempDir);
 
@@ -574,28 +601,21 @@ export const uploadLocalDocument = async (req, res) => {
       });
     }
 
+    // ✅ Cross-platform Python executable
     const pythonExe =
       process.env.PYTHON_EXECUTABLE ||
-      path.join(
-        process.cwd(),
-        "..",
-        "ml-service",
-        "venv",
-        "Scripts",
-        "python.exe",
-      );
+      (process.platform === "win32"
+        ? path.join(
+            process.cwd(),
+            "..",
+            "ml-service",
+            "venv",
+            "Scripts",
+            "python.exe"
+          )
+        : "python3");
 
     console.log("🐍 Using Python executable:", pythonExe);
-
-    if (
-      process.env.PYTHON_EXECUTABLE &&
-      !["python", "python3"].includes(process.env.PYTHON_EXECUTABLE) &&
-      !fs.existsSync(pythonExe)
-    ) {
-      return res.status(500).json({
-        error: `Python executable not found at ${pythonExe}`,
-      });
-    }
 
     console.log("🚀 Running Python extraction...");
 
@@ -637,7 +657,7 @@ export const uploadLocalDocument = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Local upload failed FULL ERROR:");
+    console.error(" Local upload failed FULL ERROR:");
     console.error(error);
 
     return res.status(500).json({
