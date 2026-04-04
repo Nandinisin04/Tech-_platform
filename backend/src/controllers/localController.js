@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import axios from "axios";
+import FormData from "form-data";
 import { execFile } from "child_process";
 import { promisify } from "util";
 
@@ -575,15 +577,17 @@ export const uploadLocalDocument = async (req, res) => {
     }
 
     const pythonExe =
-      process.env.PYTHON_EXECUTABLE ||
-      path.join(
+  process.env.PYTHON_EXECUTABLE ||
+  (process.platform === "win32"
+    ? path.join(
         process.cwd(),
         "..",
         "ml-service",
         "venv",
         "Scripts",
         "python.exe",
-      );
+      )
+    : "python3");
 
     console.log("🐍 Using Python executable:", pythonExe);
 

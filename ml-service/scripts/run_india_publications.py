@@ -7,7 +7,13 @@ from collections import defaultdict
 
 CROSSREF_URL = "https://api.crossref.org/works"
 OUTPUT_DIR = "data/india"
+import re
 
+def clean_html(text):
+    if not text:
+        return ""
+    text = re.sub(r"<.*?>", "", text)  # remove HTML tags
+    return text.strip()
 FIELDS = {
     "artificial_intelligence": [
         "artificial intelligence", "machine learning",
@@ -114,8 +120,8 @@ def fetch_field_publications(field, keywords):
     records = []
 
     for item in items:
-        title = " ".join(item.get("title", []))
-        abstract = item.get("abstract", "")
+        title = clean_html(" ".join(item.get("title", [])))
+        abstract = clean_html(item.get("abstract", ""))
         authors = item.get("author", [])
 
         matched_institutes = []
