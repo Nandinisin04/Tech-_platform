@@ -16,7 +16,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { filterKnowledgeGraph } from "@/lib/filters/filterKnowledgeGraph";
 import ModeToggle from "@/components/ui/mode-toggle";
 import LocalDashboard from "@/components/ui/local-dashboard";
-
+ 
 function applyPreset(
   f: KGFilters,
   nodeTypes: Partial<KGFilters["nodeTypes"]>,
@@ -39,7 +39,7 @@ function applyPreset(
     keyword: f.keyword,
   };
 }
-
+ 
 function FilterPill({
   title,
   children,
@@ -56,7 +56,7 @@ function FilterPill({
     </div>
   );
 }
-
+ 
 const RELATION_LABELS: Record<string, string> = {
   HAS_PATENT: "Tech → Patents",
   HAS_PAPER: "Tech → Papers",
@@ -72,7 +72,7 @@ const RELATION_LABELS: Record<string, string> = {
   COUNTRY_PATENT_SIGNAL: "Paper → Country (Patent Signal)",
   COUNTRY_RESEARCH_SIGNAL: "Paper → Country (Research Signal)",
 };
-
+ 
 function ChipButton({
   label,
   onClick,
@@ -89,7 +89,7 @@ function ChipButton({
     </button>
   );
 }
-
+ 
 function LegendItem({ color, label }: { color: string; label: string }) {
   return (
     <div className="flex items-center gap-2">
@@ -98,96 +98,83 @@ function LegendItem({ color, label }: { color: string; label: string }) {
     </div>
   );
 }
-
+ 
 function DashboardContent() {
   const searchParams = useSearchParams();
   const techParam = searchParams.get("tech") || "hypersonics";
-
+ 
   const techName = techParam.toLowerCase().trim();
   const normalizedTech = techName.replace(/\s+/g, "_");
-
-  const [data, setData] = useState<any>(null); // dashboard block only
-  const [kg, setKg] = useState<any>(null); // knowledge_graph block
+ 
+  const [data, setData] = useState<any>(null);
+  const [kg, setKg] = useState<any>(null);
   const [showKG, setShowKG] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<DashboardFilters>(defaultFilters);
   const [kgFilters, setKgFilters] = useState<KGFilters>(defaultKGFilters);
   const [loadingMessage, setLoadingMessage] = useState("Loading analysis data...");
-
+ 
   useEffect(() => {
     let cancelled = false;
-
+ 
     async function loadTech() {
       try {
         setError(null);
         setData(null);
         setKg(null);
         setLoadingMessage("Loading analysis data...");
-
+ 
         const encodedTech = encodeURIComponent(normalizedTech);
-
+ 
         console.log("🔍 FRONTEND FETCHING:", normalizedTech);
-
-        // 1️⃣ Try cached DB data first
+ 
         let res = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}`
         );
-
+ 
         console.log(`📡 GET /api/technologies/${encodedTech} status:`, res.status);
-
-        // 2️⃣ If not found, trigger ML pipeline
+ 
         if (res.status === 404) {
           console.warn("⚠️ Not in DB, running ML pipeline for:", normalizedTech);
           setLoadingMessage(`Generating intelligence for ${normalizedTech.replace(/_/g, " ")}...`);
-
+ 
           const runRes = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}/run`,
-            {
-              method: "POST",
-            }
+            { method: "POST" }
           );
-
+ 
           console.log(`🚀 POST /run status for ${normalizedTech}:`, runRes.status);
-
+ 
           if (!runRes.ok) {
             const errJson = await runRes.json().catch(() => null);
             console.error("❌ ML pipeline failed response:", errJson);
             throw new Error(errJson?.error || "ML pipeline failed");
           }
-
-          // 3️⃣ Fetch again after ML finishes
+ 
           res = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/technologies/${encodedTech}`
           );
-
+ 
           console.log(`📡 Re-fetch after pipeline for ${normalizedTech}:`, res.status);
         }
-
+ 
         if (!res.ok) {
           throw new Error(`Technology data not available (${res.status})`);
         }
-
+ 
         const json = await res.json();
-
         console.log("✅ DASHBOARD RAW RESPONSE:", json);
-
-        // ✅ STRICT EXPECTED SHAPE:
-        // {
-        //   dashboard: {...},
-        //   knowledge_graph: {...},
-        //   source: ...
-        // }
-
+ 
         const dashboardBlock = json?.dashboard ?? null;
         const knowledgeGraphBlock = json?.knowledge_graph ?? null;
-
+ 
         console.log("📦 dashboardBlock:", dashboardBlock);
         console.log("🕸 knowledgeGraphBlock:", knowledgeGraphBlock);
-
+ 
         if (!dashboardBlock) {
           throw new Error("Malformed response: missing dashboard block");
         }
-
+ 
         if (!cancelled) {
           setData(dashboardBlock);
           setKg(knowledgeGraphBlock);
@@ -199,64 +186,112 @@ function DashboardContent() {
         }
       }
     }
-
+ 
     loadTech();
-
+ 
     return () => {
       cancelled = true;
     };
   }, [normalizedTech]);
-
-  // Auto-set patent year range from patents entity
+ 
+  /* ── Auto-set patent year range from patents entity ── */
   useEffect(() => {
     if (!data?.entities?.patents?.length) return;
-
+ 
     const years = data.entities.patents
       .map((p: any) => p.year)
       .filter((y: any) => typeof y === "number");
-
+ 
     if (!years.length) return;
-
+ 
     const minYear = Math.min(...years);
     const maxYear = Math.max(...years);
-
+ 
     console.log("📅 Patent year range auto-detected:", { minYear, maxYear });
-
+ 
     setFilters((prev) => ({
       ...prev,
       patentYearRange: [minYear, maxYear],
     }));
   }, [data]);
-
-  const filteredData = useMemo(() => {
-    if (!data) return null;
-    const result = applyFilters(data, filters);
-    console.log("🧪 filteredData:", result);
-    return result;
-  }, [data, filters]);
-
+ 
+  /* ── Auto-set publication year range from papers ── */
+  useEffect(() => {
+    if (!data?.entities?.papers?.length) return;
+ 
+    const years = data.entities.papers
+      .map((p: any) => p.year)
+      .filter((y: any) => typeof y === "number");
+ 
+    if (!years.length) return;
+ 
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+ 
+    console.log("📅 Publication year range auto-detected:", { minYear, maxYear });
+ 
+    setFilters((prev) => ({
+      ...prev,
+      publicationYearRange: [minYear, maxYear],
+    }));
+  }, [data]);
+ 
+  /* ── Derived values: patent year bounds ── */
   const patentYears = useMemo(() => {
     if (!data?.patent_timeline?.length) return [];
     return data.patent_timeline
       .map((p: any) => p.year)
       .filter((y: any) => typeof y === "number");
   }, [data]);
-
+ 
   const minPatentYear =
     patentYears.length > 0 ? Math.min(...patentYears) : 2010;
-
+ 
   const maxPatentYear =
     patentYears.length > 0
       ? Math.max(...patentYears)
       : new Date().getFullYear();
-
+ 
+  /* ── Derived values: publication year bounds ── */
+  const publicationYears = useMemo(() => {
+    if (!data?.entities?.papers?.length) return [];
+    return data.entities.papers
+      .map((p: any) => p.year)
+      .filter((y: any) => typeof y === "number");
+  }, [data]);
+ 
+  const minPublicationYear =
+    publicationYears.length > 0 ? Math.min(...publicationYears) : 1980;
+ 
+  const maxPublicationYear =
+    publicationYears.length > 0
+      ? Math.max(...publicationYears)
+      : new Date().getFullYear();
+ 
+  /* ── Derived values: available countries from country_investment ── */
+  const availableCountries = useMemo(() => {
+    if (!data?.country_investment?.values) return [];
+    return Object.keys(data.country_investment.values)
+      .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
+      .sort();
+  }, [data]);
+ 
+  /* ── Apply filters ── */
+  const filteredData = useMemo(() => {
+    if (!data) return null;
+    const result = applyFilters(data, filters);
+    console.log("🧪 filteredData:", result);
+    return result;
+  }, [data, filters]);
+ 
+  /* ── Apply KG filters ── */
   const filteredKG = useMemo(() => {
     if (!kg) return null;
     const result = filterKnowledgeGraph(kg, kgFilters);
     console.log("🕸 filteredKG:", result);
     return result;
   }, [kg, kgFilters]);
-
+ 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -264,7 +299,7 @@ function DashboardContent() {
       </div>
     );
   }
-
+ 
   if (!filteredData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -272,15 +307,14 @@ function DashboardContent() {
       </div>
     );
   }
-
+ 
   console.log("📊 FINAL DASHBOARD DATA:", data);
-
+ 
   return (
     <main className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
-          {/* LEFT SIDE */}
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2 text-primary">
               <ChevronLeft className="w-5 h-5" />
@@ -288,19 +322,18 @@ function DashboardContent() {
             </Link>
             <h1 className="text-2xl font-bold">TechIntel</h1>
           </div>
-
-          {/* RIGHT SIDE */}
+ 
           <div className="flex items-center">
             <ThemeToggle />
           </div>
         </div>
       </header>
-
+ 
       <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
         <DashboardHeader techName={techName.replace(/_/g, " ")} />
         <p>{filteredData.overview?.text}</p>
-        <KeyInsightsCards insights={filteredData.summary?? ""} />
-
+        <KeyInsightsCards insights={filteredData.summary ?? ""} />
+ 
         {/* MAIN CONTENT */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* LEFT: ALL CHARTS */}
@@ -312,14 +345,14 @@ function DashboardContent() {
               patentsCountry={filteredData.patents_country ?? []}
               marketReports={filteredData.entities?.market_reports ?? []}
             />
-
+ 
             {/* Knowledge Graph */}
             {kg && kg.nodes?.length > 0 && (
               <div className="mt-6 rounded-xl border bg-card p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-sm font-semibold">Knowledge Graph</h2>
-
+ 
                   <button
                     onClick={() => setShowKG(!showKG)}
                     className="px-3 py-1.5 text-xs rounded-md border bg-background hover:bg-muted transition"
@@ -327,7 +360,7 @@ function DashboardContent() {
                     {showKG ? "Hide Graph" : "Show Graph"}
                   </button>
                 </div>
-
+ 
                 {showKG && (
                   <>
                     {/* Node Legend */}
@@ -338,7 +371,7 @@ function DashboardContent() {
                       <LegendItem color="bg-pink-300" label="Country" />
                       <LegendItem color="bg-yellow-400" label="Source Article" />
                     </div>
-
+ 
                     {/* Layout: Graph Left + Controls Right */}
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                       {/* LEFT = Graph */}
@@ -350,7 +383,7 @@ function DashboardContent() {
                           />
                         )}
                       </div>
-
+ 
                       {/* RIGHT = Controls Panel */}
                       <div className="lg:col-span-1 space-y-3">
                         {/* Analyst Questions */}
@@ -368,7 +401,7 @@ function DashboardContent() {
                                 )
                               }
                             />
-
+ 
                             <ChipButton
                               label="🔗 Patent ↔ Paper Bridges"
                               onClick={() =>
@@ -385,7 +418,7 @@ function DashboardContent() {
                                 )
                               }
                             />
-
+ 
                             <ChipButton
                               label="📄 Similar Papers"
                               onClick={() =>
@@ -396,7 +429,7 @@ function DashboardContent() {
                                 )
                               }
                             />
-
+ 
                             <ChipButton
                               label="🧩 Similar Patents"
                               onClick={() =>
@@ -409,7 +442,7 @@ function DashboardContent() {
                             />
                           </div>
                         </FilterPill>
-
+ 
                         {/* Node Type Filters */}
                         <FilterPill title="NODE TYPES">
                           <div className="grid grid-cols-1 gap-2 text-xs">
@@ -438,7 +471,7 @@ function DashboardContent() {
                             )}
                           </div>
                         </FilterPill>
-
+ 
                         {/* Relation Filters */}
                         <FilterPill title="RELATION TYPES">
                           <div className="grid grid-cols-1 gap-2 text-xs max-h-[180px] overflow-auto pr-1">
@@ -468,7 +501,7 @@ function DashboardContent() {
                             )}
                           </div>
                         </FilterPill>
-
+ 
                         {/* Reset */}
                         <button
                           onClick={() => setKgFilters(defaultKGFilters)}
@@ -483,7 +516,7 @@ function DashboardContent() {
               </div>
             )}
           </div>
-
+ 
           {/* RIGHT: SIDEBAR */}
           {filteredData && (
             <SidebarPanels
@@ -492,9 +525,12 @@ function DashboardContent() {
               publications={filteredData.entities?.papers ?? []}
               patents={filteredData.entities?.patents ?? []}
               filters={filters}
+              setFilters={setFilters}
               minPatentYear={minPatentYear}
               maxPatentYear={maxPatentYear}
-              setFilters={setFilters}
+              minPublicationYear={minPublicationYear}
+              maxPublicationYear={maxPublicationYear}
+              availableCountries={availableCountries}
             />
           )}
         </div>
@@ -502,21 +538,21 @@ function DashboardContent() {
     </main>
   );
 }
-
+ 
 type Mode = "technology" | "local";
-
+ 
 export default function DashboardPage() {
   const [mode, setMode] = useState<Mode>("technology");
-
+ 
   useEffect(() => {
     const saved = localStorage.getItem("intel_mode") as Mode | null;
     if (saved === "technology" || saved === "local") setMode(saved);
   }, []);
-
+ 
   useEffect(() => {
     localStorage.setItem("intel_mode", mode);
   }, [mode]);
-
+ 
   return (
     <div className="min-h-screen">
       {/* TOP MINI BAR FOR TOGGLE */}
@@ -525,11 +561,11 @@ export default function DashboardPage() {
           <h2 className="text-sm font-semibold text-muted-foreground">
             Mode Switch
           </h2>
-
+ 
           <ModeToggle mode={mode} setMode={setMode} />
         </div>
       </div>
-
+ 
       {/* MODE CONTENT */}
       {mode === "technology" ? (
         <Suspense fallback={<p className="p-6">Loading dashboard...</p>}>

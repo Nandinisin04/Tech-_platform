@@ -11,14 +11,42 @@ export default function PublicationList({ papers, onSelect }: any) {
         <div
           key={i}
           onClick={() => onSelect(paper)}
-          className="p-2 rounded-md border border-border/30 bg-secondary/30 cursor-pointer hover:bg-muted transition"
+          className="p-2 rounded-md border border-border/30 bg-secondary/30 cursor-pointer hover:bg-muted transition space-y-1"
         >
-          <p className="text-sm font-medium line-clamp-2">
-            {paper.title}
-          </p>
+
+          {/* Title */}
+          {paper.link ? (
+            <a
+              href={paper.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-sm font-medium text-primary hover:underline line-clamp-2"
+            >
+              {paper.title}
+            </a>
+          ) : (
+            <p className="text-sm font-medium line-clamp-2">
+              {paper.title}
+            </p>
+          )}
+
+          {/* Year (NEW FIX) */}
+          {paper.year && (
+            <p className="text-xs text-muted-foreground">
+              Year: {paper.year}
+            </p>
+          )}
+
         </div>
 
       ))}
+
+      {papers.length === 0 && (
+        <p className="text-xs text-muted-foreground">
+          No publications available
+        </p>
+      )}
 
     </div>
   )
